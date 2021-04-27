@@ -24,7 +24,7 @@ setup(
     description = 'Workflow utilities',
     long_description = long_description,
     long_description_content_type = 'text/markdown',
-    author = 'Michele Berselli',
+    author = 'Michele Berselli, Soo Lee',
     author_email = 'berselli.michele@gmail.com',
     url='https://github.com/dbmi-bgm/cgap-wfl_utils',
     include_package_data=True,
