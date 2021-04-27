@@ -1,0 +1,201 @@
+{
+  "accession": "ACCID",
+  "app_name": "TEST",
+  "app_version": "v1",
+  "uuid": "test-uuid",
+  "arguments": [
+    {
+      "argument_name": "input_generic",
+      "argument_type": "file",
+      "uuid": "input_generic-uuid"
+    },
+    {
+      "argument_name": "pmtr_generic",
+      "argument_type": "parameter",
+      "value": "value_pmtr_generic"
+    }
+  ],
+  "workflows": [
+    {
+      "name": "A",
+      "uuid": "a-uuid",
+      "config": {
+        "instance_type": "a.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_a",
+          "argument_type": "file",
+          "scatter": true
+        },
+        {
+          "argument_name": "pmtr_a",
+          "argument_type": "parameter",
+          "value": "value_pmtr_a"
+        }
+      ],
+      "outputs": ["output_a"]
+    },
+    {
+      "name": "B",
+      "uuid": "b-uuid",
+      "config": {
+        "instance_type": "b.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_b",
+          "argument_type": "file",
+          "source_step": "A",
+          "source_argument_name": "output_a"
+        },
+        {
+          "argument_name": "pmtr_b",
+          "argument_type": "parameter",
+          "value": "value_pmtr_b"
+        }
+      ],
+      "outputs": ["output_b"]
+    },
+    {
+      "name": "C",
+      "uuid": "c-uuid",
+      "config": {
+        "instance_type": "c.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_c",
+          "argument_type": "file",
+          "source_step": "B",
+          "source_argument_name": "output_b"
+        }
+      ],
+      "outputs": ["output_c"]
+    },
+    {
+      "name": "D",
+      "uuid": "d-uuid",
+      "config": {
+        "instance_type": "d.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_d",
+          "argument_type": "file",
+          "gather": true,
+          "source_step": "C",
+          "source_argument_name": "output_c"
+        }
+      ],
+      "outputs": ["output_d"]
+    },
+    {
+      "name": "E",
+      "uuid": "e-uuid",
+      "config": {
+        "instance_type": "e.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_e",
+          "argument_type": "file",
+          "source_step": "C",
+          "source_argument_name": "output_c"
+        }
+      ],
+      "outputs": ["output_e"]
+    },
+    {
+      "name": "G",
+      "uuid": "g-uuid",
+      "config": {
+        "instance_type": "g.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_g",
+          "argument_type": "file",
+          "source_step": "D",
+          "source_argument_name": "output_d"
+        }
+      ],
+      "outputs": ["output_g"]
+    },
+    {
+      "name": "H",
+      "uuid": "h-uuid",
+      "config": {
+        "instance_type": "h.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_h",
+          "argument_type": "file",
+          "source_step": "G",
+          "source_argument_name": "output_g"
+        },
+        {
+          "argument_name": "input_h1",
+          "argument_type": "file",
+          "gather": true,
+          "source_step": "E",
+          "source_argument_name": "output_e"
+        },
+        {
+          "argument_name": "input_h2",
+          "argument_type": "file",
+          "source_step": "Z",
+          "source_argument_name": "output_z"
+        }
+      ],
+      "outputs": ["output_h"]
+    },
+    {
+      "name": "P",
+      "uuid": "p-uuid",
+      "config": {
+        "instance_type": "p.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_p",
+          "argument_type": "file",
+          "source_step": "G",
+          "source_argument_name": "output_g"
+        }
+      ],
+      "outputs": ["output_p"]
+    },
+    {
+      "name": "M",
+      "uuid": "m-uuid",
+      "config": {
+        "instance_type": "m.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_m",
+          "argument_type": "file",
+          "source_step": "P",
+          "source_argument_name": "output_p"
+        }
+      ],
+      "outputs": ["output_m"]
+    },
+    {
+      "name": "Z",
+      "uuid": "z-uuid",
+      "config": {
+        "instance_type": "z.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_z",
+          "argument_type": "file"
+        }
+      ],
+      "outputs": ["output_z"]
+    }
+  ]
+}
