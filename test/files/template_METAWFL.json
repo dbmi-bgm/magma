@@ -1,0 +1,67 @@
+{
+  "accession": "", # must be unique
+  "app_name": "", # must be unique
+  "app_version": "",
+  "uuid": "", # must be unique
+  # GENERAL ARGUMENTS
+  "arguments": [
+    {
+      "argument_name": "",
+      "argument_type": "file",
+      "uuid": "",
+      "mount": false,
+      "rename": "",
+      "unzip": ""
+    },
+    {
+      "argument_name": "",
+      "argument_type": "parameter",
+      "value": ""
+    }
+  ],
+  # STEPS
+  "workflows": [
+    {
+      "name": "", # must be unique
+      "uuid": "", # WORKFLOW UUID, must be unique
+      "config": {
+        "instance_type": "",
+        "ebs_size": "",
+        "EBS_optimized": true,
+        "spot_instance": true,
+        "log_bucket": "tibanna-output",
+        "run_name": "run_",
+        "behavior_on_capacity_limit": "wait_and_retry"
+      },
+      # STEP ARGUMENTS
+      # Try to check for value (parameters) or link to previous step (file)
+      #   if not specified, try match to general arguments, if not is initial input
+      "arguments": [
+        {
+          "argument_name": "",
+          "argument_type": "file",
+          "scatter": true,
+          "gather": false,
+          "mount": false,
+          "rename": "",
+          "unzip": "",
+          # SPECIFY IF LINK PREVIOUS STEP OUTPUT
+          "source_step": "",
+          "source_argument_name": ""
+          # if no match need to be done because it's the first input
+          #   skip source_step field
+          # if parameter or file value is case specific and need to come from
+          #   workflow run we can just set a placeholder like <whatever>.value
+          #   where <whatever>.value means pick 'value' in 'whatever' section in
+          #   current workflow run object
+        },
+        {
+          "argument_name": "",
+          "argument_type": "parameter",
+          "value": ""
+        }
+      ],
+      "outputs": [] # LIST OUTPUTS
+    }
+  ]
+}
