@@ -2,7 +2,7 @@
 
 ################################################
 #
-#   Library to parse meta-workflow objects
+#   Library to work with meta-workflow objects
 #
 #   Michele Berselli
 #   berselli.michele@gmail.com
@@ -83,6 +83,8 @@ class Wfl(object):
 
         def _attributes(self):
             '''
+                read arguments
+                set step calculated attributes
             '''
             for arg in self.arguments:
                 if not self.is_scatter and arg.get('scatter'):
@@ -102,6 +104,8 @@ class Wfl(object):
 
     def _read_steps(self):
         '''
+            read step workflows
+            initialize Step objects
         '''
         for wfl in self.workflows:
             step_obj = self.Step(wfl)
@@ -116,8 +120,11 @@ class Wfl(object):
 
     def _build_wfl_run(self, end_steps):
         '''
+            build graph structure for workflow given end_steps
+            backtrack from end_steps to link steps that are dependencies
+            return a set containg steps that are entry point
 
-            end_steps, names list of end steps to build wfl_run for
+                end_steps, names list of end steps to build workflow for
         '''
         steps_ = set() #steps that are entry point to wfl_run
         for end_step in end_steps:
@@ -145,8 +152,13 @@ class Wfl(object):
 
     def _order_wfl_run(self, end_steps):
         '''
+            sort and list all workflow steps given end_steps
+            _build_wfl_run to build graph structure for workflow
+            start from steps that are entry points
+            navigate the graph structure
+            return a list with workflow steps in order
 
-            end_steps, names list of end steps to build wfl_run for
+                end_steps, names list of end steps to build workflow for
         '''
         steps_ = []
         queue = list(self._build_wfl_run(end_steps))
@@ -178,8 +190,15 @@ class Wfl(object):
 
     def write_wfl_run(self, end_steps, input=3):
         '''
+            create json structure for workflow given end_steps and input
+            _order_wfl_run to sort and list all workflow steps
+            use scatter, gather_from and dependencies information
+            to create and collect shards for individual steps
+            complete attributes and other metadata for workflow
+            return a json that represents a workflow run object
 
-            end_steps, names list of end steps to build wfl_run for
+                end_steps, names list of end steps to build workflow for
+                input, dictionary with input arguments
         '''
         n = input
         scatter = {}
