@@ -40,8 +40,8 @@
         {
           "argument_name": "",
           "argument_type": "file",
-          "scatter": true,
-          "gather": false,
+          "scatter": 0,
+          "gather": 0,
           "mount": false,
           "rename": "",
           "unzip": "",
@@ -54,6 +54,7 @@
           #   workflow run we can just set a placeholder like <whatever>.value
           #   where <whatever>.value means pick 'value' in 'whatever' section in
           #   current workflow run object
+          # if source_argument_name but not source_step it's global
         },
         {
           "argument_name": "",

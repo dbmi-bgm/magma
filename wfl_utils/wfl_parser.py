@@ -71,8 +71,10 @@ class Wfl(object):
                                     .format(e.args[0], step_json))
             #end try
             # Calculated attributes
-            self.is_scatter = False
-            self.gather_from = set() #names of steps to gather from
+            self.is_scatter = 0 #dimension to scatter
+            self.gather_from = {} #{name: dimension, ...} of steps to gather from
+                                  # dimension is input dimension increment
+                                  # and shard dimension decrement
             self.dependencies = set() #names of steps that are dependency
             # For building graph structure
             self._nodes = set() #step_objects for steps that depend on current step
@@ -87,14 +89,16 @@ class Wfl(object):
                 set step calculated attributes
             '''
             for arg in self.arguments:
-                if not self.is_scatter and arg.get('scatter'):
-                    self.is_scatter = True
+                scatter = arg.get('scatter') #scatter dimension
+                if not self.is_scatter and scatter:
+                    self.is_scatter = scatter
                 #end if
                 source_step = arg.get('source_step') #source step name
                 if source_step:
                     self.dependencies.add(source_step)
-                    if arg.get('gather'):
-                        self.gather_from.add(source_step)
+                    gather = arg.get('gather')
+                    if gather:
+                        self.gather_from.setdefault(source_step, gather)
                     #end if
                 #end if
             #end for
@@ -188,7 +192,56 @@ class Wfl(object):
         return steps_
     #end def
 
-    def write_wfl_run(self, end_steps, input=3):
+    def _input_dimensions(self, input):
+        '''
+        '''
+        input_dimensions = {}
+        input_dimensions.setdefault(1, [len(input)])
+        if isinstance(input[0], list):
+            input_dimensions.setdefault(2, [])
+            for i in input:
+                input_dimensions[2].append(len(i))
+                if isinstance(i[0], list):
+                    input_dimensions.setdefault(3, [])
+                    d_ = []
+                    for ii in i:
+                        d_.append(len(ii))
+                    #end for
+                    input_dimensions[3].append(d_)
+                #end if
+            #end for
+        #end if
+        return input_dimensions
+    #end def
+
+    def _shards(self, input_dimensions, dimension):
+        '''
+        '''
+        shards = []
+        input_dimension = input_dimensions[dimension]
+        if dimension == 1: #1st dimension
+            for i in range(input_dimension[0]):
+                shards.append([str(i)])
+            #end for
+        elif dimension == 2: #2nd dimension
+            for i, d in enumerate(input_dimension):
+                for ii in range(d):
+                    shards.append([str(i), str(ii)])
+                #end for
+            #end for
+        else: #3rd dimension
+            for i, d in enumerate(input_dimension):
+                for ii, dd in enumerate(d):
+                    for iii in range(dd):
+                        shards.append([str(i), str(ii), str(iii)])
+                    #end for
+                #end for
+            #end for
+        #end if
+        return shards
+    #end def
+
+    def write_wfl_run(self, end_steps, input):
         '''
             create json structure for workflow given end_steps and input
             _order_wfl_run to sort and list all workflow steps
@@ -200,8 +253,8 @@ class Wfl(object):
                 end_steps, names list of end steps to build workflow for
                 input, dictionary with input arguments
         '''
-        n = input
-        scatter = {}
+        scatter = {} #{step_obj.name: dimension, ...}
+        dimensions = self._input_dimensions(input)
         steps_ = self._order_wfl_run(end_steps)
         run_json = {
             'meta_workflow_uuid': self.uuid,
@@ -211,42 +264,66 @@ class Wfl(object):
         for step_obj in steps_:
             run_step = {}
             run_step.setdefault('name', step_obj.name)
-            # run_step.setdefault('workflow_run_uuid', '')
-            # run_step.setdefault('output', '')
-            # run_step.setdefault('status', 'pending')
+            run_step.setdefault('workflow_run_uuid', '')
+            run_step.setdefault('output', '')
+            run_step.setdefault('status', 'pending')
             run_step.setdefault('dependencies', [])
             # Check scatter
-            #   If dependency in scatter but not in gather_from,
-            #       current step must be scattered.
-            scatter_ = 1 #default is no scatter, 1 step
+            #   If is_scatter or dependency in scatter
+            #       but not in gather_from
+            #       current step must be scattered
+            scatter_dimension = 0 #dimension to scatter if any
             if step_obj.is_scatter:
-                scatter_ = n
-                scatter.setdefault(step_obj.name, scatter_)
+                scatter_dimension = step_obj.is_scatter
+                scatter.setdefault(step_obj.name, scatter_dimension)
             else:
+                in_gather, gather_dimensions = True, []
                 for dependency in step_obj.dependencies:
                     if dependency in scatter:
+                        scatter_dimension = scatter[dependency]
                         if dependency not in step_obj.gather_from:
-                            scatter_ = scatter[dependency]
-                            scatter.setdefault(step_obj.name, scatter_)
+                            in_gather = False
                             break
+                        else:
+                            gather_dimension = scatter_dimension - step_obj.gather_from[dependency]
+                            gather_dimensions.append(gather_dimension)
                         #end if
                     #end if
                 #end for
+                if in_gather and gather_dimensions:
+                    scatter_dimension = max(gather_dimensions)
+                #end if
+                if scatter_dimension > 0:
+                    scatter.setdefault(step_obj.name, scatter_dimension)
+                #end if
             #end if
             # Created shards
-            for i in range(scatter_):
+            if scatter_dimension: #create shards
+                shards = self._shards(dimensions, scatter_dimension)
+            else: shards = [['0']] #no scatter, only one shard
+            #end if
+            for s in shards:
                 run_step_ = copy.deepcopy(run_step)
-                run_step_.setdefault('shard', i)
+                run_step_.setdefault('shard', ':'.join(s))
                 # Check gather_from
                 #   If dependency in gather_from,
-                #       dependencies must be aggregated from scatter.
-                for dependency in step_obj.dependencies:
+                #       dependencies must be aggregated from scatter
+                for dependency in sorted(step_obj.dependencies):
                     if dependency in step_obj.gather_from:
-                        for i_ in range(scatter[dependency]):
-                            run_step_['dependencies'].append('{0}:{1}'.format(dependency, i_))
+                        # reducing dimension with gather
+                        #   but i need to get shards for original scatter dimension
+                        shards_gather = self._shards(dimensions, scatter[dependency])
+                        gather_dimension = scatter[dependency] - step_obj.gather_from[dependency]
+                        for s_g in shards_gather:
+                            if scatter_dimension == 0 or \
+                                scatter_dimension > gather_dimension: #gather all from that dependency
+                                run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(s_g)))
+                            elif s_g[:scatter_dimension] == s: #gather only corresponding subset
+                                run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(s_g)))
+                            #end if
                         #end for
                     else:
-                        run_step_['dependencies'].append('{0}:{1}'.format(dependency, i))
+                        run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(s)))
                     #end if
                 #end for
                 run_json['workflow_runs'].append(run_step_)

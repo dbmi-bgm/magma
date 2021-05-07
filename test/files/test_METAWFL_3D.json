@@ -26,7 +26,7 @@
         {
           "argument_name": "input_a",
           "argument_type": "file",
-          "scatter": 1
+          "scatter": 3
         },
         {
           "argument_name": "pmtr_a",
@@ -67,6 +67,7 @@
         {
           "argument_name": "input_c",
           "argument_type": "file",
+          "gather": 1,
           "source_step": "B",
           "source_argument_name": "output_b"
         }
@@ -83,7 +84,7 @@
         {
           "argument_name": "input_d",
           "argument_type": "file",
-          "gather": 1,
+          "gather": 2,
           "source_step": "C",
           "source_argument_name": "output_c"
         }
@@ -100,8 +101,9 @@
         {
           "argument_name": "input_e",
           "argument_type": "file",
-          "source_step": "C",
-          "source_argument_name": "output_c"
+          "gather": 2,
+          "source_step": "B",
+          "source_argument_name": "output_b"
         }
       ],
       "outputs": ["output_e"]
@@ -123,51 +125,6 @@
       "outputs": ["output_g"]
     },
     {
-      "name": "H",
-      "uuid": "h-uuid",
-      "config": {
-        "instance_type": "h.instance"
-      },
-      "arguments": [
-        {
-          "argument_name": "input_h",
-          "argument_type": "file",
-          "source_step": "G",
-          "source_argument_name": "output_g"
-        },
-        {
-          "argument_name": "input_h1",
-          "argument_type": "file",
-          "gather": 1,
-          "source_step": "E",
-          "source_argument_name": "output_e"
-        },
-        {
-          "argument_name": "input_h2",
-          "argument_type": "file",
-          "source_step": "Z",
-          "source_argument_name": "output_z"
-        }
-      ],
-      "outputs": ["output_h"]
-    },
-    {
-      "name": "P",
-      "uuid": "p-uuid",
-      "config": {
-        "instance_type": "p.instance"
-      },
-      "arguments": [
-        {
-          "argument_name": "input_p",
-          "argument_type": "file",
-          "source_step": "G",
-          "source_argument_name": "output_g"
-        }
-      ],
-      "outputs": ["output_p"]
-    },
-    {
       "name": "M",
       "uuid": "m-uuid",
       "config": {
@@ -177,25 +134,66 @@
         {
           "argument_name": "input_m",
           "argument_type": "file",
-          "source_step": "P",
-          "source_argument_name": "output_p"
+          "gather": 1,
+          "source_step": "A",
+          "source_argument_name": "output_a"
+        },
+        {
+          "argument_name": "input_m",
+          "argument_type": "file",
+          "gather": 1,
+          "source_step": "E",
+          "source_argument_name": "output_e"
         }
       ],
       "outputs": ["output_m"]
     },
     {
-      "name": "Z",
-      "uuid": "z-uuid",
+      "name": "H",
+      "uuid": "h-uuid",
       "config": {
-        "instance_type": "z.instance"
+        "instance_type": "h.instance"
       },
       "arguments": [
         {
-          "argument_name": "input_z",
-          "argument_type": "file"
+          "argument_name": "input_h",
+          "argument_type": "file",
+          "gather": 2,
+          "source_step": "A",
+          "source_argument_name": "output_a"
+        },
+        {
+          "argument_name": "input_h",
+          "argument_type": "file",
+          "source_step": "E",
+          "source_argument_name": "output_e"
         }
       ],
-      "outputs": ["output_z"]
+      "outputs": ["output_h"]
+    },
+    {
+      "name": "X",
+      "uuid": "x-uuid",
+      "config": {
+        "instance_type": "x.instance"
+      },
+      "arguments": [
+        {
+          "argument_name": "input_x",
+          "argument_type": "file",
+          "gather": 2,
+          "source_step": "A",
+          "source_argument_name": "output_a"
+        },
+        {
+          "argument_name": "input_x",
+          "argument_type": "file",
+          "gather": 1,
+          "source_step": "E",
+          "source_argument_name": "output_e"
+        }
+      ],
+      "outputs": ["output_x"]
     }
   ]
 }
