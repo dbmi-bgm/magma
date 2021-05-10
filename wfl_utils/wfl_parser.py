@@ -65,16 +65,16 @@ class Wfl(object):
                 self.uuid = step_json['uuid'] #str, need to be unique
                 self.config = step_json['config'] #dict
                 self.arguments = step_json['arguments'] #dict
-                self.outputs = step_json['outputs'] #dict
+                self.outputs = step_json['outputs'] #list
             except KeyError as e:
                 raise ValueError('Validation error, missing key {0} in step workflow json\n{1}\n'
                                     .format(e.args[0], step_json))
             #end try
             # Calculated attributes
-            self.is_scatter = 0 #dimension to scatter
+            self.is_scatter = 0 #dimension to scatter, int
             self.gather_from = {} #{name: dimension, ...} of steps to gather from
                                   # dimension is input dimension increment
-                                  # and shard dimension decrement
+                                  # and shard dimension decrement, int
             self.dependencies = set() #names of steps that are dependency
             # For building graph structure
             self._nodes = set() #step_objects for steps that depend on current step
@@ -194,6 +194,13 @@ class Wfl(object):
 
     def _input_dimensions(self, input):
         '''
+            given input as list
+            calculate dimensions of input
+
+                input, list of input arguments
+
+            # TODO
+            rewrite the function and generalize using recursion
         '''
         input_dimensions = {}
         input_dimensions.setdefault(1, [len(input)])
@@ -216,6 +223,14 @@ class Wfl(object):
 
     def _shards(self, input_dimensions, dimension):
         '''
+            given input_dimensions
+            calculate shards for specified dimension
+
+                input_dimensions, dimensions of input from _input_dimension
+                dimension, dimension to calculate shards for
+
+            # TODO
+            rewrite the function and generalize using recursion
         '''
         shards = []
         input_dimension = input_dimensions[dimension]
@@ -251,7 +266,7 @@ class Wfl(object):
             return a json that represents a workflow run object
 
                 end_steps, names list of end steps to build workflow for
-                input, dictionary with input arguments
+                input, list of input arguments
         '''
         scatter = {} #{step_obj.name: dimension, ...}
         dimensions = self._input_dimensions(input)
