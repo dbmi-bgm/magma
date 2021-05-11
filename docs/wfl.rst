@@ -1,6 +1,6 @@
-==========
-wfl_parser
-==========
+==========================
+wfl module (meta-worklfow)
+==========================
 
 This is a module to work with :ref:`meta-workflows <meta-workflow-label>` in json format.
 
@@ -9,7 +9,7 @@ Import the library
 
 .. code-block:: python
 
-    from magma import wfl_parser
+    from magma import wfl
 
 Usage
 +++++
@@ -31,7 +31,7 @@ Initialize Wfl object
         data = json.load(json_file)
 
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
 
 This will read meta-workflow ``.json`` content into a ``Wfl`` object and create a ``Step`` object for each of the step-workflows in ``workflows``.
 
@@ -75,7 +75,7 @@ The method ``wfl_obj.write_wfl_run(end_steps, inputs)`` creates a json structure
     end_steps = ['step_5', 'step_6']
 
     # run wfl_obj.write_wfl_run
-    wfl_run = wfl_obj.write_wfl_run(end_steps, inputs)
+    run_json = wfl_obj.write_wfl_run(end_steps, inputs)
 
 Step object
 ^^^^^^^^^^^

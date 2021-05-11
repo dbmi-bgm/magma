@@ -20,4 +20,4 @@ Contents
    install
    meta-workflow
    workflow-run
-   wfl_parser
+   wfl

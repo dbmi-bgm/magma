@@ -123,7 +123,7 @@ class Wfl(object):
         #end for
     #end def
 
-    def _build_wfl_run(self, end_steps):
+    def _build_run(self, end_steps):
         '''
             build graph structure for meta-workflow given end_steps
             backtrack from end_steps to link step-workflows that are dependencies
@@ -155,10 +155,10 @@ class Wfl(object):
         return steps_
     #end def
 
-    def _order_wfl_run(self, end_steps):
+    def _order_run(self, end_steps):
         '''
             sort and list all step-workflows for meta-workflow given end_steps
-            _build_wfl_run to build graph structure for meta-workflow
+            _build_run to build graph structure for meta-workflow
             start from step-workflows that are entry points
             navigate the graph structure
             return a list with step-workflows in order
@@ -166,7 +166,7 @@ class Wfl(object):
                 end_steps, names list of end step-workflows to build graph structure for
         '''
         steps_ = []
-        queue = list(self._build_wfl_run(end_steps))
+        queue = list(self._build_run(end_steps))
         while queue:
             step_obj = queue.pop(0)
             # Adding next steps to queue
@@ -257,10 +257,10 @@ class Wfl(object):
         return shards
     #end def
 
-    def write_wfl_run(self, end_steps, input):
+    def write_run(self, end_steps, input):
         '''
             create json workflow-run structure for meta-workflow given end_steps and input
-            _order_wfl_run to sort and list all step-workflows
+            _order_run to sort and list all step-workflows
             use scatter, gather_from and dependencies information
             to create and collect shards for individual step-workflows
             complete attributes and other metadata for meta-workflow
@@ -271,7 +271,7 @@ class Wfl(object):
         '''
         scatter = {} #{step_obj.name: dimension, ...}
         dimensions = self._input_dimensions(input)
-        steps_ = self._order_wfl_run(end_steps)
+        steps_ = self._order_run(end_steps)
         run_json = {
             'meta_workflow_uuid': self.uuid,
             'workflow_runs': [],

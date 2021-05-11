@@ -1,1 +1,1 @@
-# cgap-wfl_utils
+# magma

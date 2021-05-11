@@ -5,7 +5,7 @@ import sys, os
 import pytest
 import json
 
-from magma import wfl_parser
+from magma import wfl
 
 #################################################################
 #   Tests
@@ -107,7 +107,7 @@ template = {
   ]
 }
 
-def test_wfl_parser_M_H():
+def test_wfl_M_H():
     ''' '''
     # Results expected
     results = {
@@ -127,9 +127,9 @@ def test_wfl_parser_M_H():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
-    x = wfl_obj.write_wfl_run(['M', 'H'], input=['f1', 'f2', 'f3'])
+    x = wfl_obj.write_run(['M', 'H'], input=['f1', 'f2', 'f3'])
     # Test steps
     assert sorted([wfl_['name'] for wfl_ in x['workflow_runs']]) == results['steps']
     # Test depencencies
@@ -139,7 +139,7 @@ def test_wfl_parser_M_H():
     #end for
 #end def
 
-def test_wfl_parser_P():
+def test_wfl_P():
     ''' '''
     # Results expected
     results = {
@@ -155,9 +155,9 @@ def test_wfl_parser_P():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
-    x = wfl_obj.write_wfl_run(['P'], input=['f1', 'f2', 'f3'])
+    x = wfl_obj.write_run(['P'], input=['f1', 'f2', 'f3'])
     # Test steps
     assert sorted([wfl_['name'] for wfl_ in x['workflow_runs']]) == results['steps']
     # Test depencencies
@@ -166,22 +166,22 @@ def test_wfl_parser_P():
     #end for
 #end def
 
-def test_wfl_parser_2D_WGS_trio():
+def test_wfl_2D_WGS_trio():
     # Results expected
     result = {'meta_workflow_uuid': 'UUID', 'workflow_runs': [{'name': 'workflow_bwa-mem_no_unzip-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': [], 'shard': '0:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': [], 'shard': '1:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': [], 'shard': '1:1'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': [], 'shard': '2:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': [], 'shard': '2:1'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': [], 'shard': '2:2'}, {'name': 'workflow_add-readgroups-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:0:0'], 'shard': '0:0'}, {'name': 'workflow_add-readgroups-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:1:0'], 'shard': '1:0'}, {'name': 'workflow_add-readgroups-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:1:1'], 'shard': '1:1'}, {'name': 'workflow_add-readgroups-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'], 'shard': '2:0'}, {'name': 'workflow_add-readgroups-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'], 'shard': '2:1'}, {'name': 'workflow_add-readgroups-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'], 'shard': '2:2'}, {'name': 'workflow_merge-bam-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:0:0'], 'shard': '0'}, {'name': 'workflow_merge-bam-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:1:0', 'workflow_add-readgroups-check:1:1'], 'shard': '1'}, {'name': 'workflow_merge-bam-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:2:0', 'workflow_add-readgroups-check:2:1', 'workflow_add-readgroups-check:2:2'], 'shard': '2'}, {'name': 'workflow_picard-MarkDuplicates-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:0'], 'shard': '0'}, {'name': 'workflow_picard-MarkDuplicates-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:1'], 'shard': '1'}, {'name': 'workflow_picard-MarkDuplicates-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:2'], 'shard': '2'}, {'name': 'workflow_sort-bam-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:0'], 'shard': '0'}, {'name': 'workflow_sort-bam-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:1'], 'shard': '1'}, {'name': 'workflow_sort-bam-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-BaseRecalibrator', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-BaseRecalibrator', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-BaseRecalibrator', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:0', 'workflow_sort-bam-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:1', 'workflow_sort-bam-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:2', 'workflow_sort-bam-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-HaplotypeCaller', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-HaplotypeCaller', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-HaplotypeCaller', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-CombineGVCFs', 'workflow_run_uuid': '', 'output': '', 'status': 'pending', 'dependencies': ['workflow_gatk-HaplotypeCaller:0', 'workflow_gatk-HaplotypeCaller:1', 'workflow_gatk-HaplotypeCaller:2'], 'shard': '0'}], 'input': []}
     # Read input
     with open('test/files/CGAP_WGS_trio.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
     input = [['A'], ['C', 'D'], ['B', 'E', 'F']]
-    x = wfl_obj.write_wfl_run(['workflow_gatk-CombineGVCFs'], input)
+    x = wfl_obj.write_run(['workflow_gatk-CombineGVCFs'], input)
     # Test results
     assert x == result
 #end def
 
-def test_wfl_parser_3D_M_G_H_X():
+def test_wfl_3D_M_G_H_X():
     # Results expected
     results = {
      'A': {'0:0:0': [], '0:0:1': [], '0:1:0': [], '1:0:0': [], '1:0:1': []},
@@ -203,17 +203,17 @@ def test_wfl_parser_3D_M_G_H_X():
     with open('test/files/test_METAWFL_3D.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
     input = [[['a', 'b'], ['c']], [['h', 'i']]]
-    x = wfl_obj.write_wfl_run(['M', 'G', 'H', 'X'], input)
+    x = wfl_obj.write_run(['M', 'G', 'H', 'X'], input)
     # Test depencencies
     for wfl_ in x['workflow_runs']:
         assert sorted(wfl_['dependencies']) == results[wfl_['name']][wfl_['shard']]
     #end for
 #end def
 
-def test_wfl_parser__order_wfl_run_H_P():
+def test_wfl__order_run_H_P():
     # Results expected
     results = {
         'steps': ['Z', 'A', 'B', 'C', 'D', 'E', 'G', 'H', 'P'],
@@ -223,15 +223,15 @@ def test_wfl_parser__order_wfl_run_H_P():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
-    x = wfl_obj._order_wfl_run(['H', 'P'])
+    x = wfl_obj._order_run(['H', 'P'])
     # Test steps
     try: assert [x_.name for x_ in x] == results['steps']
     except Exception: [x_.name for x_ in x] == results['steps_']
 #end def
 
-def test_wfl_parser__order_wfl_run_E():
+def test_wfl__order_run_E():
     # Results expected
     results = {
         'steps': ['A', 'B', 'C', 'E'],
@@ -240,14 +240,14 @@ def test_wfl_parser__order_wfl_run_E():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
-    x = wfl_obj._order_wfl_run(['E'])
+    x = wfl_obj._order_run(['E'])
     # Test steps
     assert [x_.name for x_ in x] == results['steps']
 #end def
 
-def test_wfl_parser__order_wfl_run_E_C():
+def test_wfl__order_run_E_C():
     # Results expected
     results = {
         'steps': ['A', 'B', 'C', 'E'],
@@ -256,14 +256,14 @@ def test_wfl_parser__order_wfl_run_E_C():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(data)
+    wfl_obj = wfl.Wfl(data)
     # Run test
-    x = wfl_obj._order_wfl_run(['E', 'C'])
+    x = wfl_obj._order_run(['E', 'C'])
     # Test steps
     assert [x_.name for x_ in x] == results['steps']
 #end def
 
-def test_wfl_parser__input_dimensions():
+def test_wfl__input_dimensions():
     # Results expected
     results = {
         'dim1': {1: [3]},
@@ -271,7 +271,7 @@ def test_wfl_parser__input_dimensions():
         'dim3': {1: [3], 2: [2, 2, 2], 3: [[2 ,1], [1, 3], [2, 2]]}
     }
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(template)
+    wfl_obj = wfl.Wfl(template)
     # Run test
     dim1 = ['f0', 'f1', 'f2']
     dim2 = [['f0', 'f1'], ['f2', 'f3', 'f4'], ['f5']]
@@ -285,7 +285,7 @@ def test_wfl_parser__input_dimensions():
     assert x_dim3 == results['dim3']
 #end def
 
-def test_wfl_parser__shards():
+def test_wfl__shards():
     # Results expected
     results = {
         'dim3_1': [['0'], ['1'], ['2']],
@@ -295,7 +295,7 @@ def test_wfl_parser__shards():
                    ['2', '0', '0'], ['2', '0', '1'], ['2', '1', '0'], ['2', '1', '1']]
     }
     # Create Wfl object
-    wfl_obj = wfl_parser.Wfl(template)
+    wfl_obj = wfl.Wfl(template)
     # Run test
     dim3 = {1: [3], 2: [2, 2, 2], 3: [[2 ,1], [1, 3], [2, 2]]}
     dim3_1 = wfl_obj._shards(dim3, 1)
