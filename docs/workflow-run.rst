@@ -14,7 +14,7 @@ Structure
 
     {
       ## General workflow-run information
-      "meta_workflow_uuid": "", # universally unique identifier for the corresponding meta-worklow
+      "meta_workflow_uuid": "", # universally unique identifier for the corresponding meta-workflow
 
       ## Step-workflow shards for workflow-run
       "workflow_runs" : [

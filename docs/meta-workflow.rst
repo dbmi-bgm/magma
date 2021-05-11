@@ -5,7 +5,7 @@ meta-workflow
 =============
 
 A meta-workflow is a json object that describes the general structure of a multi-step workflow.
-Stores general information for the multi-step workflow, as well as specific information for the workflows that are steps of the meta-workflow (step-workflows).
+Stores general information for the multi-step workflow, as well as specific information for each of the workflows that is step of the meta-workflow (step-workflow).
 
 Structure
 +++++++++
@@ -13,15 +13,15 @@ Structure
 .. code-block:: python
 
     {
-      ## General meta-worflow information
+      ## General meta-workflow information
       #   These are general fields that are required by the parser,
       #   however, there is no check on the content that can be customized
       "accession": "", # custom unique identifier
-      "app_name": "", # name for the meta-worflow
-      "app_version": "", # version for the meta-worflow
+      "app_name": "", # name for the meta-workflow
+      "app_version": "", # version for the meta-workflow
       "uuid": "", # universally unique identifier
 
-      ## General meta-worflow arguments
+      ## General meta-workflow arguments
       #   These are general arguments that are used by multiple steps
       #   and can be grouped here to avoid repetition
       "arguments": [
