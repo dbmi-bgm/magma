@@ -1,8 +1,8 @@
-=========
-wfl-utils
-=========
+===========
+magma-suite
+===========
 
-This is a documentation for CGAP wfl-utils.
+This is a documentation for CGAP magma-suite, a collection of tools to manage meta-workflows automation.
 
 Contents
 ########

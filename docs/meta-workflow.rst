@@ -4,7 +4,8 @@
 meta-workflow
 =============
 
-A meta-workflow is a json object that describes a workflow general structure.
+A meta-workflow is a json object that describes the general structure of a multi-step workflow.
+Stores general information for the multi-step workflow, as well as specific information for the workflows that are steps of the meta-workflow (step-workflows).
 
 Structure
 +++++++++
@@ -51,14 +52,14 @@ Structure
       ## Steps for the meta-workflow
       "workflows": [
 
-        # Structure for workflow step
+        # Structure for step-workflow
         {
-          # General step information
+          # General step-workflow information
           #   These are general fields that are required by the parser,
           #   however, there is no check on the content that can be customized
-          "name": "", # name for the step
+          "name": "", # name for the step-workflow
           "uuid": "", # universally unique identifier
-          "config": { # configuration for the step
+          "config": { # configuration for the step-workflow
             "instance_type": "",
             "ebs_size": "",
             "EBS_optimized": True,
@@ -68,8 +69,8 @@ Structure
             "behavior_on_capacity_limit": "wait_and_retry"
           },
 
-          # Step arguments
-          #   These are the arguments that are used by the step
+          # Step-workflow arguments
+          #   These are the arguments that are used by the step-workflow
           "arguments": [
 
             # Structure for a file argument
@@ -90,7 +91,7 @@ Structure
               # These are optional fields
               #   It's possible to skip these fields or add custom ones
               "scatter": 0, # dimension to scatter list arguments if any
-              "gather": 0, # increment for input dimension if previous step were scattered
+              "gather": 0, # increment for input dimension if previous steps were scattered
               "mount": False,
               "rename": "",
               "unzip": ""
@@ -111,7 +112,7 @@ Structure
 
           ],
 
-          # Step outputs
+          # Step-workflow outputs
           "outputs": []
         }
 

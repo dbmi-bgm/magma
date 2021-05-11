@@ -4,8 +4,8 @@
 workflow-run
 ============
 
-A workflow-run is a json object that describes a workflow structure for a specific input and defined end points given a meta-workflow.
-Scatter, gather and dependencies information are used to create and link all the shards for individual steps that are necessary to reach end points based on the input.
+A workflow-run is a json object that describes the structure of a multi-step workflow given the corresponding meta-workflow, specific input and defined end points.
+Scatter, gather and dependencies information are used to create and link all the shards for individual step-workflows that are necessary to reach end points based on the input.
 
 Structure
 +++++++++
@@ -16,16 +16,16 @@ Structure
       ## General workflow-run information
       "meta_workflow_uuid": "", # universally unique identifier for the corresponding meta-worklow
 
-      ## Steps for workflow-run
+      ## Step-workflow shards for workflow-run
       "workflow_runs" : [
 
-            # Step structure
+            # Step-workflow shard structure
             { "name": "step1",
               "workflow_run_uuid": "", # universally unique identifier for the actual run
               "status": "running",
               "output": [],
-              "dependencies": [], # step shards that are dependencies
-              "shard": "0" # step shard
+              "dependencies": [], # step-workflow shards that are dependencies
+              "shard": "0" # step-workflow shard
             },
 
             { "name": "step1",

@@ -19,14 +19,14 @@ tests_requires = [
 ]
 
 setup(
-    name='wfl_utils',
+    name='magma-suite',
     version=open('_version.py').readlines()[-1].split()[-1].strip("\"'"),
-    description = 'Workflow utilities',
+    description = 'Collection of tools to manage meta-workflows automation',
     long_description = long_description,
     long_description_content_type = 'text/markdown',
     author = 'Michele Berselli, Soo Lee',
     author_email = 'berselli.michele@gmail.com',
-    url='https://github.com/dbmi-bgm/cgap-wfl_utils',
+    url='https://github.com/dbmi-bgm/magma',
     include_package_data=True,
     packages=find_packages(),
     classifiers=[

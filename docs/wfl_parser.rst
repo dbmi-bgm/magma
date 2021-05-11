@@ -9,7 +9,7 @@ Import the library
 
 .. code-block:: python
 
-    from wfl_utils import wfl_parser
+    from magma import wfl_parser
 
 Usage
 +++++
@@ -17,7 +17,7 @@ Usage
 Wfl object
 ^^^^^^^^^^
 
-``Wfl`` object stores meta-workflow general information, together with step workflows information as ``Step`` objects.
+``Wfl`` object stores meta-workflow general information, together with step-workflows information as ``Step`` objects.
 
 Initialize Wfl object
 *********************
@@ -33,7 +33,7 @@ Initialize Wfl object
     # Create Wfl object
     wfl_obj = wfl_parser.Wfl(data)
 
-This will read meta-workflow ``.json`` content into a ``Wfl`` object and create a ``Step`` object for each of the step workflows in ``workflows``.
+This will read meta-workflow ``.json`` content into a ``Wfl`` object and create a ``Step`` object for each of the step-workflows in ``workflows``.
 
 Attributes
 **********
@@ -71,7 +71,7 @@ The method ``wfl_obj.write_wfl_run(end_steps, inputs)`` creates a json structure
     # input is a list of inputs, up to 3-dimensions
     inputs = [[['file_1', 'file_2'], ['file_3', 'file_4']]]
 
-    # end steps, is a list of the final steps for the workflow run
+    # end steps, is a list of the final step-workflows for the workflow run
     end_steps = ['step_5', 'step_6']
 
     # run wfl_obj.write_wfl_run
@@ -95,7 +95,7 @@ Attributes
 
   - ``step_obj.is_scatter``, stores ``scatter`` dimension for step as int.
 
-  - ``step_obj.gather_from``, stores increment for input dimension for steps to gather from as dict.
+  - ``step_obj.gather_from``, stores increment for input dimension for step-workflows to gather from as dict.
 
       .. code-block:: python
 
@@ -106,4 +106,4 @@ Attributes
             ...
           }
 
-  - ``step_obj.dependencies``, stores names of steps that are dependency as set.
+  - ``step_obj.dependencies``, stores names of step-workflows that are dependency as set.

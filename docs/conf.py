@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'wfl_utils'
+project = 'magma-suite'
 copyright = '2021, CGAP team, HMS DBMI'
 author = 'Michele Berselli, Soo Lee'
 

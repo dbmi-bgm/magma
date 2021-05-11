@@ -5,7 +5,7 @@ import sys, os
 import pytest
 import json
 
-from wfl_utils import wfl_parser
+from magma import wfl_parser
 
 #################################################################
 #   Tests
