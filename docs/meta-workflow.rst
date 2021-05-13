@@ -33,7 +33,7 @@ Structure
           "argument_type": "file",
           "uuid": "",
           # These are optional fields
-          #   It's possible to skip these fields or add custom ones
+          #   It is possible to skip these fields or add custom ones
           "mount": False,
           "rename": "",
           "unzip": ""
@@ -68,6 +68,18 @@ Structure
             "run_name": "run_",
             "behavior_on_capacity_limit": "wait_and_retry"
           },
+          "custom_pf_fields": { #
+            "<argument_name>": {
+              "file_type": "",
+              "description": ""
+            }
+          },
+          "custom_qc_fields": { #
+            "<argument_name>": {
+              "file_type": "",
+              "description": ""
+            }
+          },
 
           # Step-workflow arguments
           #   These are the arguments that are used by the step-workflow
@@ -80,18 +92,16 @@ Structure
               "argument_type": "file",
               # Linking fields
               #   If no source step is specified,
-              #   the argument will be matched to general arguments/initial input
-              #   by source_argument_name or argument name if source_argument_name is missing
-              #   If parameter or file value is case specific and need to come from
-              #     workflow run set a placeholder like <whatever>.value
-              #     where <whatever>.value means pick 'value' in 'whatever' section in
-              #     current workflow run object
+              #     the argument will be matched to general arguments by source_argument_name
+              #     or argument_name if source_argument_name is missing
+              #   First will try to match to argument in meta-worfklow-run specific input
+              #     if no match is found will try to match to meta-workflow default argument
               "source_step": "",
-              "source_argument_name": ""
+              "source_argument_name": "",
               # These are optional fields
-              #   It's possible to skip these fields or add custom ones
-              "scatter": 0, # dimension to scatter list arguments if any
-              "gather": 0, # increment for input dimension if previous steps were scattered
+              #   It is possible to skip these fields or add custom ones
+              "scatter": 2, # dimension to scatter list arguments if any
+              "gather": 1, # increment for input dimension if previous steps were scattered
               "mount": False,
               "rename": "",
               "unzip": ""
@@ -104,8 +114,10 @@ Structure
               "argument_type": "parameter",
               # These are optional fields
               #   If no value is specified,
-              #   the argument will be matched to general arguments by source_argument_name
-              #   or argument name if source_argument_name is missing
+              #     the argument will be matched to general arguments by source_argument_name
+              #     or argument_name if source_argument_name is missing
+              #   First will try to match to argument in meta-worfklow-run specific input
+              #     if no match is found will try to match to meta-workflow default argument
               "value": "",
               "source_argument_name": ""
             }

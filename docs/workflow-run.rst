@@ -56,10 +56,10 @@ Structure
               "dependencies": ["step2:0", "step2:1"],
               "shard": "0"
             }
-      ]
+      ],
 
       ## Specific input for meta-workflow-run
-      "input": []
+      "input": [],
 
       ## Specific output for meta-workflow-run
       "output": []
