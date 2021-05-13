@@ -74,11 +74,7 @@ Structure
               "description": ""
             }
           },
-          "custom_qc_fields": { #
-            "<argument_name>": {
-              "file_type": "",
-              "description": ""
-            }
+          "custom_qc_fields": {
           },
 
           # Step-workflow arguments
