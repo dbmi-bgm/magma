@@ -127,7 +127,7 @@ def test_wfl_M_H():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     x = wfl_obj.write_run(['M', 'H'], input=['f1', 'f2', 'f3'])
     # Test steps
@@ -155,7 +155,7 @@ def test_wfl_P():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     x = wfl_obj.write_run(['P'], input=['f1', 'f2', 'f3'])
     # Test steps
@@ -173,7 +173,7 @@ def test_wfl_2D_WGS_trio():
     with open('test/files/CGAP_WGS_trio.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     input = [['A'], ['C', 'D'], ['B', 'E', 'F']]
     x = wfl_obj.write_run(['workflow_gatk-CombineGVCFs'], input)
@@ -203,7 +203,7 @@ def test_wfl_3D_M_G_H_X():
     with open('test/files/test_METAWFL_3D.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     input = [[['a', 'b'], ['c']], [['h', 'i']]]
     x = wfl_obj.write_run(['M', 'G', 'H', 'X'], input)
@@ -223,7 +223,7 @@ def test_wfl__order_run_H_P():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     x = wfl_obj._order_run(['H', 'P'])
     # Test steps
@@ -240,7 +240,7 @@ def test_wfl__order_run_E():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     x = wfl_obj._order_run(['E'])
     # Test steps
@@ -256,7 +256,7 @@ def test_wfl__order_run_E_C():
     with open('test/files/test_METAWFL.json') as json_file:
         data = json.load(json_file)
     # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     x = wfl_obj._order_run(['E', 'C'])
     # Test steps
@@ -271,7 +271,7 @@ def test_wfl__input_dimensions():
         'dim3': {1: [3], 2: [2, 2, 2], 3: [[2 ,1], [1, 3], [2, 2]]}
     }
     # Create Wfl object
-    wfl_obj = wfl.Wfl(template)
+    wfl_obj = wfl.MetaWorkflow(template)
     # Run test
     dim1 = ['f0', 'f1', 'f2']
     dim2 = [['f0', 'f1'], ['f2', 'f3', 'f4'], ['f5']]
@@ -295,7 +295,7 @@ def test_wfl__shards():
                    ['2', '0', '0'], ['2', '0', '1'], ['2', '1', '0'], ['2', '1', '1']]
     }
     # Create Wfl object
-    wfl_obj = wfl.Wfl(template)
+    wfl_obj = wfl.MetaWorkflow(template)
     # Run test
     dim3 = {1: [3], 2: [2, 2, 2], 3: [[2 ,1], [1, 3], [2, 2]]}
     dim3_1 = wfl_obj._shards(dim3, 1)

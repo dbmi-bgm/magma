@@ -1,11 +1,11 @@
-.. _workflow-run-label:
+.. _meta-workflow-run-label:
 
-============
-workflow-run
-============
+=================
+meta-workflow-run
+=================
 
-A workflow-run is a json object that describes the structure of a multi-step workflow given the corresponding meta-workflow, specific input and defined end points.
-Scatter, gather and dependencies information are used to create and link all the shards for individual step-workflows that are necessary to reach end points based on the input.
+A meta-workflow-run is a json object that describes the structure of a multi-step workflow given the corresponding meta-workflow, specific input and defined end points.
+Scatter, gather and dependencies information are used to create and link all the shards for individual step-workflows (workflow-runs) that are necessary to reach end points based on the input.
 
 Structure
 +++++++++
@@ -13,19 +13,19 @@ Structure
 .. code-block:: python
 
     {
-      ## General workflow-run information
+      ## General meta-workflow-run information
       "meta_workflow_uuid": "", # universally unique identifier for the corresponding meta-workflow
 
-      ## Step-workflow shards for workflow-run
+      ## Workflow-runs for meta-workflow-run
       "workflow_runs" : [
 
-            # Step-workflow shard structure
+            # Workflow-run structure
             { "name": "step1",
               "workflow_run_uuid": "", # universally unique identifier for the actual run
               "status": "running",
               "output": [],
-              "dependencies": [], # step-workflow shards that are dependencies
-              "shard": "0" # step-workflow shard
+              "dependencies": [], # workflow-runs that are dependencies
+              "shard": "0"
             },
 
             { "name": "step1",
@@ -58,9 +58,9 @@ Structure
             }
       ]
 
-      ## Specific input for workflow-run
+      ## Specific input for meta-workflow-run
       "input": []
 
-      ## Specific output for workflow-run
+      ## Specific output for meta-workflow-run
       "output": []
     }

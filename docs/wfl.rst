@@ -14,13 +14,13 @@ Import the library
 Usage
 +++++
 
-Wfl object
-^^^^^^^^^^
+MetaWorkflow object
+^^^^^^^^^^^^^^^^^^^
 
-``Wfl`` object stores meta-workflow general information, together with step-workflows information as ``Step`` objects.
+``MetaWorkflow`` object stores meta-workflow general information, together with step-workflows information as ``StepWorkflow`` objects.
 
-Initialize Wfl object
-*********************
+Initialize MetaWorkflow object
+******************************
 
 .. code-block:: python
 
@@ -30,15 +30,15 @@ Initialize Wfl object
     with open('.json') as json_file:
         data = json.load(json_file)
 
-    # Create Wfl object
-    wfl_obj = wfl.Wfl(data)
+    # Create MetaWorkflow object
+    wfl_obj = wfl.MetaWorkflow(data)
 
-This will read meta-workflow ``.json`` content into a ``Wfl`` object and create a ``Step`` object for each of the step-workflows in ``workflows``.
+This will read meta-workflow ``.json`` content into a ``MetaWorkflow`` object and create a ``StepWorkflow`` object for each of the step-workflows in ``workflows``.
 
 Attributes
 **********
 
-  - ``wfl_obj.steps``, stores ``Step`` objects as dictionary.
+  - ``wfl_obj.steps``, stores ``StepWorkflow`` objects as dictionary.
 
       .. code-block:: python
 
@@ -57,28 +57,28 @@ Attributes
 
   - ``wfl_obj.uuid``, stores ``uuid`` content as string.
 
-  - ``wfl_obj.arguments``, stores ``arguments`` content as dict.
+  - ``wfl_obj.arguments``, stores ``arguments`` content as list.
 
-  - ``wfl_obj.workflows``, stores ``workflows`` content as dict.
+  - ``wfl_obj.workflows``, stores ``workflows`` content as list.
 
-Write workflow run
-******************
+Write meta-workflow-run
+***********************
 
-The method ``wfl_obj.write_wfl_run(end_steps, inputs)`` creates a json structure for a :ref:`workflow-run-label` given specific end steps and inputs.
+The method ``wfl_obj.write_run(end_steps, input)`` returns a json structure for a :ref:`meta-workflow-run-label` given specific end step-workflows and inputs.
 
 .. code-block:: python
 
     # input is a list of inputs, up to 3-dimensions
-    inputs = [[['file_1', 'file_2'], ['file_3', 'file_4']]]
+    input = [[['file_1', 'file_2'], ['file_3', 'file_4']]]
 
-    # end steps, is a list of the final step-workflows for the workflow run
+    # end_steps, is a list of the final step-workflows for the meta-workflow-run
     end_steps = ['step_5', 'step_6']
 
-    # run wfl_obj.write_wfl_run
-    run_json = wfl_obj.write_wfl_run(end_steps, inputs)
+    # run wfl_obj.write_run
+    run_json = wfl_obj.write_run(end_steps, input)
 
-Step object
-^^^^^^^^^^^
+StepWorkflow object
+^^^^^^^^^^^^^^^^^^^
 
 Attributes
 **********

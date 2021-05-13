@@ -18,28 +18,28 @@ import copy
 ################################################
 #   Objects
 ################################################
-class Wfl(object):
+class MetaWorkflow(object):
     '''
         object to represent a meta-workflow
     '''
 
-    def __init__(self, wfl_json):
+    def __init__(self, input_json):
         '''
-            initialize Wfl object from wfl_json
+            initialize MetaWorkflow object from input_json
 
-                wfl_json is a meta-workflow in json format
+                input_json is a meta-workflow in json format
         '''
         # Basic attributes
         try:
-            self.accession = wfl_json['accession'] #str, need to be unique
-            self.app_name = wfl_json['app_name'] #str, need to be unique
-            self.app_version = wfl_json['app_version'] #str
-            self.uuid = wfl_json['uuid'] #str, need to be unique
-            self.arguments = wfl_json['arguments'] #dict
-            self.workflows = wfl_json['workflows'] #dict
+            self.accession = input_json['accession'] #str, need to be unique
+            self.app_name = input_json['app_name'] #str, need to be unique
+            self.app_version = input_json['app_version'] #str
+            self.uuid = input_json['uuid'] #str, need to be unique
+            self.arguments = input_json['arguments'] #list
+            self.workflows = input_json['workflows'] #list
         except KeyError as e:
             raise ValueError('Validation error, missing key {0} in meta-workflow json\n{1}\n'
-                                .format(e.args[0], wfl_json))
+                                .format(e.args[0], input_json))
         #end try
         # Calculated attributes
         self.steps = {} #{step_obj.name: step_obj, ...}
@@ -48,28 +48,28 @@ class Wfl(object):
         self._read_steps()
     #end def
 
-    class Step(object):
+    class StepWorkflow(object):
         '''
             object to represent a step-workflow
             that is a step of the meta-workflow
         '''
 
-        def __init__(self, step_json):
+        def __init__(self, input_json):
             '''
-                initialize Step object
+                initialize StepWorkflow object
 
-                    step_json is a step-workflow in json format
+                    input_json is a step-workflow in json format
             '''
             # Basic attributes
             try:
-                self.name = step_json['name'] #str, need to be unique
-                self.uuid = step_json['uuid'] #str, need to be unique
-                self.config = step_json['config'] #dict
-                self.arguments = step_json['arguments'] #dict
-                self.outputs = step_json['outputs'] #list
+                self.name = input_json['name'] #str, need to be unique
+                self.uuid = input_json['uuid'] #str, need to be unique
+                self.config = input_json['config'] #dict
+                self.arguments = input_json['arguments'] #list
+                self.outputs = input_json['outputs'] #list
             except KeyError as e:
-                raise ValueError('Validation error, missing key {0} in step workflow json\n{1}\n'
-                                    .format(e.args[0], step_json))
+                raise ValueError('Validation error, missing key {0} in step-workflow json\n{1}\n'
+                                    .format(e.args[0], input_json))
             #end try
             # Calculated attributes
             self.is_scatter = 0 #dimension to scatter, int
@@ -110,10 +110,10 @@ class Wfl(object):
     def _read_steps(self):
         '''
             read step-workflows
-            initialize Step objects
+            initialize StepWorkflow objects
         '''
         for wfl in self.workflows:
-            step_obj = self.Step(wfl)
+            step_obj = self.StepWorkflow(wfl)
             if step_obj.name not in self.steps:
                 self.steps.setdefault(step_obj.name, step_obj)
             else:
@@ -259,14 +259,14 @@ class Wfl(object):
 
     def write_run(self, end_steps, input):
         '''
-            create json workflow-run structure for meta-workflow given end_steps and input
+            create json meta-workflow-run structure for meta-workflow given end_steps and input
             _order_run to sort and list all step-workflows
             use scatter, gather_from and dependencies information
-            to create and collect shards for individual step-workflows
+            to create and collect shards for individual step-workflows (workflow-runs)
             complete attributes and other metadata for meta-workflow
-            return a json that represents a workflow-run
+            return a json that represents a meta-workflow-run
 
-                end_steps, names list of end step-workflows to build workflow-run for
+                end_steps, names list of end step-workflows to build meta-workflow-run for
                 input, list of input arguments
         '''
         scatter = {} #{step_obj.name: dimension, ...}
