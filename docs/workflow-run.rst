@@ -23,7 +23,15 @@ Structure
             { "name": "step1",
               "workflow_run_uuid": "", # universally unique identifier for the actual run
               "status": "running",
-              "output": [],
+              "output": [
+                # Structure for a file argument,
+                #   only type of argument that can be output of a workflow-run
+                {
+                  # These are necessary fields
+                  "argument_name": "",
+                  "uuid": ""
+                }
+              ],
               "dependencies": [], # workflow-runs that are dependencies
               "shard": "0"
             },
@@ -59,7 +67,23 @@ Structure
       ],
 
       ## Specific input for meta-workflow-run
-      "input": [],
+      "input": [
+        # Structure for a file argument
+        {
+          # These are necessary fields
+          "argument_name": "",
+          "argument_type": "file",
+          "uuid": ""
+        },
+
+        # Structure for a parameter argument
+        {
+          # These are necessary fields
+          "argument_name": "",
+          "argument_type": "parameter",
+          "value": ""
+        }
+      ],
 
       ## Specific output for meta-workflow-run
       "output": []

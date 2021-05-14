@@ -63,7 +63,7 @@ class MetaWorkflowRun(object):
             try:
                 self.name = input_json['name'] #str
                 self.workflow_run_uuid = input_json['workflow_run_uuid'] #str
-                self.output = input_json['output'] #
+                self.output = input_json['output'] # list
                 self.status = input_json['status'] #str, pending | running | completed | failed
                 self.dependencies = input_json['dependencies'] #list
                 self.shard = input_json['shard'] #str

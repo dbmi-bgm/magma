@@ -66,7 +66,7 @@ class MetaWorkflow(object):
                 self.uuid = input_json['uuid'] #str, need to be unique
                 self.config = input_json['config'] #dict
                 self.arguments = input_json['arguments'] #list
-                self.outputs = input_json['outputs'] #list
+                # self.outputs = input_json['outputs'] #list
             except KeyError as e:
                 raise ValueError('Validation error, missing key {0} in step-workflow json\n{1}\n'
                                     .format(e.args[0], input_json))
@@ -281,7 +281,7 @@ class MetaWorkflow(object):
             run_step = {}
             run_step.setdefault('name', step_obj.name)
             run_step.setdefault('workflow_run_uuid', '')
-            run_step.setdefault('output', '')
+            run_step.setdefault('output', [])
             run_step.setdefault('status', 'pending')
             run_step.setdefault('dependencies', [])
             # Check scatter

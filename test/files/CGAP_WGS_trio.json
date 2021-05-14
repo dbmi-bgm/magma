@@ -97,8 +97,7 @@
         },
         {
           "argument_name": "sample_name",
-          "argument_type": "parameter",
-          "value": "<input>.NAME"
+          "argument_type": "parameter"
         }
       ],
       "outputs": ["bam_w_readgroups", "bam_w_readgroups-check"]
