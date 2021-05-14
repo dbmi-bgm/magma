@@ -31,12 +31,7 @@ Structure
           # These are necessary fields
           "argument_name": "",
           "argument_type": "file",
-          "uuid": "",
-          # These are optional fields
-          #   It is possible to skip these fields or add custom ones
-          "mount": False,
-          "rename": "",
-          "unzip": ""
+          "uuid": ""
         },
 
         # Structure for a parameter argument
@@ -118,11 +113,7 @@ Structure
               "source_argument_name": ""
             }
 
-          ],
-
-          # Step-workflow outputs
-          "outputs": []
+          ]
         }
-
       ]
     }
