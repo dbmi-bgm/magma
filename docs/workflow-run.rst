@@ -14,15 +14,21 @@ Structure
 
     {
       ## General meta-workflow-run information
-      "meta_workflow_uuid": "", # universally unique identifier for the corresponding meta-workflow
+      "meta_workflow_uuid": "", # universally unique identifier
+                                #   for the corresponding meta-workflow
 
       ## Workflow-runs for meta-workflow-run
       "workflow_runs" : [
 
             # Workflow-run structure
-            { "name": "step1",
-              "workflow_run_uuid": "", # universally unique identifier for the actual run
-              "status": "running",
+            {
+              # These are necessary fields
+              "name": "",
+              "status": "", # pending | running | completed | failed
+              "shard": "", # x 1D | x:x 2D | x:x:x 3D | ...
+              # These are optional fields
+              #   or fields created during the processing
+              "dependencies": [],
               "output": [
                 # Structure for a file argument,
                 #   only type of argument that can be output of a workflow-run
@@ -32,35 +38,46 @@ Structure
                   "uuid": ""
                 }
               ],
-              "dependencies": [], # workflow-runs that are dependencies
-              "shard": "0"
+              # Fields that are created to link the actual run
+              "workflow_run_uuid": "",
+              "jobid": ""
             },
 
+            # Example
             { "name": "step1",
-              "workflow_run_uuid": "",
+              "workflow_run_uuid": "uuid-step1:0-run",
               "status": "complete",
-              "output": [],
-              "dependencies": [],
+              "output": [
+                {
+                  "argument_name": "out_step1",
+                  "uuid": "uuid-out_step1:0"
+                }
+              ],
+              "shard": "0"
+            },
+            { "name": "step1",
+              "workflow_run_uuid": "uuid-step1:1-run",
+              "status": "complete",
+              "output": [
+                {
+                  "argument_name": "out_step1",
+                  "uuid": "uuid-out_step1:1"
+                }
+              ],
               "shard": "1"
             },
             { "name": "step2",
-              "workflow_run_uuid": "",
-              "status": "pending",
-              "output": [],
+              "status": "running",
               "dependencies": ["step1:0"],
               "shard": "0"
             },
             { "name": "step2",
-              "workflow_run_uuid": "",
-              "status": "pending",
-              "output": [],
+              "status": "running",
               "dependencies": ["step1:1"],
               "shard": "1"
             },
             { "name": "step3",
-              "workflow_run_uuid": "",
               "status": "pending",
-              "output": [],
               "dependencies": ["step2:0", "step2:1"],
               "shard": "0"
             }

@@ -30,21 +30,14 @@ class MetaWorkflow(object):
                 input_json is a meta-workflow in json format
         '''
         # Basic attributes
-        try:
-            self.accession = input_json['accession'] #str, need to be unique
-            self.app_name = input_json['app_name'] #str, need to be unique
-            self.app_version = input_json['app_version'] #str
-            self.uuid = input_json['uuid'] #str, need to be unique
-            self.arguments = input_json['arguments'] #list
-            self.workflows = input_json['workflows'] #list
-        except KeyError as e:
-            raise ValueError('Validation error, missing key {0} in meta-workflow json\n{1}\n'
-                                .format(e.args[0], input_json))
-        #end try
+        for key in input_json:
+            setattr(self, key, input_json[key])
+        #end for
         # Calculated attributes
         self.steps = {} #{step_obj.name: step_obj, ...}
 
         # Calculate attributes
+        self._validate()
         self._read_steps()
     #end def
 
@@ -61,16 +54,9 @@ class MetaWorkflow(object):
                     input_json is a step-workflow in json format
             '''
             # Basic attributes
-            try:
-                self.name = input_json['name'] #str, need to be unique
-                self.uuid = input_json['uuid'] #str, need to be unique
-                self.config = input_json['config'] #dict
-                self.arguments = input_json['arguments'] #list
-                # self.outputs = input_json['outputs'] #list
-            except KeyError as e:
-                raise ValueError('Validation error, missing key {0} in step-workflow json\n{1}\n'
-                                    .format(e.args[0], input_json))
-            #end try
+            for key in input_json:
+                setattr(self, key, input_json[key])
+            #end for
             # Calculated attributes
             self.is_scatter = 0 #dimension to scatter, int
             self.gather_from = {} #{name: dimension, ...} of steps to gather from
@@ -81,7 +67,22 @@ class MetaWorkflow(object):
             self._nodes = set() #step_objects for steps that depend on current step
 
             # Calculate attributes
+            self._validate()
             self._attributes()
+        #end def
+
+        def _validate(self):
+            '''
+            '''
+            try:
+                getattr(self, 'name') #str, need to be unique
+                getattr(self, 'uuid') #str, need to be unique
+                getattr(self, 'config') #dict
+                getattr(self, 'arguments') #list
+            except AttributeError as e:
+                raise ValueError('JSON validation error, {0}\n'
+                                    .format(e.args[0]))
+            #end try
         #end def
 
         def _attributes(self):
@@ -106,6 +107,19 @@ class MetaWorkflow(object):
         #end def
 
     #end class
+
+    def _validate(self):
+        '''
+        '''
+        try:
+            getattr(self, 'uuid') #str, need to be unique
+            getattr(self, 'arguments') #list
+            getattr(self, 'workflows') #list
+        except AttributeError as e:
+            raise ValueError('JSON validation error, {0}\n'
+                                .format(e.args[0]))
+        #end try
+    #end def
 
     def _read_steps(self):
         '''
@@ -280,10 +294,7 @@ class MetaWorkflow(object):
         for step_obj in steps_:
             run_step = {}
             run_step.setdefault('name', step_obj.name)
-            run_step.setdefault('workflow_run_uuid', '')
-            run_step.setdefault('output', [])
             run_step.setdefault('status', 'pending')
-            run_step.setdefault('dependencies', [])
             # Check scatter
             #   If is_scatter or dependency in scatter
             #       but not in gather_from
@@ -325,6 +336,7 @@ class MetaWorkflow(object):
                 #   If dependency in gather_from,
                 #       dependencies must be aggregated from scatter
                 for dependency in sorted(step_obj.dependencies):
+                    run_step_.setdefault('dependencies', [])
                     if dependency in step_obj.gather_from:
                         # reducing dimension with gather
                         #   but i need to get shards for original scatter dimension

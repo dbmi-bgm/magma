@@ -16,9 +16,7 @@ Structure
       ## General meta-workflow information
       #   These are general fields that are required by the parser,
       #   however, there is no check on the content that can be customized
-      "accession": "", # custom unique identifier
-      "app_name": "", # name for the meta-workflow
-      "app_version": "", # version for the meta-workflow
+      "name": "",
       "uuid": "", # universally unique identifier
 
       ## General meta-workflow arguments
@@ -63,14 +61,11 @@ Structure
             "run_name": "run_",
             "behavior_on_capacity_limit": "wait_and_retry"
           },
-          "custom_pf_fields": { #
-            "<argument_name>": {
-              "file_type": "",
-              "description": ""
-            }
-          },
-          "custom_qc_fields": {
-          },
+
+          # Additional step-workflow information
+          #   Optional fields can be added and customized
+          "custom_pf_fields": {},
+          "custom_qc_fields": {},
 
           # Step-workflow arguments
           #   These are the arguments that are used by the step-workflow
@@ -81,6 +76,7 @@ Structure
               # These are necessary fields
               "argument_name": "",
               "argument_type": "file",
+
               # Linking fields
               #   If no source step is specified,
               #     the argument will be matched to general arguments by source_argument_name
@@ -89,10 +85,14 @@ Structure
               #     if no match is found will try to match to meta-workflow default argument
               "source_step": "",
               "source_argument_name": "",
-              # These are optional fields
-              #   It is possible to skip these fields or add custom ones
+
+              # Input dimension
+              #   These are optional arguments that can be used to change input dimension
               "scatter": 2, # dimension to scatter list arguments if any
               "gather": 1, # increment for input dimension if previous steps were scattered
+
+              # These are optional fields
+              #   It is possible to skip these fields or add custom ones
               "mount": False,
               "rename": "",
               "unzip": ""
@@ -103,6 +103,7 @@ Structure
               # These are necessary fields
               "argument_name": "",
               "argument_type": "parameter",
+
               # These are optional fields
               #   If no value is specified,
               #     the argument will be matched to general arguments by source_argument_name

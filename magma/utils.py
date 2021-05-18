@@ -14,67 +14,13 @@
 #   Libraries
 ################################################
 import sys, os
-import copy
 
-################################################
-#   Templates
-################################################
-# {
-#   “app_name”: “workflow_vep-annot-check”,
-#   “workflow_uuid”: “cgap:workflow_vep-annot-check_v22",
-#   “parameters”: {
-#     “nthreads”: 64
-#   },
-#   “config”: {
-#     “instance_type”: “c5n.18xlarge”,
-#     “ebs_size”: “0.25x”,
-#     “EBS_optimized”: true,
-#     “spot_instance”: true,
-#     “log_bucket”: “tibanna-output”,
-#     “key_name”: “4dn-encode”,
-#     “public_postrun_json”: true,
-#     “behavior_on_capacity_limit”: “wait_and_retry”
-#   },
-#   “custom_pf_fields”: { #meta-workflow
-#     “annotated_vcf”: {
-#       “file_type”: “vep-annotated VCF”,
-#       “description”: “vep-annotated VCF file”,
-#       “genome_assembly”: “GRCh38" # from foursight
-#     }
-#   },
-#    “custom_qc_fields”: { #meta-workflow
-#      “annotated_vcf”: {
-#        “file_type”: “vep-annotated VCF”,
-#        “description”: “vep-annotated VCF file”,
-#        “genome_assembly”: “GRCh38"
-#      }
-#    },
-#   “common_fields”: { #foursight
-#     “project”: “/projects/brigham-genomic-medicine/“,
-#     “institution”: “/institutions/bwh/”
-#   },
-#   “input_files”: [
-#     {
-#       “workflow_argument_name”: “CADD_indel”,
-#       “uuid”: “b9f123dd-be05-4a14-957a-5e1e5a5ce254”,
-#       “mount”: true
-#     },
-#     {
-#       “workflow_argument_name”: “spliceai_snv”,
-#       “uuid”: “a35e580c-7579-4312-a3a1-66810e6d9366"
-#       “mount”: true
-#     },
-#     {
-#       “workflow_argument_name”: “vep”
-#       “uuid”: “4ff30e10-aa8b-4ebf-87ac-20c7bfc15a46”
-#     }
-#   ],
-#   “_tibanna”: { # foursight
-#     “run_id”: “GAPFIQOGRXEU”, #foursight, is the sample
-#     “env”: “fourfront-cgap” #foursight
-#     “run_type”: “workflow_vep-annot-check” #meta-workflow
-#   }
-# }
+# tibanna
+from tibanna.utils import create_jobid
+
+# dcicutils
+
+
 ################################################
 #   Functions
 ################################################
@@ -93,12 +39,24 @@ class Argument(object):
         for key in input_json:
             setattr(self, key, input_json[key])
         #end for
-        #TODO, add some validation for the attributes
-        #   to streamline format errors identification
+        # Validate
+        self._validate()
         # Calculated attributes
         if not getattr(self, 'source_argument_name', None):
             self.source_argument_name = self.argument_name
         #end if
+    #end def
+
+    def _validate(self):
+        '''
+        '''
+        try:
+            getattr(self, 'argument_name')
+            getattr(self, 'argument_type')
+        except AttributeError as e:
+            raise ValueError('JSON validation error, {0}\n'
+                                .format(e.args[0]))
+        #end try
     #end def
 
 #end class
@@ -121,6 +79,57 @@ class InputGenerator(object):
     def input_generator(self):
         '''
         '''
+        for run_obj, run_args in self._input():
+            jobid = create_jobid()
+            # Update run status
+            self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'running')
+            self.wflrun_obj.update_attribute(run_obj.shard_name, 'jobid', jobid)
+            ### This is where formatting happens,
+            #       to change formatting just change this part
+            step_obj = self.wfl_obj.steps[run_obj.name]
+            input_json = {
+                'app_name': run_obj.name,
+                'workflow_uuid': step_obj.uuid,
+                'config': step_obj.config,
+                'parameters': {},
+                'input_files': [],
+                'jobid': jobid
+            }
+            if getattr(step_obj, 'custom_pf_fields', None):
+                input_json.setdefault('custom_pf_fields', step_obj.custom_pf_fields)
+            #end if
+            if getattr(step_obj, 'custom_qc_fields', None):
+                input_json.setdefault('custom_qc_fields', step_obj.custom_qc_fields)
+            #end if
+            for arg_obj in run_args:
+                if arg_obj.argument_type == 'parameter':
+                    input_json['parameters'].setdefault(arg_obj.argument_name, arg_obj.value)
+                else:
+                    # Basic argument information
+                    arg_ = {
+                        'workflow_argument_name': arg_obj.argument_name,
+                        'uuid': arg_obj.uuid
+                    }
+                    # Additional information
+                    if getattr(arg_obj, 'mount', None):
+                        arg_.setdefault('mount', arg_obj.mount)
+                    #end if
+                    if getattr(arg_obj, 'rename', None):
+                        arg_.setdefault('rename', arg_obj.rename)
+                    #end if
+                    if getattr(arg_obj, 'unzip', None):
+                        arg_.setdefault('unzip', arg_obj.unzip)
+                    #end if
+                    input_json['input_files'].append(arg_)
+                #end if
+            #end for
+            yield input_json, self.wflrun_obj.runs_to_json()
+        #end for
+    #end def
+
+    def _input(self):
+        '''
+        '''
         out_ = []
         # Get workflow-runs that need to be run
         for run_obj in self.wflrun_obj.to_run():
@@ -131,8 +140,6 @@ class InputGenerator(object):
             #   parameter arguments -> value
             self._match_arguments(run_args, run_obj)
             out_.append((run_obj, run_args))
-            ### This is where formatting happens,
-            #       to change formatting just change this part
         #end for
         return out_
     #end def
@@ -152,11 +159,13 @@ class InputGenerator(object):
     def _match_arguments(self, run_args, run_obj):
         '''
                 run_args, is a list of Argument objects for a workflow-run
+                run_obj, is a WorkflowRun object for a workflow-run
         '''
         for arg_obj in run_args:
+            is_file = False
             # Check argument type
-            argument_type = getattr(arg_obj, 'argument_type')
-            if argument_type == 'file':
+            if arg_obj.argument_type == 'file':
+                is_file = True
                 is_match = self._match_argument_file(arg_obj, run_obj)
             else: # is parameter
                 is_match = self._match_argument_parameter(arg_obj)
@@ -164,6 +173,19 @@ class InputGenerator(object):
             if not is_match:
                 raise ValueError('Value error, cannot find a match for argument {0}\n'
                                     .format(arg_obj.argument_name))
+            #end if
+            # Check Scatter
+            if getattr(arg_obj, 'scatter', None):
+                shard = map(int, run_obj.shard.split(':'))
+                if is_file: in_ = arg_obj.uuid
+                else: in_ = arg_obj.value
+                #end if
+                for idx in shard:
+                    in_ = in_[idx]
+                #end for
+                if is_file: arg_obj.uuid = in_
+                else: arg_obj.value = in_
+                #end if
             #end if
         #end for
     #end def
@@ -184,7 +206,7 @@ class InputGenerator(object):
                     #end for
                 #end if
             #end for
-            if len(uuid_) > 1: #TODO handle gather better
+            if len(uuid_) > 1:
                 arg_obj.uuid = uuid_
             else:
                 arg_obj.uuid = uuid_[0]
@@ -240,5 +262,21 @@ class InputGenerator(object):
         #end for
         return False
     #end def
+
+#end class
+
+class CheckStatus(object):
+    '''
+    '''
+
+    def __init__(self, wflrun_obj):
+        '''
+
+                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+        '''
+        # Basic attributes
+        self.wflrun_obj = wflrun_obj
+    #end def
+
 
 #end class
