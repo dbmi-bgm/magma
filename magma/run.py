@@ -117,7 +117,7 @@ class MetaWorkflowRun(object):
             check if dependencies are completed
             return a list of workflow-runs ready to run
         '''
-        to_run = []
+        runs_ = []
         for _, run_obj in self.runs.items():
             if run_obj.status == 'pending':
                 is_dependencies = True
@@ -128,11 +128,25 @@ class MetaWorkflowRun(object):
                         break
                     #end if
                 #end for
-                if is_dependencies: to_run.append(run_obj)
+                if is_dependencies: runs_.append(run_obj)
                 #end if
             #end if
         #end for
-        return to_run
+        return runs_
+    #end def
+
+    def running(self):
+        '''
+            check running workflow-runs
+            return a list of workflow-runs that have status set as running
+        '''
+        runs_ = []
+        for _, run_obj in self.runs.items():
+            if run_obj.status == 'running':
+                runs_.append(run_obj)
+            #end if
+        #end for
+        return runs_
     #end def
 
     def update_attribute(self, shard_name, attribute, value):

@@ -81,7 +81,7 @@ class InputGenerator(object):
         '''
         for run_obj, run_args in self._input():
             jobid = create_jobid()
-            # Update run status
+            # Update run status and jobid
             self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'running')
             self.wflrun_obj.update_attribute(run_obj.shard_name, 'jobid', jobid)
             ### This is where formatting happens,
@@ -276,7 +276,43 @@ class CheckStatus(object):
         '''
         # Basic attributes
         self.wflrun_obj = wflrun_obj
+        self.status_ = {
+            'pending': 'pending',
+            'running': 'running',
+            'completed': 'completed',
+            'failed': 'failed'
+        }
     #end def
 
+    def check_running(self): # We can maybe have a flag that switch between tibanna or dcic utils functions
+        '''
+        '''
+        for run_obj in self.wflrun_obj.running():
+            # Check current status from jobid
+            status = function.check_status(run_obj.jobid)
+            ###########
+
+            if self.status_[status] == 'completed':
+
+                # Get output
+                output_ = function.get_output(run_obj.jobid)
+                ###########
+                # Pre-process and format output
+                output = function.format_output(output_)
+                ###########
+
+                # Update run status and output
+                self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'completed')
+                self.wflrun_obj.update_attribute(run_obj.shard_name, 'output', output)
+                # Return the json to patch workflow_runs
+                yield self.wflrun_obj.runs_to_json()
+            elif self.status_[status] == 'running':
+                continue
+            else: # handle error status
+                #TODO
+                continue
+            #end if
+        #end for
+    #end def
 
 #end class
