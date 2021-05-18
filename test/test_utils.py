@@ -74,10 +74,10 @@ def test_inputgen_WGS_trio_scatter():
     wfl_obj = wfl.MetaWorkflow(data_wfl)
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
     # Run test
-    inputgen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
-    inputgen = inputgen_obj.input_generator()
+    ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
+    ingen = ingen_obj.input_generator()
     # Test results
-    for i, (input_json, workflow_runs) in enumerate(inputgen):
+    for i, (input_json, workflow_runs) in enumerate(ingen):
         if 'jobid' in input_json:
             input_json['jobid'] = 'JOBID'
         else:

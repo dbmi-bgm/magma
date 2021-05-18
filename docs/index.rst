@@ -21,3 +21,4 @@ Contents
    meta-workflow
    workflow-run
    wfl
+   utils

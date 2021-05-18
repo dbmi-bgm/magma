@@ -26,7 +26,7 @@ Initialize MetaWorkflow object
 
     import json
 
-    # Read input
+    # Read input json
     with open('.json') as json_file:
         data = json.load(json_file)
 
