@@ -3,6 +3,7 @@
 #################################################################
 import sys, os
 import pytest
+import mock
 import json
 
 from magma import wfl
@@ -92,3 +93,35 @@ def test_inputgen_WGS_trio_scatter():
         #end for
     #end for
 #end def
+
+
+def test_CheckStatus():
+    """This check does not actually connect to the portal.
+    It uses mocks for get_status and get_output
+    """
+    with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
+        data_wflrun = json.load(json_file)
+
+    # fake that the first one is running
+    data_wflrun['workflow_runs'][0]['status'] = 'running'
+    data_wflrun['workflow_runs'][0]['jobid'] = 'somejobid'
+
+    # Create MetaWorkflowRun object and check_running generator
+    wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+    cs = utils.CheckStatus(wflrun_obj)
+    cr = cs.check_running()
+
+    # mock get_status and get_output
+    with mock.patch('magma.utils.CheckStatus.get_status', return_value='complete'):
+        with mock.patch('magma.utils.CheckStatus.get_output',
+                        return_value=[{'workflow_argument_name': 'raw_bam', 'uuid': 'abc'}]):
+            res = next(cr)
+
+    # check yielded result
+    assert len(res) == len(data_wflrun['workflow_runs'])  # same as original
+    assert res[0] == {'name': 'workflow_bwa-mem_no_unzip-check',
+                      'shard': '0:0',
+                      'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
+                      'jobid': 'somejobid',
+                      'status': 'completed',  # changed from running to completed
+                      'output': [{'workflow_argument_name': 'raw_bam', 'uuid': 'abc'}]}  # output is filled in

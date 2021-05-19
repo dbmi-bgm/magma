@@ -279,35 +279,34 @@ class CheckStatus(object):
         # Basic attributes
         self.wflrun_obj = wflrun_obj
 
-        # Mapping from portal WFR run status to Magma status
-        self.status_ = {
-            'started': 'running',
-            'complete': 'completed',
-            'error': 'failed'
-        }
-
         # portal-related attributes
         self._env = env
         # cache for FFWfrUtils object
         self._ff = None
     #end def
 
+    @property
+    def status_(self):
+        """Mapping from get_status output (e.g. portal WFR run status) to Magma status.
+        Set to property so that inherited classes can overwrite it."""
+        return {
+            'started': 'running',
+            'complete': 'completed',
+            'error': 'failed'
+        }
+
     def check_running(self): # We can maybe have a flag that switch between tibanna or dcic utils functions
         '''
         '''
         for run_obj in self.wflrun_obj.running():
+
             # Check current status from jobid
             status = self.get_status(run_obj.jobid)
-            ###########
 
             if self.status_[status] == 'completed':
 
-                # Get output
-                output_ = self.get_output(run_obj.jobid)
-                ###########
-                # Pre-process and format output
-                output = self.format_output(output_)
-                ###########
+                # Get formatted output
+                output = self.get_output(run_obj.jobid)
 
                 # Update run status and output
                 self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'completed')
@@ -324,6 +323,7 @@ class CheckStatus(object):
     #end def
 
     # the following three functions are for portal (cgap / 4dn)
+    # replace them for other ways of getting status or (formatted) output
     def get_status(self, jobid):
         return self.ff.wfr_run_status(jobid)
 
@@ -332,6 +332,8 @@ class CheckStatus(object):
 
     @property
     def ff(self):
+        """internal property used for get_status, get_output for portal
+        """
         if not self._ff:
             self._ff = FFWfrUtils(self._env)
         return self._ff

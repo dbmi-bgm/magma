@@ -2,6 +2,10 @@ from magma.ff_wfr_utils import FFWfrUtils
 import pytest
 
 
+# tests requiring connection are marked 'portaltest'.
+# to perform tests without connection, use pytest -v -m "not portaltest" test_ff_wfr_utils.py
+
+
 @pytest.fixture
 def fake_wfr_output():
     return [{'a':'b', 'c':'d',
@@ -20,6 +24,7 @@ def test_FFWfrUtils():
     ff = FFWfrUtils('fourfront-cgapwolf')
     assert ff.env == 'fourfront-cgapwolf'
 
+@pytest.mark.portaltest
 def test_ff_key():
     """This test requires connection"""
     ff = FFWfrUtils('fourfront-cgapwolf')
@@ -51,3 +56,22 @@ def test_get_minimal_processed_output(fake_wfr_output):
     final_out = ff.get_minimal_processed_output('jobid')
     assert final_out == [{'uuid': 'someuuid', 'workflow_argument_name': 'somearg'},
                          {'uuid': 'someuuid2', 'workflow_argument_name': 'somearg2'}]
+
+@pytest.mark.portaltest
+def test_get_minimal_processed_output_real():
+    """This test requires connection to cgapwolf.
+    requires workflow run uuid 750851fd-00ad-49d9-98db-468cbdd552b5 (jobid c5TzfqljUygR)
+    """
+    ff = FFWfrUtils('fourfront-cgapwolf')
+    final_out = ff.get_minimal_processed_output('c5TzfqljUygR')
+    assert final_out == [{'workflow_argument_name': 'raw_bam',
+                          'uuid': '2313dd68-1e22-40c3-a56d-611e7900379f'}]
+
+@pytest.mark.portaltest
+def test_wfr_run_status_real():
+    """This test requires connection to cgapwolf.
+    requires workflow run uuid 750851fd-00ad-49d9-98db-468cbdd552b5 (jobid c5TzfqljUygR)
+    """
+    ff = FFWfrUtils('fourfront-cgapwolf')
+    status = ff.wfr_run_status('c5TzfqljUygR')
+    assert status == 'error'
