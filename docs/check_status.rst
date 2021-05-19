@@ -10,9 +10,10 @@ Check Status and Output
 
     from magma import check_status_ff
 
-    # create a CheckStatus object with an environment name
     wflrun_obj = None  # or any actual wflrun_obj
-    cs = check_status_ff.CheckStatusFF({wflrun_obj, env='fourfront-cgap')
+
+    # create a CheckStatus object with an environment name
+    cs = check_status_ff.CheckStatusFF(wflrun_obj, env='fourfront-cgap')
 
     # get_status funtion can be used as stand-alone
     cs.get_status('RBwlMTyOWvpZ')
@@ -26,5 +27,5 @@ Check Status and Output
     # create a generator for check_running
     cr = cs.check_running()
 
-    # iterate (needs a non-empty wflrun_obj)
+    # iterate (needs a non-empty wflrun_obj for this to work)
     next(cr)
