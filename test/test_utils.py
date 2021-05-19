@@ -186,12 +186,7 @@ def test_CheckStatus_running():
             res = next(cr)
 
     # check yielded result
-    assert len(res) == len(data_wflrun['workflow_runs'])  # same as original
-    assert res[0] == {'name': 'workflow_bwa-mem_no_unzip-check',
-                      'shard': '0:0',
-                      'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
-                      'jobid': 'somejobid',
-                      'status': 'running'}  # still 'running'.
+    assert res is None
 
 
 @pytest.mark.portaltest

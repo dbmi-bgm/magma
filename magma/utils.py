@@ -316,13 +316,14 @@ class CheckStatus(object):
                 self.wflrun_obj.update_attribute(run_obj.shard_name, 'output', output)
 
             elif status == 'running':
-                pass
+                yield None  # yield None so that it doesn't terminate iteration
+                continue
             else: # handle error status
                 #TODO
                 pass
             #end if
 
-            # Return the json to patch workflow_runs no matter what
+            # Return the json to patch workflow_runs for both completed and failed
             yield self.wflrun_obj.runs_to_json()
         #end for
     #end def
