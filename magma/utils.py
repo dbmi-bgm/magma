@@ -278,6 +278,8 @@ class CheckStatus(object):
         '''
         # Basic attributes
         self.wflrun_obj = wflrun_obj
+
+        # Mapping from portal WFR run status to Magma status
         self.status_ = {
             'started': 'running',
             'complete': 'completed',
