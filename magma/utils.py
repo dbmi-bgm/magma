@@ -18,7 +18,8 @@ import sys, os
 # tibanna
 from tibanna.utils import create_jobid
 
-# dcicutils
+# dcicutils wrapper
+from .ff_wfr_utils import FFWfrUtils
 
 
 ################################################
@@ -269,19 +270,24 @@ class CheckStatus(object):
     '''
     '''
 
-    def __init__(self, wflrun_obj):
+    def __init__(self, wflrun_obj, env=None):
         '''
 
                 wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+                env, portal env name e.g. fourfront-cgap (required to actually check status)
         '''
         # Basic attributes
         self.wflrun_obj = wflrun_obj
         self.status_ = {
-            'pending': 'pending',
-            'running': 'running',
-            'completed': 'completed',
-            'failed': 'failed'
+            'started': 'running',
+            'complete': 'completed',
+            'error': 'failed'
         }
+
+        # portal-related attributes
+        self._env = env
+        # cache for FFWfrUtils object
+        self._ff = None
     #end def
 
     def check_running(self): # We can maybe have a flag that switch between tibanna or dcic utils functions
@@ -289,16 +295,16 @@ class CheckStatus(object):
         '''
         for run_obj in self.wflrun_obj.running():
             # Check current status from jobid
-            status = function.check_status(run_obj.jobid)
+            status = self.get_status(run_obj.jobid)
             ###########
 
             if self.status_[status] == 'completed':
 
                 # Get output
-                output_ = function.get_output(run_obj.jobid)
+                output_ = self.get_output(run_obj.jobid)
                 ###########
                 # Pre-process and format output
-                output = function.format_output(output_)
+                output = self.format_output(output_)
                 ###########
 
                 # Update run status and output
@@ -314,4 +320,17 @@ class CheckStatus(object):
             #end if
         #end for
     #end def
+
+    # the following three functions are for portal (cgap / 4dn)
+    def get_status(self, jobid):
+        return self.ff.wfr_run_status(jobid)
+
+    def get_output(self, jobid):
+        return self.ff.get_minimal_processed_output(jobid)
+
+    @property
+    def ff(self):
+        if not self._ff:
+            self._ff = FFWfrUtils(self._env)
+        return self._ff
 #end class

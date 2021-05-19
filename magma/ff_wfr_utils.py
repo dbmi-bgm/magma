@@ -12,7 +12,7 @@ class FFWfrUtils(object):
         # cache for access key
         self._ff_key = None
 
-    def get_run_status(self, job_id):
+    def wfr_run_status(self, job_id):
         """This is the function to be used by Magma."""
         wfr_meta = self.wfr_metadata(job_id)
         return wfr_meta['run_status']
