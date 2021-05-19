@@ -57,3 +57,19 @@ Create input json to run
       # input_json -> json input for tibanna zebra
       # workflow_runs -> list of workflow-runs as dictionaries for patching
       # DO something
+
+
+Check Status and Output
+************************
+
+.. code-block:: python
+
+    from magma import utils
+    cs = utils.CheckStatus({}, 'fourfront-cgap')
+
+    cs.get_status('RBwlMTyOWvpZ')
+    #'complete'
+
+    cs.get_output('RBwlMTyOWvpZ')
+    #[{'workflow_argument_name': 'sorted_bam',
+    #  'uuid': '07ae8a9c-260e-4b1b-80ae-ae59a624d746'}]
