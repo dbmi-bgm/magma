@@ -266,33 +266,27 @@ class InputGenerator(object):
 
 #end class
 
-class CheckStatus(object):
+class AbstractCheckStatus(object):
     '''
     '''
 
-    def __init__(self, wflrun_obj, env=None):
+    def __init__(self, wflrun_obj):
         '''
 
                 wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
-                env, portal env name e.g. fourfront-cgap (required to actually check status)
         '''
         # Basic attributes
         self.wflrun_obj = wflrun_obj
 
-        # portal-related attributes
-        self._env = env
-        # cache for FFWfrUtils object
-        self._ff = None
-    #end def
-
     @property
     def status_map(self):
-        """Mapping from get_status output (e.g. portal WFR run status) to Magma status.
+        """Mapping from get_status output to Magma status.
         Set to property so that inherited classes can overwrite it."""
         return {
-            'started': 'running',
-            'complete': 'completed',
-            'error': 'failed'
+            'pending': 'pending',
+            'running': 'running',
+            'completed': 'completed',
+            'failed' : 'failed'
         }
 
     def check_running(self): # We can maybe have a flag that switch between tibanna or dcic utils functions
@@ -318,18 +312,58 @@ class CheckStatus(object):
             elif status == 'running':
                 yield None  # yield None so that it doesn't terminate iteration
                 continue
-            else: # handle error status
-                #TODO
-                pass
+            else:  # failed
+                # handle error status - anything to do before yielding the updated json.
+                self.handle_error(run_obj)
             #end if
 
             # Return the json to patch workflow_runs for both completed and failed
+            # and keep going so that it can continue updating status for other runs.
             yield self.wflrun_obj.runs_to_json()
         #end for
     #end def
 
+    # inherited classes could define stuff to do with an error case.
+    def handle_error(self, run_obj):
+        pass
+
+    # replace them with real functions for getting status or (formatted) output
+    def get_status(self, jobid):
+        return 'running'
+
+    def get_output(self, jobid):
+        return [{'workflow_argument_name': 'arg', 'uuid': 'uuid'}]
+#end class
+
+
+class CheckStatus(object):
+    '''
+    '''
+
+    def __init__(self, wflrun_obj, env=None):
+        '''
+
+                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+                env, portal env name e.g. fourfront-cgap (required to actually check status)
+        '''
+        super().__init__(wflrun_obj)
+
+        # portal-related attributes
+        self._env = env
+        # cache for FFWfrUtils object
+        self._ff = None
+    #end def
+
+    @property
+    def status_map(self):
+        """Mapping from get_status output (e.g. portal WFR run status) to Magma status"""
+        return {
+            'started': 'running',
+            'complete': 'completed',
+            'error': 'failed'
+        }
+
     # the following three functions are for portal (cgap / 4dn)
-    # replace them for other ways of getting status or (formatted) output
     def get_status(self, jobid):
         return self.ff.wfr_run_status(jobid)
 
