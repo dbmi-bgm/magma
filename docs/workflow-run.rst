@@ -67,11 +67,13 @@ Structure
               "shard": "1"
             },
             { "name": "step2",
+              "workflow_run_uuid": "uuid-step2:0-run",
               "status": "running",
               "dependencies": ["step1:0"],
               "shard": "0"
             },
             { "name": "step2",
+              "workflow_run_uuid": "uuid-step2:1-run",
               "status": "running",
               "dependencies": ["step1:1"],
               "shard": "1"

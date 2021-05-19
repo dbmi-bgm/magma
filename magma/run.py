@@ -115,7 +115,8 @@ class MetaWorkflowRun(object):
         '''
             check pending workflow-runs
             check if dependencies are completed
-            return a list of workflow-runs ready to run
+            return a list of WorkflowRun objects
+            for workflow-runs that are ready to run
         '''
         runs_ = []
         for _, run_obj in self.runs.items():
@@ -138,7 +139,8 @@ class MetaWorkflowRun(object):
     def running(self):
         '''
             check running workflow-runs
-            return a list of workflow-runs that have status set as running
+            return a list of WorkflowRun objects
+            for workflow-runs that have status set as running
         '''
         runs_ = []
         for _, run_obj in self.runs.items():
@@ -151,7 +153,7 @@ class MetaWorkflowRun(object):
 
     def update_attribute(self, shard_name, attribute, value):
         '''
-            update attribute for WorkflowRun object in runs
+            update attribute value for WorkflowRun object in runs
 
                 shard_name, WorkflowRun object shard_name
                 attribute, attribute to update
@@ -162,7 +164,7 @@ class MetaWorkflowRun(object):
 
     def runs_to_json(self):
         '''
-            return workflow_runs as json object
+            return workflow_runs as json
             build workflow_runs from WorkflowRun objects
         '''
         runs_ = []
