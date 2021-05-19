@@ -336,7 +336,7 @@ class AbstractCheckStatus(object):
 #end class
 
 
-class CheckStatus(object):
+class CheckStatus(AbstractCheckStatus):
     '''
     '''
 
