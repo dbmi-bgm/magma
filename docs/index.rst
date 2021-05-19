@@ -22,3 +22,4 @@ Contents
    workflow-run
    wfl
    utils
+   check_status
