@@ -339,7 +339,7 @@ class MetaWorkflow(object):
                     run_step_.setdefault('dependencies', [])
                     if dependency in step_obj.gather_from:
                         # reducing dimension with gather
-                        #   but i need to get shards for original scatter dimension
+                        #   but need to get shards for original scatter dimension
                         shards_gather = self._shards(dimensions, scatter[dependency])
                         gather_dimension = scatter[dependency] - step_obj.gather_from[dependency]
                         for s_g in shards_gather:

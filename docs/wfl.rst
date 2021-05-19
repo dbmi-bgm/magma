@@ -49,11 +49,7 @@ Attributes
             ...
           }
 
-  - ``wfl_obj.accession``, stores ``accession`` content as string.
-
-  - ``wfl_obj.app_name``, stores ``app_name`` content as string.
-
-  - ``wfl_obj.app_version``, stores ``app_version`` content as string.
+  - ``wfl_obj.name``, stores ``name`` content as string, if any.
 
   - ``wfl_obj.uuid``, stores ``uuid`` content as string.
 
@@ -89,9 +85,7 @@ Attributes
 
   - ``step_obj.config``, stores ``config`` content as dict.
 
-  - ``step_obj.arguments``, stores ``arguments`` content as dict.
-
-  - ``step_obj.outputs``, stores ``outputs`` content as list.
+  - ``step_obj.arguments``, stores ``arguments`` content as list.
 
   - ``step_obj.is_scatter``, stores ``scatter`` dimension for step as int.
 
@@ -106,4 +100,4 @@ Attributes
             ...
           }
 
-  - ``step_obj.dependencies``, stores names of step-workflows that are dependency as set.
+  - ``step_obj.dependencies``, stores names of step-workflows that are dependency as set, if any.
