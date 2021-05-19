@@ -314,5 +314,4 @@ class CheckStatus(object):
             #end if
         #end for
     #end def
-
 #end class
