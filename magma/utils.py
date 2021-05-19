@@ -286,7 +286,7 @@ class CheckStatus(object):
     #end def
 
     @property
-    def status_(self):
+    def status_map(self):
         """Mapping from get_status output (e.g. portal WFR run status) to Magma status.
         Set to property so that inherited classes can overwrite it."""
         return {
@@ -301,24 +301,29 @@ class CheckStatus(object):
         for run_obj in self.wflrun_obj.running():
 
             # Check current status from jobid
-            status = self.get_status(run_obj.jobid)
+            status_ = self.get_status(run_obj.jobid)
+            status = self.status_map[status_]
 
-            if self.status_[status] == 'completed':
+            # Update run status no matter what
+            self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', status)
+
+            if status == 'completed':
 
                 # Get formatted output
                 output = self.get_output(run_obj.jobid)
 
-                # Update run status and output
-                self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'completed')
+                # Update output only if it the run succeeded
                 self.wflrun_obj.update_attribute(run_obj.shard_name, 'output', output)
-                # Return the json to patch workflow_runs
-                yield self.wflrun_obj.runs_to_json()
-            elif self.status_[status] == 'running':
-                continue
+
+            elif status == 'running':
+                pass
             else: # handle error status
                 #TODO
-                continue
+                pass
             #end if
+
+            # Return the json to patch workflow_runs no matter what
+            yield self.wflrun_obj.runs_to_json()
         #end for
     #end def
 
