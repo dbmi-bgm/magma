@@ -28,7 +28,7 @@ def test_CheckStatusFF():
     # mock get_status and get_output
     with mock.patch('magma.check_status_ff.CheckStatusFF.get_status', return_value='complete'):
         with mock.patch('magma.check_status_ff.CheckStatusFF.get_output',
-                        return_value=[{'workflow_argument_name': 'raw_bam', 'uuid': 'abc'}]):
+                        return_value=[{'argument_name': 'raw_bam', 'uuid': 'abc'}]):
             res = next(cr)
 
     # check yielded result
@@ -38,7 +38,7 @@ def test_CheckStatusFF():
                       'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
                       'jobid': 'somejobid',
                       'status': 'completed',  # changed from running to completed
-                      'output': [{'workflow_argument_name': 'raw_bam', 'uuid': 'abc'}]}  # output is filled in
+                      'output': [{'argument_name': 'raw_bam', 'uuid': 'abc'}]}  # output is filled in
 
 
 def test_CheckStatusFF_failed():
@@ -60,7 +60,7 @@ def test_CheckStatusFF_failed():
     # mock get_status and get_output
     with mock.patch('magma.check_status_ff.CheckStatusFF.get_status', return_value='error'):
         with mock.patch('magma.check_status_ff.CheckStatusFF.get_output',
-                        return_value=[{'workflow_argument_name': 'raw_bam', 'uuid': 'abc'}]):
+                        return_value=[{'argument_name': 'raw_bam', 'uuid': 'abc'}]):
             res = next(cr)
 
     # check yielded result
@@ -91,7 +91,7 @@ def test_CheckStatusFF_running():
     # mock get_status and get_output
     with mock.patch('magma.check_status_ff.CheckStatusFF.get_status', return_value='started'):
         with mock.patch('magma.check_status_ff.CheckStatusFF.get_output',
-                        return_value=[{'workflow_argument_name': 'raw_bam', 'uuid': 'abc'}]):
+                        return_value=[{'argument_name': 'raw_bam', 'uuid': 'abc'}]):
             res = next(cr)
 
     # check yielded result
@@ -141,5 +141,5 @@ def test_CheckStatusFF_real_completed():
                     'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
                     # add status and output
                     'status': 'completed',
-                    'output': [{'workflow_argument_name': 'raw_bam',
+                    'output': [{'argument_name': 'raw_bam',
                                 'uuid': '59939d48-1c7e-4b9d-a644-fdcaff8610be'}]}]
