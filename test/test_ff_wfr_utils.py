@@ -11,14 +11,14 @@ def fake_wfr_output():
     return [{'a':'b', 'c':'d',
             'type': 'Output processed file',
             'value': {'uuid': 'someuuid'},
-            'argument_name': 'somearg'},
+            'workflow_argument_name': 'somearg'},
             {'a2':'b2', 'c2':'d2',
             'type': 'Output processed file',
              'value': {'uuid': 'someuuid2'},
-             'argument_name': 'somearg2'},
+             'workflow_argument_name': 'somearg2'},
             {'a3':'b3', 'c3':'d3',
              'type': 'Output QC file',
-             'argument_name': 'somearg3'}]
+             'workflow_argument_name': 'somearg3'}]
 
 def test_FFWfrUtils():
     ff = FFWfrUtils('fourfront-cgapwolf')

@@ -55,7 +55,7 @@ class FFWfrUtils(object):
     def filter_wfr_output_minimal_processed(wfr_output):
         """return a list of {'argument_name': <arg_name>, 'uuid': <uuid>}
         for all processed file output"""
-        return [{'argument_name': opf['argument_name'],
+        return [{'argument_name': opf['workflow_argument_name'],
                  'uuid': opf['value']['uuid']} \
                     for opf in wfr_output \
                         if opf['type'] == 'Output processed file']
