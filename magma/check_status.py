@@ -65,5 +65,5 @@ class AbstractCheckStatus(object):
         return 'running'
 
     def get_output(self, jobid):
-        return [{'workflow_argument_name': 'arg', 'uuid': 'uuid'}]
+        return [{'argument_name': 'arg', 'uuid': 'uuid'}]
 #end class

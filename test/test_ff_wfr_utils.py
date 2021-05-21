@@ -11,14 +11,14 @@ def fake_wfr_output():
     return [{'a':'b', 'c':'d',
             'type': 'Output processed file',
             'value': {'uuid': 'someuuid'},
-            'workflow_argument_name': 'somearg'},
+            'argument_name': 'somearg'},
             {'a2':'b2', 'c2':'d2',
             'type': 'Output processed file',
              'value': {'uuid': 'someuuid2'},
-             'workflow_argument_name': 'somearg2'},
+             'argument_name': 'somearg2'},
             {'a3':'b3', 'c3':'d3',
              'type': 'Output QC file',
-             'workflow_argument_name': 'somearg3'}]
+             'argument_name': 'somearg3'}]
 
 def test_FFWfrUtils():
     ff = FFWfrUtils('fourfront-cgapwolf')
@@ -47,15 +47,15 @@ def test_wfr_run_status():
 
 def test_filter_wfr_output_minimal_processed(fake_wfr_output):
     filtered_output = FFWfrUtils.filter_wfr_output_minimal_processed(fake_wfr_output)
-    assert filtered_output == [{'uuid': 'someuuid', 'workflow_argument_name': 'somearg'},
-                               {'uuid': 'someuuid2', 'workflow_argument_name': 'somearg2'}]
+    assert filtered_output == [{'uuid': 'someuuid', 'argument_name': 'somearg'},
+                               {'uuid': 'someuuid2', 'argument_name': 'somearg2'}]
 
 def test_get_minimal_processed_output(fake_wfr_output):
     ff = FFWfrUtils('fourfront-cgapwolf')
     ff._metadata['jobid'] = {'output_files': fake_wfr_output}
     final_out = ff.get_minimal_processed_output('jobid')
-    assert final_out == [{'uuid': 'someuuid', 'workflow_argument_name': 'somearg'},
-                         {'uuid': 'someuuid2', 'workflow_argument_name': 'somearg2'}]
+    assert final_out == [{'uuid': 'someuuid', 'argument_name': 'somearg'},
+                         {'uuid': 'someuuid2', 'argument_name': 'somearg2'}]
 
 @pytest.mark.portaltest
 def test_get_minimal_processed_output_real():
@@ -64,7 +64,7 @@ def test_get_minimal_processed_output_real():
     """
     ff = FFWfrUtils('fourfront-cgapwolf')
     final_out = ff.get_minimal_processed_output('c5TzfqljUygR')
-    assert final_out == [{'workflow_argument_name': 'raw_bam',
+    assert final_out == [{'argument_name': 'raw_bam',
                           'uuid': '2313dd68-1e22-40c3-a56d-611e7900379f'}]
 
 @pytest.mark.portaltest
