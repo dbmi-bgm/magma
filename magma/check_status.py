@@ -1,13 +1,13 @@
 class AbstractCheckStatus(object):
-    '''
+    """
     Skeleton for CheckStatus Classes
-    '''
+    """
 
     def __init__(self, wflrun_obj):
-        '''
+        """
 
                 wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
-        '''
+        """
         # Basic attributes
         self.wflrun_obj = wflrun_obj
 
@@ -23,8 +23,8 @@ class AbstractCheckStatus(object):
         }
 
     def check_running(self): # We can maybe have a flag that switch between tibanna or dcic utils functions
-        '''
-        '''
+        """
+        """
         for run_obj in self.wflrun_obj.running():
 
             # Check current status from jobid

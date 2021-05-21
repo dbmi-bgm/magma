@@ -16,7 +16,7 @@ Structure
       ## General meta-workflow information
       #   These are general fields that are required by the parser,
       #   however, there is no check on the content that can be customized
-      "name": "",
+      "name": "", # name for the meta-workflow
       "uuid": "", # universally unique identifier
 
       ## General meta-workflow arguments

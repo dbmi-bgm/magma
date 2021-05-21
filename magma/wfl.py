@@ -19,16 +19,16 @@ import copy
 #   Objects
 ################################################
 class MetaWorkflow(object):
-    '''
+    """
         object to represent a meta-workflow
-    '''
+    """
 
     def __init__(self, input_json):
-        '''
+        """
             initialize MetaWorkflow object from input_json
 
                 input_json is a meta-workflow in json format
-        '''
+        """
         # Basic attributes
         for key in input_json:
             setattr(self, key, input_json[key])
@@ -42,17 +42,17 @@ class MetaWorkflow(object):
     #end def
 
     class StepWorkflow(object):
-        '''
+        """
             object to represent a step-workflow
             that is a step of the meta-workflow
-        '''
+        """
 
         def __init__(self, input_json):
-            '''
+            """
                 initialize StepWorkflow object
 
                     input_json is a step-workflow in json format
-            '''
+            """
             # Basic attributes
             for key in input_json:
                 setattr(self, key, input_json[key])
@@ -72,8 +72,8 @@ class MetaWorkflow(object):
         #end def
 
         def _validate(self):
-            '''
-            '''
+            """
+            """
             try:
                 getattr(self, 'name') #str, need to be unique
                 getattr(self, 'uuid') #str, need to be unique
@@ -86,10 +86,10 @@ class MetaWorkflow(object):
         #end def
 
         def _attributes(self):
-            '''
+            """
                 read arguments
                 set calculated attributes for step-workflow
-            '''
+            """
             for arg in self.arguments:
                 scatter = arg.get('scatter') #scatter dimension
                 if not self.is_scatter and scatter:
@@ -109,8 +109,8 @@ class MetaWorkflow(object):
     #end class
 
     def _validate(self):
-        '''
-        '''
+        """
+        """
         try:
             getattr(self, 'uuid') #str, need to be unique
             getattr(self, 'arguments') #list
@@ -122,10 +122,10 @@ class MetaWorkflow(object):
     #end def
 
     def _read_steps(self):
-        '''
+        """
             read step-workflows
             initialize StepWorkflow objects
-        '''
+        """
         for wfl in self.workflows:
             step_obj = self.StepWorkflow(wfl)
             if step_obj.name not in self.steps:
@@ -138,13 +138,13 @@ class MetaWorkflow(object):
     #end def
 
     def _build_run(self, end_steps):
-        '''
+        """
             build graph structure for meta-workflow given end_steps
             backtrack from end_steps to link step-workflows that are dependencies
             return a set containg step-workflows that are entry point
 
                 end_steps, names list of end step-workflows to build graph structure for
-        '''
+        """
         steps_ = set() #steps that are entry point to wfl_run
         for end_step in end_steps:
             # Initialize queue with end_step
@@ -170,7 +170,7 @@ class MetaWorkflow(object):
     #end def
 
     def _order_run(self, end_steps):
-        '''
+        """
             sort and list all step-workflows for meta-workflow given end_steps
             _build_run to build graph structure for meta-workflow
             start from step-workflows that are entry points
@@ -178,7 +178,7 @@ class MetaWorkflow(object):
             return a list with step-workflows in order
 
                 end_steps, names list of end step-workflows to build graph structure for
-        '''
+        """
         steps_ = []
         queue = list(self._build_run(end_steps))
         while queue:
@@ -208,7 +208,7 @@ class MetaWorkflow(object):
     #end def
 
     def _input_dimensions(self, input):
-        '''
+        """
             given input as list
             calculate dimensions of input
 
@@ -216,7 +216,7 @@ class MetaWorkflow(object):
 
             # TODO
             rewrite the function and generalize using recursion
-        '''
+        """
         input_dimensions = {}
         input_dimensions.setdefault(1, [len(input)])
         if isinstance(input[0], list):
@@ -237,7 +237,7 @@ class MetaWorkflow(object):
     #end def
 
     def _shards(self, input_dimensions, dimension):
-        '''
+        """
             given input_dimensions
             calculate shards for specified dimension
 
@@ -246,7 +246,7 @@ class MetaWorkflow(object):
 
             # TODO
             rewrite the function and generalize using recursion
-        '''
+        """
         shards = []
         input_dimension = input_dimensions[dimension]
         if dimension == 1: #1st dimension
@@ -272,7 +272,7 @@ class MetaWorkflow(object):
     #end def
 
     def write_run(self, end_steps, input):
-        '''
+        """
             create json meta-workflow-run structure for meta-workflow given end_steps and input
             _order_run to sort and list all step-workflows
             use scatter, gather_from and dependencies information
@@ -282,7 +282,7 @@ class MetaWorkflow(object):
 
                 end_steps, names list of end step-workflows to build meta-workflow-run for
                 input, list of input arguments
-        '''
+        """
         scatter = {} #{step_obj.name: dimension, ...}
         dimensions = self._input_dimensions(input)
         steps_ = self._order_run(end_steps)

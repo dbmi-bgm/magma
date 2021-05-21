@@ -21,5 +21,6 @@ Contents
    meta-workflow
    workflow-run
    wfl
+   run
    utils
    check_status

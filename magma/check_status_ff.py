@@ -4,16 +4,16 @@ from .ff_wfr_utils import FFWfrUtils
 
 
 class CheckStatusFF(AbstractCheckStatus):
-    '''
+    """
     CheckStatus Class for CGAP/4dn Portal (tibanna-ff-based)
-    '''
+    """
 
     def __init__(self, wflrun_obj, env=None):
-        '''
+        """
 
                 wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
                 env, portal env name e.g. fourfront-cgap (required to actually check status)
-        '''
+        """
         super().__init__(wflrun_obj)
 
         # portal-related attributes

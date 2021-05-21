@@ -17,7 +17,7 @@ Usage
 MetaWorkflow object
 ^^^^^^^^^^^^^^^^^^^
 
-``MetaWorkflow`` object stores meta-workflow general information, together with step-workflows information as ``StepWorkflow`` objects.
+*MetaWorkflow* object stores meta-workflow general information, together with step-workflows information as *StepWorkflow* objects.
 
 Initialize MetaWorkflow object
 ******************************
@@ -33,12 +33,12 @@ Initialize MetaWorkflow object
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
 
-This will read meta-workflow ``.json`` content into a ``MetaWorkflow`` object and create a ``StepWorkflow`` object for each of the step-workflows in ``workflows``.
+This will read meta-workflow ``.json`` content into a *MetaWorkflow* object and create a *StepWorkflow* object for each of the step-workflows in ``workflows``.
 
 Attributes
 **********
 
-  - ``wfl_obj.steps``, stores ``StepWorkflow`` objects as dictionary.
+  - ``wfl_obj.steps``, stores *StepWorkflow* objects as dictionary.
 
       .. code-block:: python
 

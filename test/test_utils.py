@@ -10,8 +10,6 @@ from magma import run
 from magma import utils
 # from tibanna_cgap.zebra_utils import ZebraInput
 
-
-# ZebraInput(**dict)
 #################################################################
 #   Tests
 #################################################################
@@ -93,3 +91,21 @@ def test_inputgen_WGS_trio_scatter():
         #end for
     #end for
 #end def
+
+# def test_input_zebra():
+#     # Read input
+#     with open('test/files/CGAP_WGS_trio.json') as json_file:
+#         data_wfl = json.load(json_file)
+#     with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
+#         data_wflrun = json.load(json_file)
+#     # Create MetaWorkflow and MetaWorkflowRun objects
+#     wfl_obj = wfl.MetaWorkflow(data_wfl)
+#     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+#     # Run test
+#     ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
+#     ingen = ingen_obj.input_generator()
+#     # Test results
+#     for input_json, workflow_runs in ingen:
+#         assert ZebraInput(**input_json)
+#     #end for
+# #end def

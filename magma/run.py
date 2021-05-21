@@ -18,16 +18,16 @@ import sys, os
 #   Objects
 ################################################
 class MetaWorkflowRun(object):
-    '''
+    """
         object to represent a meta-workflow-run
-    '''
+    """
 
     def __init__(self, input_json):
-        '''
+        """
             initialize MetaWorkflowRun object from input_json
 
                 input_json is a meta-workflow-run in json format
-        '''
+        """
         # Basic attributes
         for key in input_json:
             setattr(self, key, input_json[key])
@@ -41,16 +41,16 @@ class MetaWorkflowRun(object):
     #end def
 
     class WorkflowRun(object):
-        '''
+        """
             object to represent a workflow-run
-        '''
+        """
 
         def __init__(self, input_json):
-            '''
+            """
                 initialize WorkflowRun object from input_json
 
                     input_json is a workflow-run in json format
-            '''
+            """
             # Basic attributes
             for key in input_json:
                 setattr(self, key, input_json[key])
@@ -68,8 +68,8 @@ class MetaWorkflowRun(object):
         #end def
 
         def _validate(self):
-            '''
-            '''
+            """
+            """
             try:
                 getattr(self, 'name') #str
                 getattr(self, 'status') #str, pending | running | completed | failed
@@ -83,8 +83,8 @@ class MetaWorkflowRun(object):
     #end class
 
     def _validate(self):
-        '''
-        '''
+        """
+        """
         try:
             getattr(self, 'meta_workflow_uuid') #str
             getattr(self, 'input') #list
@@ -96,10 +96,10 @@ class MetaWorkflowRun(object):
     #end def
 
     def _read_runs(self):
-        '''
+        """
             read workflow-runs
             initialize WorkflowRun objects
-        '''
+        """
         for run in self.workflow_runs:
             run_obj = self.WorkflowRun(run)
             if run_obj.shard_name not in self.runs:
@@ -112,12 +112,12 @@ class MetaWorkflowRun(object):
     #end def
 
     def to_run(self):
-        '''
+        """
             check pending workflow-runs
             check if dependencies are completed
             return a list of WorkflowRun objects
             for workflow-runs that are ready to run
-        '''
+        """
         runs_ = []
         for _, run_obj in self.runs.items():
             if run_obj.status == 'pending':
@@ -137,11 +137,11 @@ class MetaWorkflowRun(object):
     #end def
 
     def running(self):
-        '''
+        """
             check running workflow-runs
             return a list of WorkflowRun objects
-            for workflow-runs that have status set as running
-        '''
+            for workflow-runs that have status set to running
+        """
         runs_ = []
         for _, run_obj in self.runs.items():
             if run_obj.status == 'running':
@@ -152,21 +152,21 @@ class MetaWorkflowRun(object):
     #end def
 
     def update_attribute(self, shard_name, attribute, value):
-        '''
+        """
             update attribute value for WorkflowRun object in runs
 
-                shard_name, WorkflowRun object shard_name
+                shard_name, WorkflowRun object shard_name ('name:shard')
                 attribute, attribute to update
                 value, new value for attribute
-        '''
+        """
         setattr(self.runs[shard_name], attribute, value)
     #end def
 
     def runs_to_json(self):
-        '''
+        """
             return workflow_runs as json
             build workflow_runs from WorkflowRun objects
-        '''
+        """
         runs_ = []
         for run in self.workflow_runs: #used to get the right order
             run_ = {}

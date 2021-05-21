@@ -2,7 +2,7 @@
 utils module
 ============
 
-This is a module to work with
+This is a module to work with *MetaWorkflow* and *MetaWorkflowRun* objects.
 
 Import the library
 ++++++++++++++++++
@@ -22,6 +22,8 @@ Usage
 
 InputGenerator object
 ^^^^^^^^^^^^^^^^^^^^^
+
+*InputGenerator* object allows to combine and use *MetaWorkflow* and *MetaWorkflowRun* objects to map arguments and create input and patching objects in json format for workflow-runs.
 
 Initialize InputGenerator object
 ********************************
@@ -50,9 +52,12 @@ Initialize InputGenerator object
 Create input json to run
 ************************
 
+The method ``ingen_obj.input_generator()`` returns a generator of ``input, workflow_runs`` in json format.
+``input`` stores necessary information to run a workflow-run and can be used as input for *tibanna*.
+``workflow_runs`` stores updated information for workflow-runs.
+
 .. code-block:: python
 
-    #
     for input_json, workflow_runs in ingen_obj.input_generator():
       # input_json -> json input for tibanna zebra
       # workflow_runs -> list of workflow-runs as dictionaries for patching

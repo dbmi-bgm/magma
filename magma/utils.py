@@ -27,12 +27,16 @@ from tibanna.utils import create_jobid
 #   Objects
 ################################################
 class Argument(object):
-    '''
-    '''
+    """
+        object to model an argument
+    """
 
     def __init__(self, input_json):
-        '''
-        '''
+        """
+            initialize Argument object from input_json
+
+                input_json is an argument in json format
+        """
         # Basic attributes
         for key in input_json:
             setattr(self, key, input_json[key])
@@ -46,8 +50,8 @@ class Argument(object):
     #end def
 
     def _validate(self):
-        '''
-        '''
+        """
+        """
         try:
             getattr(self, 'argument_name')
             getattr(self, 'argument_type')
@@ -60,23 +64,34 @@ class Argument(object):
 #end class
 
 class InputGenerator(object):
-    '''
-    '''
+    """
+        object to combine MetaWorkflow and MetaWorkflowRun objects
+    """
 
     def __init__(self, wfl_obj, wflrun_obj):
-        '''
+        """
+            initialize InputGenerator object
 
                 wfl_obj, MetaWorkflow object representing a meta-workflow
                 wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
-        '''
+        """
         # Basic attributes
         self.wfl_obj = wfl_obj
         self.wflrun_obj = wflrun_obj
     #end def
 
     def input_generator(self):
-        '''
-        '''
+        """
+            return a generator to input for workflow-run in json format
+            and updated workflow-runs information in json format for patching
+
+            for each workflow-run ready to run:
+                update workflow-run status to running
+                create and add a jobid
+                format input json for tibanna zebra
+                create an updated workflow_runs json for patching
+                yield input json and workflow_runs
+        """
         for run_obj, run_args in self._input():
             jobid = create_jobid()
             # Update run status and jobid
@@ -126,8 +141,8 @@ class InputGenerator(object):
     #end def
 
     def _input(self):
-        '''
-        '''
+        """
+        """
         out_ = []
         # Get workflow-runs that need to be run
         for run_obj in self.wflrun_obj.to_run():
@@ -143,9 +158,9 @@ class InputGenerator(object):
     #end def
 
     def _run_arguments(self, run_obj):
-        '''
+        """
                 run_obj, is a WorkflowRun object for a workflow-run
-        '''
+        """
         run_args = []
         for arg in self.wfl_obj.steps[run_obj.name].arguments:
             arg_obj = Argument(arg)
@@ -155,10 +170,10 @@ class InputGenerator(object):
     #end def
 
     def _match_arguments(self, run_args, run_obj):
-        '''
+        """
                 run_args, is a list of Argument objects for a workflow-run
                 run_obj, is a WorkflowRun object for a workflow-run
-        '''
+        """
         for arg_obj in run_args:
             is_file = False
             # Check argument type
@@ -189,8 +204,10 @@ class InputGenerator(object):
     #end def
 
     def _match_argument_file(self, arg_obj, run_obj):
-        '''
-        '''
+        """
+                arg_obj, is Argument object for a workflow-run
+                run_obj, is a WorkflowRun object for a workflow-run
+        """
         if getattr(arg_obj, 'source_step', None):
         # Is workflow-run dependency, match to workflow-run output
             uuid_ = []
@@ -217,8 +234,9 @@ class InputGenerator(object):
     #end def
 
     def _match_argument_parameter(self, arg_obj):
-        '''
-        '''
+        """
+                arg_obj, is Argument object for a workflow-run
+        """
         if getattr(arg_obj, 'value', None) != None:
             # Is value
             return True
@@ -229,8 +247,9 @@ class InputGenerator(object):
     #end def
 
     def _match_general_argument(self, arg_obj):
-        '''
-        '''
+        """
+                arg_obj, is Argument object for a workflow-run
+        """
         # Try and match with meta-worfklow-run input
         if self._value(arg_obj, self.wflrun_obj.input):
             return True
@@ -243,10 +262,10 @@ class InputGenerator(object):
     #end def
 
     def _value(self, arg_obj, arg_list):
-        '''
+        """
                 arg_obj, is Argument object for a workflow-run
                 arg_list, is a list of arguments as dictionaries
-        '''
+        """
         for arg in arg_list:
             if arg_obj.source_argument_name == arg['argument_name'] and \
                arg_obj.argument_type == arg['argument_type']:
