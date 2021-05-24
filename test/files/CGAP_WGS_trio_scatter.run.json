@@ -25,7 +25,8 @@
               }
             ],
             "status": "completed",
-            "shard": "2:0"
+            "shard": "2:0",
+            "jobid": "a1b2c3d"
         },
         {
             "name": "workflow_bwa-mem_no_unzip-check",
@@ -36,7 +37,8 @@
               }
             ],
             "status": "completed",
-            "shard": "2:1"
+            "shard": "2:1",
+            "jobid": "e1f2g3h"
         },
         {
             "name": "workflow_bwa-mem_no_unzip-check",
@@ -47,7 +49,8 @@
               }
             ],
             "status": "completed",
-            "shard": "2:2"
+            "shard": "2:2",
+            "jobid": "AAAAAAa"
         },
         {
             "name": "workflow_add-readgroups-check",

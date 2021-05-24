@@ -92,6 +92,88 @@ def test_inputgen_WGS_trio_scatter():
     #end for
 #end def
 
+def test_runupdate_reset_steps():
+    # Results
+    initial = {
+        'workflow_bwa-mem_no_unzip-check:2:0': {'name': 'workflow_bwa-mem_no_unzip-check',
+          'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:0'}],
+          'status': 'completed',
+          'shard': '2:0',
+          'jobid': 'a1b2c3d'},
+        'workflow_bwa-mem_no_unzip-check:2:1': {'name': 'workflow_bwa-mem_no_unzip-check',
+         'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:1'}],
+         'status': 'completed',
+         'shard': '2:1',
+         'jobid': 'e1f2g3h'},
+        'workflow_bwa-mem_no_unzip-check:2:2': {'name': 'workflow_bwa-mem_no_unzip-check',
+         'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:2'}],
+         'status': 'completed',
+         'shard': '2:2',
+         'jobid': 'AAAAAAa'},
+        'workflow_add-readgroups-check:2:0': {'name': 'workflow_add-readgroups-check',
+          'output': [{'argument_name': 'bam_w_readgroups',
+            'uuid': 'uuid-bam_w_readgroups-2:0'}],
+          'status': 'completed',
+          'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'],
+          'shard': '2:0'},
+        'workflow_add-readgroups-check:2:1': {'name': 'workflow_add-readgroups-check',
+          'output': [{'argument_name': 'bam_w_readgroups',
+            'uuid': 'uuid-bam_w_readgroups-2:1'}],
+          'status': 'completed',
+          'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
+          'shard': '2:1'},
+        'workflow_add-readgroups-check:2:2': {'name': 'workflow_add-readgroups-check',
+          'output': [{'argument_name': 'bam_w_readgroups',
+            'uuid': 'uuid-bam_w_readgroups-2:2'}],
+          'status': 'completed',
+          'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'],
+          'shard': '2:2'}
+    }
+    final = {
+        'workflow_bwa-mem_no_unzip-check:2:0': {'name': 'workflow_bwa-mem_no_unzip-check',
+          'status': 'pending',
+          'shard': '2:0'},
+        'workflow_bwa-mem_no_unzip-check:2:1': {'name': 'workflow_bwa-mem_no_unzip-check',
+         'status': 'pending',
+         'shard': '2:1'},
+        'workflow_bwa-mem_no_unzip-check:2:2': {'name': 'workflow_bwa-mem_no_unzip-check',
+         'status': 'pending',
+         'shard': '2:2'},
+        'workflow_add-readgroups-check:2:0': {'name': 'workflow_add-readgroups-check',
+          'status': 'pending',
+          'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'],
+          'shard': '2:0'},
+        'workflow_add-readgroups-check:2:1': {'name': 'workflow_add-readgroups-check',
+          'status': 'pending',
+          'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
+          'shard': '2:1'},
+        'workflow_add-readgroups-check:2:2': {'name': 'workflow_add-readgroups-check',
+          'status': 'pending',
+          'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'],
+          'shard': '2:2'}
+    }
+    # Read input
+    with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
+        data_wflrun = json.load(json_file)
+    # Create MetaWorkflowRun object
+    wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+    # Run test and test result
+    for workflow_run in wflrun_obj.runs_to_json():
+        shard_name = workflow_run['name'] + ':' + workflow_run['shard']
+        if shard_name in initial:
+            assert initial[shard_name] == workflow_run
+        #end if
+    #end for
+    runupdate = utils.RunUpdate(wflrun_obj)
+    x = runupdate.reset_steps(['workflow_bwa-mem_no_unzip-check', 'workflow_add-readgroups-check'])
+    for workflow_run in x:
+        shard_name = workflow_run['name'] + ':' + workflow_run['shard']
+        if shard_name in final:
+            assert final[shard_name] == workflow_run
+        #end if
+    #end for
+#end def
+
 # def test_input_zebra():
 #     # Read input
 #     with open('test/files/CGAP_WGS_trio.json') as json_file:

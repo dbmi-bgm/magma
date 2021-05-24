@@ -26,6 +26,9 @@ from tibanna.utils import create_jobid
 ################################################
 #   Objects
 ################################################
+################################################
+#   Argument
+################################################
 class Argument(object):
     """
         object to model an argument
@@ -63,6 +66,9 @@ class Argument(object):
 
 #end class
 
+################################################
+#   InputGenerator
+################################################
 class InputGenerator(object):
     """
         object to combine MetaWorkflow and MetaWorkflowRun objects
@@ -212,7 +218,7 @@ class InputGenerator(object):
         # Is workflow-run dependency, match to workflow-run output
             uuid_ = []
             for dependency in run_obj.dependencies:
-                if arg_obj.source_step in dependency:
+                if arg_obj.source_step == dependency.split(':')[0]:
                     for arg in self.wflrun_obj.runs[dependency].output:
                         if arg_obj.source_argument_name == arg['argument_name']:
                             uuid_.append(arg['uuid'])
@@ -278,6 +284,39 @@ class InputGenerator(object):
             #end if
         #end for
         return False
+    #end def
+
+#end class
+
+################################################
+#   RunUpdate
+################################################
+class RunUpdate(object):
+    """
+        object to handle MetaWorkflowRun and WorkflowRun update
+    """
+
+    def __init__(self, wflrun_obj):
+        """
+            initialize RunUpdate object
+
+                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+        """
+        # Basic attributes
+        self.wflrun_obj = wflrun_obj
+    #end def
+
+    def reset_steps(self, name_list):
+        """
+            reset WorkflowRun objects with name in name_list
+            return updated workflow-runs information as json
+
+                name_list, list of names for steps that need to be reset
+        """
+        for name in name_list:
+            self.wflrun_obj.reset_step(name)
+        #end for
+        return self.wflrun_obj.runs_to_json()
     #end def
 
 #end class

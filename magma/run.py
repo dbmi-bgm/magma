@@ -172,12 +172,31 @@ class MetaWorkflowRun(object):
             run_ = {}
             shard_name = run['name'] + ':' + run['shard']
             for key, val in vars(self.runs[shard_name]).items():
-                if val: run_.setdefault(key, val)
+                if val and key != 'shard_name':
+                    run_.setdefault(key, val)
                 #end if
             #end for
             runs_.append(run_)
         #end for
         return runs_
+    #end def
+
+    def reset_step(self, name):
+        """
+            reset attributes value for WorkflowRun objects in runs
+
+                name, is the name of the step to reset
+        """
+        for shard_name, run_obj in self.runs.items():
+            if name == shard_name.split(':')[0]:
+                # Reset run_obj
+                run_obj.output = []
+                run_obj.status = 'pending'
+                if getattr(run_obj, 'jobid', None):
+                    delattr(run_obj, 'jobid')
+                #end if
+            #end if
+        #end for
     #end def
 
 #end class

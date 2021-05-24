@@ -35,7 +35,6 @@ def test_CheckStatusFF():
     assert len(res) == len(data_wflrun['workflow_runs'])  # same as original
     assert res[0] == {'name': 'workflow_bwa-mem_no_unzip-check',
                       'shard': '0:0',
-                      'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
                       'jobid': 'somejobid',
                       'status': 'completed',  # changed from running to completed
                       'output': [{'argument_name': 'raw_bam', 'uuid': 'abc'}]}  # output is filled in
@@ -67,7 +66,6 @@ def test_CheckStatusFF_failed():
     assert len(res) == len(data_wflrun['workflow_runs'])  # same as original
     assert res[0] == {'name': 'workflow_bwa-mem_no_unzip-check',
                       'shard': '0:0',
-                      'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
                       'jobid': 'somejobid',
                       'status': 'failed'}  # changed from running to failed, no output.
 
@@ -116,7 +114,6 @@ def test_CheckStatusFF_real_failed():
     assert res == [{'jobid': 'c5TzfqljUygR',
                     'name': 'workflow_bwa-mem_no_unzip-check',
                     'shard': '0:0',
-                    'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
                     'status': 'failed'}]  # add failed status, not adding output
 
 
@@ -138,7 +135,6 @@ def test_CheckStatusFF_real_completed():
     assert res == [{'jobid': 'RCYui9haX4Ea',
                     'name': 'workflow_bwa-mem_no_unzip-check',
                     'shard': '0:0',
-                    'shard_name': 'workflow_bwa-mem_no_unzip-check:0:0',
                     # add status and output
                     'status': 'completed',
                     'output': [{'argument_name': 'raw_bam',
