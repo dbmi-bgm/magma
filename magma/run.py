@@ -181,6 +181,23 @@ class MetaWorkflowRun(object):
         return runs_
     #end def
 
+    def to_json(self):
+        """
+            return meta-workflow-run json
+            build workflow_runs from WorkflowRun objects
+        """
+        run_json = {}
+        # Get attributes
+        for key, val in vars(self).items():
+            if key != 'runs':
+                run_json.setdefault(key, val)
+            #end if
+        #end for
+        # Get updated workflow_runs from current WorkflowRun objects
+        run_json['workflow_runs'] = self.runs_to_json()
+        return run_json
+    #end def
+
     def reset_step(self, name):
         """
             reset attributes value for WorkflowRun objects in runs

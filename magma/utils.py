@@ -319,4 +319,43 @@ class RunUpdate(object):
         return self.wflrun_obj.runs_to_json()
     #end def
 
+    def import_step(self, wflrun_obj, name):
+        """
+            update current MetaWorkflowRun object information
+            import and use information from specified wflrun_obj
+            update WorkflowRun objects up to step specified by name
+            return updated meta-workflow-run as json
+
+                wflrun_obj, MetaWorkflowRun object to get information from
+                name, name of the step to fill in information from wflrun_obj
+        """
+        ## Import input
+        self.wflrun_obj.input = wflrun_obj.input
+        ## Import WorkflowRun objects
+        queue = [] # queue of steps to import
+                   #    name step and its dependencies
+        # Get workflow-runs corresponding to name step
+        for shard_name, run_obj in self.wflrun_obj.runs.items():
+            if name == shard_name.split(':')[0]:
+                queue.append(run_obj)
+            #end if
+        #end for
+        # Iterate queue, get dependencies and import workflow-runs
+        while queue:
+            run_obj = queue.pop(0)
+            shard_name = run_obj.shard_name
+            dependencies = run_obj.dependencies
+            try:
+                self.wflrun_obj.runs[shard_name] = wflrun_obj.runs[shard_name]
+            except KeyError as e:
+                raise ValueError('JSON content error, missing information for workflow-run {0}\n'
+                                    .format(e.args[0]))
+            #end try
+            for dependency in dependencies:
+                queue.append(self.wflrun_obj.runs[dependency])
+            #end for
+        #end while
+        return self.wflrun_obj.to_json()
+    #end def
+
 #end class
