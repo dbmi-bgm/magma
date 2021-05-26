@@ -66,6 +66,10 @@ The method ``wflrun_obj.update_attribute(shard_name, attribute, value)`` update 
 
 The method ``wflrun_obj.runs_to_json()`` return ``workflow_runs`` as json. Build ``workflow_runs`` directly from *WorkflowRun* objects in ``wflrun_obj.runs``.
 
+The method ``wflrun_obj.to_json()`` return meta-workflow-run as json. Build ``workflow_runs`` directly from *WorkflowRun* objects in ``wflrun_obj.runs``.
+
+The method ``wflrun_obj.reset_step(name)`` reset attributes value for *WorkflowRun* objects in runs corresponding to step specified by *name*.
+
 WorkflowRun object
 ^^^^^^^^^^^^^^^^^^
 

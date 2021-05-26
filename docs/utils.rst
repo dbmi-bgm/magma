@@ -62,3 +62,32 @@ The method ``ingen_obj.input_generator()`` returns a generator of ``input, workf
       # input_json -> json input for tibanna zebra
       # workflow_runs -> list of workflow-runs as dictionaries for patching
       # DO something
+
+RunUpdate object
+^^^^^^^^^^^^^^^^
+
+*RunUpdate* object allows to update and combine *MetaWorkflowRun* objects.
+
+Initialize RunUpdate object
+***************************
+
+.. code-block:: python
+
+    # Read input json, meta-workflow-run
+    with open('.run.json') as json_file:
+        data_wflrun = json.load(json_file)
+
+    # Creates MetaWorkflowRun object
+    wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+
+    # Create RunUpdate object
+    runupd_obj = utils.RunUpdate(wflrun_obj)
+
+Methods
+*******
+
+The method ``runupd_obj.reset_steps(name_list)`` reset *WorkflowRun* objects corresponding to steps specified in *name_list*.
+
+The method ``runupd_obj.import_step(wflrun_obj, name)`` update current *MetaWorkflowRun* object information, import and use information from specified *wflrun_obj*.
+Update *WorkflowRun* objects up to step specified by *name*.
+Return updated meta-workflow-run as json.
