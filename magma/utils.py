@@ -14,6 +14,7 @@
 #   Libraries
 ################################################
 import sys, os
+import re
 
 # tibanna
 from tibanna.utils import create_jobid
@@ -109,7 +110,7 @@ class InputGenerator(object):
             input_json = {
                 'app_name': run_obj.name,
                 'workflow_uuid': step_obj.uuid,
-                'config': step_obj.config,
+                'config': self._eval_formula(step_obj.config),
                 'parameters': {},
                 'input_files': [],
                 'jobid': jobid
@@ -144,6 +145,31 @@ class InputGenerator(object):
             #end for
             yield input_json, self.wflrun_obj.runs_to_json()
         #end for
+    #end def
+
+    def _eval_formula(self, dit):
+        """
+            replace formulas in dit with corresponding calculated values
+            detect formula as "formula:<formula>"
+
+                dit, dictionary to evaluate for formulas
+        """
+        d_ = {}
+        for k, v in dit.items():
+            if isinstance(v, str) and v.startswith('formula:'):
+                frmla = v.split('formula:')[-1]
+                # match parameters
+                re_match = re.findall('([a-zA-Z_]+)', frmla)
+                # replace parameters
+                for s in re_match:
+                    val = self._value_parameter(s, self.wflrun_obj.input)
+                    frmla = frmla.replace(s, str(val))
+                #end for
+                v = eval(frmla)
+            #end if
+            d_.setdefault(k, v)
+        #end for
+        return d_
     #end def
 
     def _input(self):
@@ -190,7 +216,7 @@ class InputGenerator(object):
                 is_match = self._match_argument_parameter(arg_obj)
             #end if
             if not is_match:
-                raise ValueError('Value error, cannot find a match for argument {0}\n'
+                raise ValueError('Value error, cannot find a match for argument "{0}"\n'
                                     .format(arg_obj.argument_name))
             #end if
             # Check Scatter
@@ -286,6 +312,21 @@ class InputGenerator(object):
         return False
     #end def
 
+    def _value_parameter(self, arg_name, arg_list):
+        """
+                arg_name, is the name of the argument
+                arg_list, is a list of arguments as dictionaries to match
+        """
+        for arg in arg_list:
+            if arg_name == arg['argument_name'] and \
+               arg['argument_type'] == 'parameter':
+                return arg['value']
+            #end if
+        #end for
+        raise ValueError('Value error, cannot find a match for parameter "{0}"\n'
+                            .format(arg_name))
+    #end def
+
 #end class
 
 ################################################
@@ -362,7 +403,7 @@ class RunUpdate(object):
                 try:
                     self.wflrun_obj.runs[shard_name] = wflrun_obj.runs[shard_name]
                 except KeyError as e:
-                    raise ValueError('JSON content error, missing information for workflow-run {0}\n'
+                    raise ValueError('JSON content error, missing information for workflow-run "{0}"\n'
                                         .format(e.args[0]))
                 #end try
                 for dependency in dependencies:

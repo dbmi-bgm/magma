@@ -320,6 +320,94 @@ def test_runupdate_import_step():
     #end for
 #end def
 
+def test_inputgen_formula_eval():
+    # meta-worfklow-run json
+    input_wflrun = {
+      'meta_workflow_uuid': 'DIUU',
+      'workflow_runs' : [
+            {
+              'name': 'Foo',
+              'status': 'pending',
+              'shard': '0',
+            }],
+      'input': [
+        {
+          'argument_name': 'pAram_x',
+          'argument_type': 'parameter',
+          'value': 10
+        },
+        {
+          'argument_name': 'y',
+          'argument_type': 'parameter',
+          'value': 2
+        }]
+    }
+    # meta-workflow json
+    input_wfl = {
+          'name': 'ANAME',
+          'uuid': 'UUDI',
+          'arguments': [
+            {
+              'argument_name': 'a_global_file',
+              'argument_type': 'file',
+              'uuid': 'a_global_file-UUID'
+            }
+          ],
+          'workflows': [
+            {
+              'name': 'Foo',
+              'uuid': 'Foo-UUID',
+              'config': {
+                'instance_type': 'm5.large',
+                'ebs_size': 'formula:pAram_x+10* y',
+                'EBS_optimized': True,
+                'spot_instance': False,
+                'log_bucket': 'tibanna-output',
+                'run_name': 'run_Foo'
+              },
+              'arguments': [
+                {
+                  'argument_name': 'a_local_file',
+                  'argument_type': 'file',
+                  'source_argument_name': 'a_global_file'
+                }
+              ]
+            }
+          ]
+        }
+    # Results expected
+    result = [
+        {'app_name': 'Foo', 'workflow_uuid': 'Foo-UUID',
+        'config': {
+            'instance_type': 'm5.large',
+            'ebs_size': 30,
+            'EBS_optimized': True,
+            'spot_instance': False,
+            'log_bucket': 'tibanna-output',
+            'run_name': 'run_Foo'
+            },
+        'jobid': 'JOBID',
+        'parameters': {},
+        'input_files': [
+            {'workflow_argument_name': 'a_local_file', 'uuid': 'a_global_file-UUID'}]}
+    ]
+    # Create MetaWorkflow and MetaWorkflowRun objects
+    wfl_obj = wfl.MetaWorkflow(input_wfl)
+    wflrun_obj = run.MetaWorkflowRun(input_wflrun)
+    # Run test
+    ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
+    ingen = ingen_obj.input_generator()
+    # Test results
+    for i, (input_json, workflow_runs) in enumerate(ingen):
+        if 'jobid' in input_json:
+            input_json['jobid'] = 'JOBID'
+        else:
+            assert False
+        #end if
+        assert input_json == result[i]
+    #end for
+#end def
+
 # def test_input_zebra():
 #     # Read input
 #     with open('test/files/CGAP_WGS_trio.json') as json_file:

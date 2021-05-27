@@ -131,7 +131,7 @@ class MetaWorkflow(object):
             if step_obj.name not in self.steps:
                 self.steps.setdefault(step_obj.name, step_obj)
             else:
-                raise ValueError('Validation error, step {0} duplicate in step workflows\n'
+                raise ValueError('Validation error, step "{0}" duplicate in step workflows\n'
                                     .format(step_obj.name))
             #end if
         #end for
@@ -158,7 +158,7 @@ class MetaWorkflow(object):
                             queue.append(self.steps[dependency])
                             self.steps[dependency]._nodes.add(step_obj)
                         except Exception:
-                            raise ValueError('Validation error, missing dependency step {0} in step workflows\n'
+                            raise ValueError('Validation error, missing dependency step "{0}" in step workflows\n'
                                                 .format(dependency))
                         #end try
                     #end for

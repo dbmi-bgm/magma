@@ -105,7 +105,7 @@ class MetaWorkflowRun(object):
             if run_obj.shard_name not in self.runs:
                 self.runs.setdefault(run_obj.shard_name, run_obj)
             else:
-                raise ValueError('Validation error, step {0} duplicate in step workflows\n'
+                raise ValueError('Validation error, step "{0}" duplicate in step workflows\n'
                                     .format(run_obj.shard_name))
             #end if
         #end for
