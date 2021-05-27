@@ -38,7 +38,10 @@ Structure
           "argument_name": "",
           "argument_type": "parameter",
           "value": ""
-        }
+        },
+
+        # Arguments with no value or uuid can be specified as well
+        #   and will need to be provided as input in meta-worfklow-run
 
       ],
 
@@ -54,7 +57,9 @@ Structure
           "uuid": "", # universally unique identifier
           "config": { # configuration for the step-workflow
             "instance_type": "",
-            "ebs_size": "",
+            "ebs_size": "", # it is possible to specify formulas "formula:x+1"
+                            #   values to be replaced must be defined as
+                            #   parameter arguments
             "EBS_optimized": True,
             "spot_instance": True,
             "log_bucket": "tibanna-output",

@@ -5,7 +5,7 @@ meta-workflow-run
 =================
 
 A meta-workflow-run is a json object that describes the structure of a multi-step workflow given the corresponding meta-workflow, specific input and defined end points.
-Scatter, gather and dependencies information are used to create and link all the shards for individual step-workflows (workflow-runs) that are necessary to reach end points based on the input.
+Scatter, gather and dependencies information are used to create and link all the *shards* for individual step-workflows (workflow-runs) that are necessary to reach end points based on the input.
 
 Structure
 +++++++++

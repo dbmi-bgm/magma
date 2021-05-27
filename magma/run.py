@@ -198,20 +198,47 @@ class MetaWorkflowRun(object):
         return run_json
     #end def
 
-    def reset_step(self, name):
+    def _reset_run(self, shard_name):
+        """
+            reset attributes value for WorkflowRun object in runs
+
+                shard_name, is the name of the workflow-run to reset
+        """
+        run_obj = self.runs[shard_name]
+        # Reset run_obj
+        run_obj.output = []
+        run_obj.status = 'pending'
+        if getattr(run_obj, 'jobid', None):
+            delattr(run_obj, 'jobid')
+        #end if
+    #end def
+
+    def reset_step(self, step_name):
         """
             reset attributes value for WorkflowRun objects in runs
+            reset all workflow-runs corresponding to step-workflow specified by step_name
 
-                name, is the name of the step to reset
+                step_name, is the name of the step-workflow to reset
         """
-        for shard_name, run_obj in self.runs.items():
-            if name == shard_name.split(':')[0]:
+        for shard_name_ in self.runs:
+            if step_name == shard_name_.split(':')[0]:
                 # Reset run_obj
-                run_obj.output = []
-                run_obj.status = 'pending'
-                if getattr(run_obj, 'jobid', None):
-                    delattr(run_obj, 'jobid')
-                #end if
+                self._reset_run(shard_name_)
+            #end if
+        #end for
+    #end def
+
+    def reset_shard(self, shard_name):
+        """
+            reset attributes value for WorkflowRun object in runs
+            reset only workflow-run specified by shard_name
+
+                shard_name, is the name of the workflow-run to reset
+        """
+        for shard_name_ in self.runs:
+            if shard_name == shard_name_:
+                # Reset run_obj
+                self._reset_run(shard_name_)
             #end if
         #end for
     #end def

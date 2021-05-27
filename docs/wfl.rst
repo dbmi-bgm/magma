@@ -60,7 +60,7 @@ Attributes
 Write meta-workflow-run
 ***********************
 
-The method ``wfl_obj.write_run(end_steps, input)`` returns a json structure for a :ref:`meta-workflow-run-label` given specific end step-workflows and inputs.
+The method ``wfl_obj.write_run(end_steps<str list>, input<str list>)`` returns a json structure for a :ref:`meta-workflow-run-label` given specific end step-workflows and inputs.
 
 .. code-block:: python
 

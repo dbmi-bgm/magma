@@ -306,55 +306,70 @@ class RunUpdate(object):
         self.wflrun_obj = wflrun_obj
     #end def
 
-    def reset_steps(self, name_list):
+    def reset_steps(self, steps_name):
         """
-            reset WorkflowRun objects with name in name_list
+            reset WorkflowRun objects with name in steps_name
             return updated workflow-runs information as json
 
-                name_list, list of names for steps that need to be reset
+                steps_name, list of names for step-workflows that need to be reset
         """
-        for name in name_list:
+        for name in steps_name:
             self.wflrun_obj.reset_step(name)
         #end for
         return self.wflrun_obj.runs_to_json()
     #end def
 
-    def import_step(self, wflrun_obj, name):
+    def reset_shards(self, shards_name):
+        """
+            reset WorkflowRun objects with shard_name in shards_name
+            return updated workflow-runs information as json
+
+                shards_name, list of names for workflow-runs that need to be reset
+        """
+        for name in shards_name:
+            self.wflrun_obj.reset_shard(name)
+        #end for
+        return self.wflrun_obj.runs_to_json()
+    #end def
+
+    def import_steps(self, wflrun_obj, steps_name):
         """
             update current MetaWorkflowRun object information
             import and use information from specified wflrun_obj
-            update WorkflowRun objects up to step specified by name
+            update WorkflowRun objects up to steps specified by steps_name
             return updated meta-workflow-run as json
 
                 wflrun_obj, MetaWorkflowRun object to get information from
-                name, name of the step to fill in information from wflrun_obj
+                steps_name, list of names for step-workflows to fill in information from wflrun_obj
         """
         ## Import input
         self.wflrun_obj.input = wflrun_obj.input
         ## Import WorkflowRun objects
-        queue = [] # queue of steps to import
-                   #    name step and its dependencies
-        # Get workflow-runs corresponding to name step
-        for shard_name, run_obj in self.wflrun_obj.runs.items():
-            if name == shard_name.split(':')[0]:
-                queue.append(run_obj)
-            #end if
-        #end for
-        # Iterate queue, get dependencies and import workflow-runs
-        while queue:
-            run_obj = queue.pop(0)
-            shard_name = run_obj.shard_name
-            dependencies = run_obj.dependencies
-            try:
-                self.wflrun_obj.runs[shard_name] = wflrun_obj.runs[shard_name]
-            except KeyError as e:
-                raise ValueError('JSON content error, missing information for workflow-run {0}\n'
-                                    .format(e.args[0]))
-            #end try
-            for dependency in dependencies:
-                queue.append(self.wflrun_obj.runs[dependency])
+        for name in steps_name:
+            queue = [] # queue of steps to import
+                       #    name step and its dependencies
+            # Get workflow-runs corresponding to name step
+            for shard_name, run_obj in self.wflrun_obj.runs.items():
+                if name == shard_name.split(':')[0]:
+                    queue.append(run_obj)
+                #end if
             #end for
-        #end while
+            # Iterate queue, get dependencies and import workflow-runs
+            while queue:
+                run_obj = queue.pop(0)
+                shard_name = run_obj.shard_name
+                dependencies = run_obj.dependencies
+                try:
+                    self.wflrun_obj.runs[shard_name] = wflrun_obj.runs[shard_name]
+                except KeyError as e:
+                    raise ValueError('JSON content error, missing information for workflow-run {0}\n'
+                                        .format(e.args[0]))
+                #end try
+                for dependency in dependencies:
+                    queue.append(self.wflrun_obj.runs[dependency])
+                #end for
+            #end while
+        #end for
         return self.wflrun_obj.to_json()
     #end def
 

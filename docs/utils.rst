@@ -52,9 +52,11 @@ Initialize InputGenerator object
 Create input json to run
 ************************
 
-The method ``ingen_obj.input_generator()`` returns a generator of ``input, workflow_runs`` in json format.
-``input`` stores necessary information to run a workflow-run and can be used as input for *tibanna*.
-``workflow_runs`` stores updated information for workflow-runs.
+The method ``ingen_obj.input_generator()`` returns a generator of ``input, workflow_runs`` in json format:
+
+  - ``input`` stores necessary information to run a workflow-run and can be used as input for *tibanna*.
+
+  - ``workflow_runs`` stores updated information for workflow-runs.
 
 .. code-block:: python
 
@@ -86,8 +88,12 @@ Initialize RunUpdate object
 Methods
 *******
 
-The method ``runupd_obj.reset_steps(name_list)`` reset *WorkflowRun* objects corresponding to steps specified in *name_list*.
+The method ``runupd_obj.reset_steps(steps_name<str list>)`` reset *WorkflowRun* objects corresponding to step-workflows specified in *steps_name*.
+Reset all workflow-runs associated to specified step-workflows.
 
-The method ``runupd_obj.import_step(wflrun_obj, name)`` update current *MetaWorkflowRun* object information, import and use information from specified *wflrun_obj*.
-Update *WorkflowRun* objects up to step specified by *name*.
+The method ``runupd_obj.reset_shards(shards_name<str list>)`` reset *WorkflowRun* objects corresponding to workflow-runs specified in *shards_name*.
+Reset only workflow-runs specified by shards.
+
+The method ``runupd_obj.import_steps(wflrun_obj<MetaWorkflowRun obj>, steps_name<str list>)`` update current *MetaWorkflowRun* object information, import and use information from specified *wflrun_obj*.
+Update *WorkflowRun* objects up to all steps specified in *steps_name*.
 Return updated meta-workflow-run as json.
