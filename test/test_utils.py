@@ -359,7 +359,7 @@ def test_inputgen_formula_eval():
               'uuid': 'Foo-UUID',
               'config': {
                 'instance_type': 'm5.large',
-                'ebs_size': 'formula:pAram_x+10* y',
+                'ebs_size': 'formula:pAram_x+10* y/(pAram_x)',
                 'EBS_optimized': True,
                 'spot_instance': False,
                 'log_bucket': 'tibanna-output',
@@ -380,7 +380,7 @@ def test_inputgen_formula_eval():
         {'app_name': 'Foo', 'workflow_uuid': 'Foo-UUID',
         'config': {
             'instance_type': 'm5.large',
-            'ebs_size': 30,
+            'ebs_size': 12,
             'EBS_optimized': True,
             'spot_instance': False,
             'log_bucket': 'tibanna-output',
