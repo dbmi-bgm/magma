@@ -62,9 +62,15 @@ class MetaWorkflow(object):
             self.gather_from = {} #{name: dimension, ...} of steps to gather from
                                   # dimension is input dimension increment
                                   # and shard dimension decrement, int
-            self.dependencies = set() #names of steps that are dependency
             # For building graph structure
             self._nodes = set() #step_objects for steps that depend on current step
+            # Dependencies
+            #   names of steps that are dependency
+            if getattr(self, 'dependencies', None):
+                self.dependencies = set(self.dependencies)
+            else:
+                self.dependencies = set()
+            #end def
 
             # Calculate attributes
             self._validate()
@@ -289,7 +295,8 @@ class MetaWorkflow(object):
         run_json = {
             'meta_workflow_uuid': self.uuid,
             'workflow_runs': [],
-            'input': []
+            'input': [],
+            'status': 'pending'
         }
         for step_obj in steps_:
             run_step = {}

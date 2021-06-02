@@ -340,7 +340,13 @@ def test_inputgen_formula_eval():
           'argument_name': 'y',
           'argument_type': 'parameter',
           'value': 2
-        }]
+        },
+        {
+          'argument_name': 'RNAME',
+          'argument_type': 'parameter',
+          'value': ['I', 'm', 'rename']
+        }],
+        'status': 'pending'
     }
     # meta-workflow json
     input_wfl = {
@@ -369,7 +375,14 @@ def test_inputgen_formula_eval():
                 {
                   'argument_name': 'a_local_file',
                   'argument_type': 'file',
-                  'source_argument_name': 'a_global_file'
+                  'source_argument_name': 'a_global_file',
+                  'rename': 'formula:RNAME'
+                },
+                {
+                  'argument_name': 'a_local_file',
+                  'argument_type': 'file',
+                  'source_argument_name': 'a_global_file',
+                  'rename': ['foobar']
                 }
               ]
             }
@@ -389,7 +402,11 @@ def test_inputgen_formula_eval():
         'jobid': 'JOBID',
         'parameters': {},
         'input_files': [
-            {'workflow_argument_name': 'a_local_file', 'uuid': 'a_global_file-UUID'}]}
+            {'workflow_argument_name': 'a_local_file', 'uuid': 'a_global_file-UUID',
+            'rename': ['I', 'm', 'rename']},
+            {'workflow_argument_name': 'a_local_file', 'uuid': 'a_global_file-UUID',
+            'rename': ['foobar']}
+        ]}
     ]
     # Create MetaWorkflow and MetaWorkflowRun objects
     wfl_obj = wfl.MetaWorkflow(input_wfl)

@@ -101,6 +101,7 @@ def test_CheckStatusFF_real_failed():
     """check status for a real job 'c5TzfqljUygR' (errored run) on cgapwolf"""
     small_wflrun = {'meta_workflow_uuid': 'somemwfuuid',
                     'input': {},
+                    'status': 'pending',
                     'workflow_runs': [{'jobid': 'c5TzfqljUygR',
                                        'status': 'running',
                                        'name': 'workflow_bwa-mem_no_unzip-check',
@@ -122,6 +123,7 @@ def test_CheckStatusFF_real_completed():
     """check status for a real job 'RCYui9haX4Ea' (successful run) on cgapwolf"""
     small_wflrun = {'meta_workflow_uuid': 'somemwfuuid',
                     'input': {},
+                    'status': 'pending',
                     'workflow_runs': [{'jobid': 'RCYui9haX4Ea',
                                        'status': 'running',
                                        'name': 'workflow_bwa-mem_no_unzip-check',

@@ -155,5 +155,6 @@
             "shard": "2"
         }
     ],
-    "input": []
+    "input": [],
+    "status": "pending"
 }

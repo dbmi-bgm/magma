@@ -135,7 +135,12 @@ class InputGenerator(object):
                         arg_.setdefault('mount', arg_obj.mount)
                     #end if
                     if getattr(arg_obj, 'rename', None):
-                        arg_.setdefault('rename', arg_obj.rename)
+                        rname = arg_obj.rename
+                        if isinstance(rname, str) and rname.startswith('formula:'):
+                            frmla = rname.split('formula:')[-1]
+                            rname = self._value_parameter(frmla, self.wflrun_obj.input)
+                        #end if
+                        arg_.setdefault('rename', rname)
                     #end if
                     if getattr(arg_obj, 'unzip', None):
                         arg_.setdefault('unzip', arg_obj.unzip)

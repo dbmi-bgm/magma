@@ -89,6 +89,7 @@ class MetaWorkflowRun(object):
             getattr(self, 'meta_workflow_uuid') #str
             getattr(self, 'input') #list
             getattr(self, 'workflow_runs') #list
+            getattr(self, 'status') #str, pending | running | completed | failed
         except AttributeError as e:
             raise ValueError('JSON validation error, {0}\n'
                                 .format(e.args[0]))
@@ -241,6 +242,20 @@ class MetaWorkflowRun(object):
                 self._reset_run(shard_name_)
             #end if
         #end for
+    #end def
+
+    def update_status(self):
+        """
+            check status for all WorkflowRun
+            if all are set as completed
+            set MetaWorkflowRun final status as completed
+        """
+        for _, run_obj in self.runs.items():
+            if run_obj.status != 'completed':
+                return
+            #end if
+        #end for
+        self.status = 'completed'
     #end def
 
 #end class

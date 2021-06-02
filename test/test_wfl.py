@@ -39,51 +39,51 @@ from magma import wfl
 
 # Template example
 template = {
-  "name": "",
-  "uuid": "",
+  'name': '',
+  'uuid': '',
   # GENERAL ARGUMENTS
-  "arguments": [
+  'arguments': [
     {
-      "argument_name": "",
-      "argument_type": "file",
-      "uuid": ""
+      'argument_name': '',
+      'argument_type': 'file',
+      'uuid': ''
     },
     {
-      "argument_name": "",
-      "argument_type": "parameter",
-      "value": ""
+      'argument_name': '',
+      'argument_type': 'parameter',
+      'value': ''
     }
   ],
   # STEPS
-  "workflows": [
+  'workflows': [
     {
-      "name": "",
-      "uuid": "",
-      "config": {
-        "instance_type": "",
-        "ebs_size": "",
-        "EBS_optimized": True,
-        "spot_instance": True,
-        "log_bucket": "tibanna-output",
-        "run_name": "run_",
-        "behavior_on_capacity_limit": "wait_and_retry"
+      'name': '',
+      'uuid': '',
+      'config': {
+        'instance_type': '',
+        'ebs_size': '',
+        'EBS_optimized': True,
+        'spot_instance': True,
+        'log_bucket': 'tibanna-output',
+        'run_name': 'run_',
+        'behavior_on_capacity_limit': 'wait_and_retry'
       },
-      "arguments": [
+      'arguments': [
         {
-          "argument_name": "",
-          "argument_type": "file",
-          "scatter": 0,
-          "gather": 0,
-          "mount": False,
-          "rename": "",
-          "unzip": "",
-          "source_step": "",
-          "source_argument_name": ""
+          'argument_name': '',
+          'argument_type': 'file',
+          'scatter': 0,
+          'gather': 0,
+          'mount': False,
+          'rename': '',
+          'unzip': '',
+          'source_step': '',
+          'source_argument_name': ''
         },
         {
-          "argument_name": "",
-          "argument_type": "parameter",
-          "value": ""
+          'argument_name': '',
+          'argument_type': 'parameter',
+          'value': ''
         }
       ]
     }
@@ -155,7 +155,7 @@ def test_wfl_P():
 
 def test_wfl_2D_WGS_trio():
     # Results expected
-    result = {'meta_workflow_uuid': 'UUID', 'workflow_runs': [{'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '0:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '1:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '1:1'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '2:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '2:1'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '2:2'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:0:0'], 'shard': '0:0'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:1:0'], 'shard': '1:0'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:1:1'], 'shard': '1:1'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'], 'shard': '2:0'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'], 'shard': '2:1'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'], 'shard': '2:2'}, {'name': 'workflow_merge-bam-check', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:0:0'], 'shard': '0'}, {'name': 'workflow_merge-bam-check', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:1:0', 'workflow_add-readgroups-check:1:1'], 'shard': '1'}, {'name': 'workflow_merge-bam-check', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:2:0', 'workflow_add-readgroups-check:2:1', 'workflow_add-readgroups-check:2:2'], 'shard': '2'}, {'name': 'workflow_picard-MarkDuplicates-check', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:0'], 'shard': '0'}, {'name': 'workflow_picard-MarkDuplicates-check', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:1'], 'shard': '1'}, {'name': 'workflow_picard-MarkDuplicates-check', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:2'], 'shard': '2'}, {'name': 'workflow_sort-bam-check', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:0'], 'shard': '0'}, {'name': 'workflow_sort-bam-check', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:1'], 'shard': '1'}, {'name': 'workflow_sort-bam-check', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-BaseRecalibrator', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-BaseRecalibrator', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-BaseRecalibrator', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:0', 'workflow_sort-bam-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:1', 'workflow_sort-bam-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:2', 'workflow_sort-bam-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-HaplotypeCaller', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-HaplotypeCaller', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-HaplotypeCaller', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-CombineGVCFs', 'status': 'pending', 'dependencies': ['workflow_gatk-HaplotypeCaller:0', 'workflow_gatk-HaplotypeCaller:1', 'workflow_gatk-HaplotypeCaller:2'], 'shard': '0'}], 'input': []}
+    result = {'meta_workflow_uuid': 'UUID', 'workflow_runs': [{'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '0:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '1:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '1:1'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '2:0'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '2:1'}, {'name': 'workflow_bwa-mem_no_unzip-check', 'status': 'pending', 'shard': '2:2'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:0:0'], 'shard': '0:0'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:1:0'], 'shard': '1:0'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:1:1'], 'shard': '1:1'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'], 'shard': '2:0'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'], 'shard': '2:1'}, {'name': 'workflow_add-readgroups-check', 'status': 'pending', 'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'], 'shard': '2:2'}, {'name': 'workflow_merge-bam-check', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:0:0'], 'shard': '0'}, {'name': 'workflow_merge-bam-check', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:1:0', 'workflow_add-readgroups-check:1:1'], 'shard': '1'}, {'name': 'workflow_merge-bam-check', 'status': 'pending', 'dependencies': ['workflow_add-readgroups-check:2:0', 'workflow_add-readgroups-check:2:1', 'workflow_add-readgroups-check:2:2'], 'shard': '2'}, {'name': 'workflow_picard-MarkDuplicates-check', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:0'], 'shard': '0'}, {'name': 'workflow_picard-MarkDuplicates-check', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:1'], 'shard': '1'}, {'name': 'workflow_picard-MarkDuplicates-check', 'status': 'pending', 'dependencies': ['workflow_merge-bam-check:2'], 'shard': '2'}, {'name': 'workflow_sort-bam-check', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:0'], 'shard': '0'}, {'name': 'workflow_sort-bam-check', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:1'], 'shard': '1'}, {'name': 'workflow_sort-bam-check', 'status': 'pending', 'dependencies': ['workflow_picard-MarkDuplicates-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-BaseRecalibrator', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-BaseRecalibrator', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-BaseRecalibrator', 'status': 'pending', 'dependencies': ['workflow_sort-bam-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:0', 'workflow_sort-bam-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:1', 'workflow_sort-bam-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-ApplyBQSR-check', 'status': 'pending', 'dependencies': ['workflow_gatk-BaseRecalibrator:2', 'workflow_sort-bam-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-HaplotypeCaller', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:0'], 'shard': '0'}, {'name': 'workflow_gatk-HaplotypeCaller', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:1'], 'shard': '1'}, {'name': 'workflow_gatk-HaplotypeCaller', 'status': 'pending', 'dependencies': ['workflow_gatk-ApplyBQSR-check:2'], 'shard': '2'}, {'name': 'workflow_gatk-CombineGVCFs', 'status': 'pending', 'dependencies': ['workflow_gatk-HaplotypeCaller:0', 'workflow_gatk-HaplotypeCaller:1', 'workflow_gatk-HaplotypeCaller:2'], 'shard': '0'}], 'input': [], 'status': 'pending'}
     # Read input
     with open('test/files/CGAP_WGS_trio.json') as json_file:
         data = json.load(json_file)

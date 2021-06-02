@@ -74,6 +74,8 @@ Reset all workflow-runs associated to specified step-workflow.
 The method ``wflrun_obj.reset_shard(shard_name<str>)`` reset attributes value for *WorkflowRun* object in runs corresponding to workflow-run specified as *shard_name*.
 Reset only workflow-run specified by shard.
 
+The method ``wflrun_obj.update_status()`` check the status for all *WorkflowRun* objects, if all are set as completed set *MetaWorkflowRun* final status as ``completed``.
+
 WorkflowRun object
 ^^^^^^^^^^^^^^^^^^
 

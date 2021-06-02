@@ -69,6 +69,7 @@ Structure
 
           # Additional step-workflow information
           #   Optional fields can be added and customized
+          "dependencies": [], # allows to force general dependencies to previous steps
           "custom_pf_fields": {},
           "custom_qc_fields": {},
 
@@ -99,7 +100,7 @@ Structure
               # These are optional fields
               #   It is possible to skip these fields or add custom ones
               "mount": False,
-              "rename": "",
+              "rename": "formula:<variable_name>",
               "unzip": ""
             },
 

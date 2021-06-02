@@ -104,6 +104,9 @@ Structure
         }
       ],
 
+      ## Final status
+      "status": "", # pending | running | completed | failed
+
       ## Specific output for meta-workflow-run
       "output": []
     }
