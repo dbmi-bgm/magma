@@ -100,7 +100,9 @@ Structure
               # These are optional fields
               #   It is possible to skip these fields or add custom ones
               "mount": False,
-              "rename": "formula:<variable_name>",
+              "rename": "formula:<variable_name>", #  formula:<variable_name> can be used to
+                                                   #    specify a variable name that need to be matched
+                                                   #    and the value replaced for the field
               "unzip": ""
             },
 
