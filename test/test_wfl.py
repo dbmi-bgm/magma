@@ -42,7 +42,7 @@ template = {
   'name': '',
   'uuid': '',
   # GENERAL ARGUMENTS
-  'arguments': [
+  'input': [
     {
       'argument_name': '',
       'argument_type': 'file',
@@ -68,7 +68,7 @@ template = {
         'run_name': 'run_',
         'behavior_on_capacity_limit': 'wait_and_retry'
       },
-      'arguments': [
+      'input': [
         {
           'argument_name': '',
           'argument_type': 'file',
@@ -77,7 +77,7 @@ template = {
           'mount': False,
           'rename': '',
           'unzip': '',
-          'source_step': '',
+          'source': '',
           'source_argument_name': ''
         },
         {
@@ -112,7 +112,7 @@ def test_wfl_M_H():
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
     # Run test
-    x = wfl_obj.write_run(['M', 'H'], input=['f1', 'f2', 'f3'])
+    x = wfl_obj.write_run(['M', 'H'], input_argument=['f1', 'f2', 'f3'])
     # Test steps
     assert sorted([wfl_['name'] for wfl_ in x['workflow_runs']]) == results['steps']
     # Test depencencies
@@ -142,7 +142,7 @@ def test_wfl_P():
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
     # Run test
-    x = wfl_obj.write_run(['P'], input=['f1', 'f2', 'f3'])
+    x = wfl_obj.write_run(['P'], input_argument=['f1', 'f2', 'f3'])
     # Test steps
     assert sorted([wfl_['name'] for wfl_ in x['workflow_runs']]) == results['steps']
     # Test depencencies

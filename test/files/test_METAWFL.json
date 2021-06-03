@@ -3,7 +3,7 @@
   "app_name": "TEST",
   "app_version": "v1",
   "uuid": "test-uuid",
-  "arguments": [
+  "input": [
     {
       "argument_name": "input_generic",
       "argument_type": "file",
@@ -22,7 +22,7 @@
       "config": {
         "instance_type": "a.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_a",
           "argument_type": "file",
@@ -42,11 +42,11 @@
       "config": {
         "instance_type": "b.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_b",
           "argument_type": "file",
-          "source_step": "A",
+          "source": "A",
           "source_argument_name": "output_a"
         },
         {
@@ -63,11 +63,11 @@
       "config": {
         "instance_type": "c.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_c",
           "argument_type": "file",
-          "source_step": "B",
+          "source": "B",
           "source_argument_name": "output_b"
         }
       ],
@@ -79,12 +79,12 @@
       "config": {
         "instance_type": "d.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_d",
           "argument_type": "file",
           "gather": 1,
-          "source_step": "C",
+          "source": "C",
           "source_argument_name": "output_c"
         }
       ],
@@ -96,11 +96,11 @@
       "config": {
         "instance_type": "e.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_e",
           "argument_type": "file",
-          "source_step": "C",
+          "source": "C",
           "source_argument_name": "output_c"
         }
       ],
@@ -112,11 +112,11 @@
       "config": {
         "instance_type": "g.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_g",
           "argument_type": "file",
-          "source_step": "D",
+          "source": "D",
           "source_argument_name": "output_d"
         }
       ],
@@ -128,24 +128,24 @@
       "config": {
         "instance_type": "h.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_h",
           "argument_type": "file",
-          "source_step": "G",
+          "source": "G",
           "source_argument_name": "output_g"
         },
         {
           "argument_name": "input_h1",
           "argument_type": "file",
           "gather": 1,
-          "source_step": "E",
+          "source": "E",
           "source_argument_name": "output_e"
         },
         {
           "argument_name": "input_h2",
           "argument_type": "file",
-          "source_step": "Z",
+          "source": "Z",
           "source_argument_name": "output_z"
         }
       ],
@@ -157,11 +157,11 @@
       "config": {
         "instance_type": "p.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_p",
           "argument_type": "file",
-          "source_step": "G",
+          "source": "G",
           "source_argument_name": "output_g"
         }
       ],
@@ -173,11 +173,11 @@
       "config": {
         "instance_type": "m.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_m",
           "argument_type": "file",
-          "source_step": "P",
+          "source": "P",
           "source_argument_name": "output_p"
         }
       ],
@@ -189,7 +189,7 @@
       "config": {
         "instance_type": "z.instance"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_z",
           "argument_type": "file"

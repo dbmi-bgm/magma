@@ -38,8 +38,7 @@ Structure
                   "uuid": ""
                 }
               ],
-              # Fields that are created to link the actual run
-              "workflow_run_uuid": "",
+              # Additonal fields created to link the actual run
               "jobid": ""
             },
 
@@ -107,6 +106,6 @@ Structure
       ## Final status
       "status": "", # pending | running | completed | failed
 
-      ## Specific output for meta-workflow-run
-      "output": []
+      ## Optional general fields for meta-workflow-run
+      "common_fields": {}
     }

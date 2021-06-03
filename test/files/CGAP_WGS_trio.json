@@ -3,7 +3,7 @@
   "app_name": "WGS_trio",
   "app_version": "v22",
   "uuid": "UUID",
-  "arguments": [
+  "input": [
     {
       "argument_name": "reference_bwa",
       "argument_type": "file",
@@ -55,7 +55,7 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "fastq_R1",
           "argument_type": "file",
@@ -83,12 +83,12 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
           "mount": true,
-          "source_step": "workflow_bwa-mem_no_unzip-check",
+          "source": "workflow_bwa-mem_no_unzip-check",
           "source_argument_name": "raw_bam"
         },
         {
@@ -104,13 +104,13 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bams",
           "argument_type": "file",
           "gather": 1,
           "mount": true,
-          "source_step": "workflow_add-readgroups-check",
+          "source": "workflow_add-readgroups-check",
           "source_argument_name": "bam_w_readgroups"
         }
       ],
@@ -122,11 +122,11 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
-          "source_step": "workflow_merge-bam-check",
+          "source": "workflow_merge-bam-check",
           "source_argument_name": "merged_bam"
         }
       ],
@@ -138,12 +138,12 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
           "mount": true,
-          "source_step": "workflow_picard-MarkDuplicates-check",
+          "source": "workflow_picard-MarkDuplicates-check",
           "source_argument_name": "dupmarked_bam"
         }
       ],
@@ -155,12 +155,12 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
           "mount": true,
-          "source_step": "workflow_sort-bam-check",
+          "source": "workflow_sort-bam-check",
           "source_argument_name": "sorted_bam"
         },
         {
@@ -188,17 +188,17 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
-          "source_step": "workflow_sort-bam-check",
+          "source": "workflow_sort-bam-check",
           "source_argument_name": "sorted_bam"
         },
         {
           "argument_name": "recalibration_report",
           "argument_type": "file",
-          "source_step": "workflow_gatk-BaseRecalibrator",
+          "source": "workflow_gatk-BaseRecalibrator",
           "source_argument_name": "recalibration_report"
         },
         {
@@ -216,12 +216,12 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
           "mount": true,
-          "source_step": "workflow_gatk-ApplyBQSR-check",
+          "source": "workflow_gatk-ApplyBQSR-check",
           "source_argument_name": "recalibrated_bam"
         },
         {
@@ -244,12 +244,12 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
           "mount": true,
-          "source_step": "workflow_gatk-ApplyBQSR-check",
+          "source": "workflow_gatk-ApplyBQSR-check",
           "source_argument_name": "recalibrated_bam"
         },
         {
@@ -272,12 +272,12 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_bam",
           "argument_type": "file",
           "mount": true,
-          "source_step": "workflow_gatk-ApplyBQSR-check",
+          "source": "workflow_gatk-ApplyBQSR-check",
           "source_argument_name": "recalibrated_bam"
         },
         {
@@ -293,13 +293,13 @@
       "config": {
         "log_bucket": "tibanna-output"
       },
-      "arguments": [
+      "input": [
         {
           "argument_name": "input_gvcfs",
           "argument_type": "file",
           "gather": 1,
           "mount": true,
-          "source_step": "workflow_gatk-HaplotypeCaller",
+          "source": "workflow_gatk-HaplotypeCaller",
           "source_argument_name": "gvcf"
         },
         {

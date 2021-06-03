@@ -53,18 +53,18 @@ Attributes
 
   - ``wfl_obj.uuid``, stores ``uuid`` content as string.
 
-  - ``wfl_obj.arguments``, stores ``arguments`` content as list.
+  - ``wfl_obj.input``, stores ``input`` content as list.
 
   - ``wfl_obj.workflows``, stores ``workflows`` content as list.
 
 Write meta-workflow-run
 ***********************
 
-The method ``wfl_obj.write_run(end_steps<str list>, input<str list>)`` returns a json structure for a :ref:`meta-workflow-run-label` given specific end step-workflows and inputs.
+The method ``wfl_obj.write_run(end_steps<str list>, input_argument<str | str list>)`` returns a json structure for a :ref:`meta-workflow-run-label` given specific end step-workflows and input_argument.
 
 .. code-block:: python
 
-    # input is a list of inputs, up to 3-dimensions
+    # input is a string or list of strings, up to 3-dimensions
     input = [[['file_1', 'file_2'], ['file_3', 'file_4']]]
 
     # end_steps, is a list of the final step-workflows for the meta-workflow-run
@@ -85,7 +85,7 @@ Attributes
 
   - ``step_obj.config``, stores ``config`` content as dict.
 
-  - ``step_obj.arguments``, stores ``arguments`` content as list.
+  - ``step_obj.input``, stores ``input`` content as list.
 
   - ``step_obj.is_scatter``, stores ``scatter`` dimension for step as int.
 

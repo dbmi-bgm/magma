@@ -115,12 +115,26 @@ class InputGenerator(object):
                 'input_files': [],
                 'jobid': jobid
             }
+
+            ####################################################################
+            # This should either come from run_obj or step_obj
+            #     at some point add that option and possibly merge the two
             if getattr(step_obj, 'custom_pf_fields', None):
                 input_json.setdefault('custom_pf_fields', step_obj.custom_pf_fields)
             #end if
             if getattr(step_obj, 'custom_qc_fields', None):
                 input_json.setdefault('custom_qc_fields', step_obj.custom_qc_fields)
             #end if
+            ####################################################################
+
+            ####################################################################
+            # This should either come from wflrun_obj or wfl_obj
+            #     at some point add that option and possibly merge the two
+            if getattr(self.wflrun_obj, 'common_fields', None):
+                input_json.setdefault('common_fields', self.wflrun_obj.common_fields)
+            #end if
+            ####################################################################
+
             for arg_obj in run_args:
                 if arg_obj.argument_type == 'parameter':
                     input_json['parameters'].setdefault(arg_obj.argument_name, arg_obj.value)
@@ -199,7 +213,7 @@ class InputGenerator(object):
                 run_obj, is a WorkflowRun object for a workflow-run
         """
         run_args = []
-        for arg in self.wfl_obj.steps[run_obj.name].arguments:
+        for arg in self.wfl_obj.steps[run_obj.name].input:
             arg_obj = Argument(arg)
             run_args.append(arg_obj)
         #end for
@@ -245,11 +259,11 @@ class InputGenerator(object):
                 arg_obj, is Argument object for a workflow-run
                 run_obj, is a WorkflowRun object for a workflow-run
         """
-        if getattr(arg_obj, 'source_step', None):
+        if getattr(arg_obj, 'source', None):
         # Is workflow-run dependency, match to workflow-run output
             uuid_ = []
             for dependency in run_obj.dependencies:
-                if arg_obj.source_step == dependency.split(':')[0]:
+                if arg_obj.source == dependency.split(':')[0]:
                     for arg in self.wflrun_obj.runs[dependency].output:
                         if arg_obj.source_argument_name == arg['argument_name']:
                             uuid_.append(arg['uuid'])
@@ -292,7 +306,7 @@ class InputGenerator(object):
             return True
         #end if
         # No match, try match to default argument in meta-worfklow
-        if self._value(arg_obj, self.wfl_obj.arguments):
+        if self._value(arg_obj, self.wfl_obj.input):
             return True
         #end if
         return False

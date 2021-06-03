@@ -352,7 +352,7 @@ def test_inputgen_formula_eval():
     input_wfl = {
           'name': 'ANAME',
           'uuid': 'UUDI',
-          'arguments': [
+          'input': [
             {
               'argument_name': 'a_global_file',
               'argument_type': 'file',
@@ -371,7 +371,7 @@ def test_inputgen_formula_eval():
                 'log_bucket': 'tibanna-output',
                 'run_name': 'run_Foo'
               },
-              'arguments': [
+              'input': [
                 {
                   'argument_name': 'a_local_file',
                   'argument_type': 'file',
