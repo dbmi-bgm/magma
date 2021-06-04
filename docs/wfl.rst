@@ -81,7 +81,7 @@ Attributes
 
   - ``step_obj.name``, stores ``name`` content as string.
 
-  - ``step_obj.uuid``, stores ``uuid`` content as string.
+  - ``step_obj.workflow``, stores ``workflow`` content as string.
 
   - ``step_obj.config``, stores ``config`` content as dict.
 

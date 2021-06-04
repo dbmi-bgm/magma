@@ -28,7 +28,7 @@ def test_CheckStatusFF():
     # mock get_status and get_output
     with mock.patch('magma.check_status_ff.CheckStatusFF.get_status', return_value='complete'):
         with mock.patch('magma.check_status_ff.CheckStatusFF.get_output',
-                        return_value=[{'argument_name': 'raw_bam', 'uuid': 'abc'}]):
+                        return_value=[{'argument_name': 'raw_bam', 'file': 'abc'}]):
             res = next(cr)
 
     # check yielded result
@@ -37,7 +37,7 @@ def test_CheckStatusFF():
                       'shard': '0:0',
                       'jobid': 'somejobid',
                       'status': 'completed',  # changed from running to completed
-                      'output': [{'argument_name': 'raw_bam', 'uuid': 'abc'}]}  # output is filled in
+                      'output': [{'argument_name': 'raw_bam', 'file': 'abc'}]}  # output is filled in
 
 
 def test_CheckStatusFF_failed():
@@ -59,7 +59,7 @@ def test_CheckStatusFF_failed():
     # mock get_status and get_output
     with mock.patch('magma.check_status_ff.CheckStatusFF.get_status', return_value='error'):
         with mock.patch('magma.check_status_ff.CheckStatusFF.get_output',
-                        return_value=[{'argument_name': 'raw_bam', 'uuid': 'abc'}]):
+                        return_value=[{'argument_name': 'raw_bam', 'file': 'abc'}]):
             res = next(cr)
 
     # check yielded result
@@ -89,7 +89,7 @@ def test_CheckStatusFF_running():
     # mock get_status and get_output
     with mock.patch('magma.check_status_ff.CheckStatusFF.get_status', return_value='started'):
         with mock.patch('magma.check_status_ff.CheckStatusFF.get_output',
-                        return_value=[{'argument_name': 'raw_bam', 'uuid': 'abc'}]):
+                        return_value=[{'argument_name': 'raw_bam', 'file': 'abc'}]):
             res = next(cr)
 
     # check yielded result
@@ -99,9 +99,9 @@ def test_CheckStatusFF_running():
 @pytest.mark.portaltest
 def test_CheckStatusFF_real_failed():
     """check status for a real job 'c5TzfqljUygR' (errored run) on cgapwolf"""
-    small_wflrun = {'meta_workflow_uuid': 'somemwfuuid',
+    small_wflrun = {'meta_workflow': 'somemwfuuid',
                     'input': {},
-                    'status': 'pending',
+                    'final_status': 'pending',
                     'workflow_runs': [{'jobid': 'c5TzfqljUygR',
                                        'status': 'running',
                                        'name': 'workflow_bwa-mem_no_unzip-check',
@@ -121,9 +121,9 @@ def test_CheckStatusFF_real_failed():
 @pytest.mark.portaltest
 def test_CheckStatusFF_real_completed():
     """check status for a real job 'RCYui9haX4Ea' (successful run) on cgapwolf"""
-    small_wflrun = {'meta_workflow_uuid': 'somemwfuuid',
+    small_wflrun = {'meta_workflow': 'somemwfuuid',
                     'input': {},
-                    'status': 'pending',
+                    'final_status': 'pending',
                     'workflow_runs': [{'jobid': 'RCYui9haX4Ea',
                                        'status': 'running',
                                        'name': 'workflow_bwa-mem_no_unzip-check',
@@ -140,4 +140,4 @@ def test_CheckStatusFF_real_completed():
                     # add status and output
                     'status': 'completed',
                     'output': [{'argument_name': 'raw_bam',
-                                'uuid': '59939d48-1c7e-4b9d-a644-fdcaff8610be'}]}]
+                                'file': '59939d48-1c7e-4b9d-a644-fdcaff8610be'}]}]

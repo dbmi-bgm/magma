@@ -7,7 +7,7 @@
     {
       "argument_name": "input_generic",
       "argument_type": "file",
-      "uuid": "input_generic-uuid"
+      "file": "input_generic-uuid"
     },
     {
       "argument_name": "pmtr_generic",
@@ -18,7 +18,7 @@
   "workflows": [
     {
       "name": "A",
-      "uuid": "a-uuid",
+      "workflow": "a-uuid",
       "config": {
         "instance_type": "a.instance"
       },
@@ -38,7 +38,7 @@
     },
     {
       "name": "B",
-      "uuid": "b-uuid",
+      "workflow": "b-uuid",
       "config": {
         "instance_type": "b.instance"
       },
@@ -59,7 +59,7 @@
     },
     {
       "name": "C",
-      "uuid": "c-uuid",
+      "workflow": "c-uuid",
       "config": {
         "instance_type": "c.instance"
       },
@@ -75,7 +75,7 @@
     },
     {
       "name": "D",
-      "uuid": "d-uuid",
+      "workflow": "d-uuid",
       "config": {
         "instance_type": "d.instance"
       },
@@ -92,7 +92,7 @@
     },
     {
       "name": "E",
-      "uuid": "e-uuid",
+      "workflow": "e-uuid",
       "config": {
         "instance_type": "e.instance"
       },
@@ -108,7 +108,7 @@
     },
     {
       "name": "G",
-      "uuid": "g-uuid",
+      "workflow": "g-uuid",
       "config": {
         "instance_type": "g.instance"
       },
@@ -124,7 +124,7 @@
     },
     {
       "name": "H",
-      "uuid": "h-uuid",
+      "workflow": "h-uuid",
       "config": {
         "instance_type": "h.instance"
       },
@@ -153,7 +153,7 @@
     },
     {
       "name": "P",
-      "uuid": "p-uuid",
+      "workflow": "p-uuid",
       "config": {
         "instance_type": "p.instance"
       },
@@ -169,7 +169,7 @@
     },
     {
       "name": "M",
-      "uuid": "m-uuid",
+      "workflow": "m-uuid",
       "config": {
         "instance_type": "m.instance"
       },
@@ -185,7 +185,7 @@
     },
     {
       "name": "Z",
-      "uuid": "z-uuid",
+      "workflow": "z-uuid",
       "config": {
         "instance_type": "z.instance"
       },

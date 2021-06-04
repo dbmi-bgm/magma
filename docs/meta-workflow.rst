@@ -29,7 +29,7 @@ Structure
           # These are necessary fields
           "argument_name": "",
           "argument_type": "file",
-          "uuid": ""
+          "file": ""
         },
 
         # Structure for a parameter argument
@@ -54,7 +54,7 @@ Structure
           #   These are general fields that are required by the parser,
           #   however, there is no check on the content that can be customized
           "name": "", # name for the step-workflow
-          "uuid": "", # universally unique identifier
+          "workflow": "", # universally unique identifier
           "config": { # configuration for the step-workflow
             "instance_type": "",
             "ebs_size": "",

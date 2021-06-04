@@ -90,7 +90,7 @@ class InputGenerator(object):
     def input_generator(self):
         """
             return a generator to input for workflow-run in json format
-            and updated workflow-runs information in json format for patching
+            and updated workflow-runs and final_status information in json format for patching
 
             for each workflow-run ready to run:
                 update workflow-run status to running
@@ -109,7 +109,7 @@ class InputGenerator(object):
             step_obj = self.wfl_obj.steps[run_obj.name]
             input_json = {
                 'app_name': run_obj.name,
-                'workflow_uuid': step_obj.uuid,
+                'workflow_uuid': step_obj.workflow,
                 'config': self._eval_formula(step_obj.config),
                 'parameters': {},
                 'input_files': [],
@@ -142,7 +142,7 @@ class InputGenerator(object):
                     # Basic argument information
                     arg_ = {
                         'workflow_argument_name': arg_obj.argument_name,
-                        'uuid': arg_obj.uuid
+                        'uuid': arg_obj.file
                     }
                     # Additional information
                     if getattr(arg_obj, 'mount', None):
@@ -162,7 +162,8 @@ class InputGenerator(object):
                     input_json['input_files'].append(arg_)
                 #end if
             #end for
-            yield input_json, self.wflrun_obj.runs_to_json()
+            yield input_json, {'final_status':  self.wflrun_obj.update_status(),
+                               'workflow_runs': self.wflrun_obj.runs_to_json()}
         #end for
     #end def
 
@@ -200,7 +201,7 @@ class InputGenerator(object):
             # Get workflow-run arguments
             run_args = self._run_arguments(run_obj)
             # Match and update workflow-run arguments
-            #   file arguments -> uuid
+            #   file arguments -> file
             #   parameter arguments -> value
             self._match_arguments(run_args, run_obj)
             out_.append((run_obj, run_args))
@@ -241,13 +242,15 @@ class InputGenerator(object):
             # Check Scatter
             if getattr(arg_obj, 'scatter', None):
                 shard = map(int, run_obj.shard.split(':'))
-                if is_file: in_ = arg_obj.uuid
+                if is_file: in_ = arg_obj.file
                 else: in_ = arg_obj.value
                 #end if
-                for idx in shard:
+                for idx in list(shard)[:arg_obj.scatter]:
+                    # [:arg_obj.scatter] handle multiple scatter in same shard,
+                    #   use scatter dimension to subset shard index list
                     in_ = in_[idx]
                 #end for
-                if is_file: arg_obj.uuid = in_
+                if is_file: arg_obj.file = in_
                 else: arg_obj.value = in_
                 #end if
             #end if
@@ -261,21 +264,21 @@ class InputGenerator(object):
         """
         if getattr(arg_obj, 'source', None):
         # Is workflow-run dependency, match to workflow-run output
-            uuid_ = []
+            file_ = []
             for dependency in run_obj.dependencies:
                 if arg_obj.source == dependency.split(':')[0]:
                     for arg in self.wflrun_obj.runs[dependency].output:
                         if arg_obj.source_argument_name == arg['argument_name']:
-                            uuid_.append(arg['uuid'])
+                            file_.append(arg['file'])
                             break
                         #end if
                     #end for
                 #end if
             #end for
-            if len(uuid_) > 1:
-                arg_obj.uuid = uuid_
+            if len(file_) > 1:
+                arg_obj.file = file_
             else:
-                arg_obj.uuid = uuid_[0]
+                arg_obj.file = file_[0]
             #end if
             return True
         else:
@@ -321,7 +324,7 @@ class InputGenerator(object):
             if arg_obj.source_argument_name == arg['argument_name'] and \
                arg_obj.argument_type == arg['argument_type']:
                 if arg_obj.argument_type == 'file':
-                    arg_obj.uuid = arg['uuid']
+                    arg_obj.file = arg['file']
                 else:
                     arg_obj.value = arg['value']
                 #end if
@@ -369,27 +372,29 @@ class RunUpdate(object):
     def reset_steps(self, steps_name):
         """
             reset WorkflowRun objects with name in steps_name
-            return updated workflow-runs information as json
+            return updated workflow-runs and final_status information as json
 
                 steps_name, list of names for step-workflows that need to be reset
         """
         for name in steps_name:
             self.wflrun_obj.reset_step(name)
         #end for
-        return self.wflrun_obj.runs_to_json()
+        return {'final_status':  self.wflrun_obj.update_status(),
+                'workflow_runs': self.wflrun_obj.runs_to_json()}
     #end def
 
     def reset_shards(self, shards_name):
         """
             reset WorkflowRun objects with shard_name in shards_name
-            return updated workflow-runs information as json
+            return updated workflow-runs and final_status information as json
 
                 shards_name, list of names for workflow-runs that need to be reset
         """
         for name in shards_name:
             self.wflrun_obj.reset_shard(name)
         #end for
-        return self.wflrun_obj.runs_to_json()
+        return {'final_status':  self.wflrun_obj.update_status(),
+                'workflow_runs': self.wflrun_obj.runs_to_json()}
     #end def
 
     def import_steps(self, wflrun_obj, steps_name):
@@ -430,6 +435,9 @@ class RunUpdate(object):
                 #end for
             #end while
         #end for
+        # Update final_status
+        self.wflrun_obj.update_status()
+
         return self.wflrun_obj.to_json()
     #end def
 

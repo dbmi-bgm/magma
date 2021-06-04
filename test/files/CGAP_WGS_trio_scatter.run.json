@@ -1,5 +1,5 @@
 {
-    "meta_workflow_uuid": "UUID",
+    "meta_workflow": "UUID",
     "workflow_runs": [
         {
             "name": "workflow_bwa-mem_no_unzip-check",
@@ -21,7 +21,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-2:0"
+                "file": "uuid-raw_bam-2:0"
               }
             ],
             "status": "completed",
@@ -33,7 +33,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-2:1"
+                "file": "uuid-raw_bam-2:1"
               }
             ],
             "status": "completed",
@@ -45,7 +45,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-2:2"
+                "file": "uuid-raw_bam-2:2"
               }
             ],
             "status": "completed",
@@ -81,7 +81,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-2:0"
+                "file": "uuid-bam_w_readgroups-2:0"
               }
             ],
             "status": "completed",
@@ -95,7 +95,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-2:1"
+                "file": "uuid-bam_w_readgroups-2:1"
               }
             ],
             "status": "completed",
@@ -109,7 +109,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-2:2"
+                "file": "uuid-bam_w_readgroups-2:2"
               }
             ],
             "status": "completed",
@@ -288,13 +288,13 @@
       {
         "argument_name": "fastq_R1",
         "argument_type": "file",
-        "uuid": [["A1"], ["C1", "D1"], ["B1", "E1", "F1"]]
+        "file": [["A1"], ["C1", "D1"], ["B1", "E1", "F1"]]
       },
       {
         "argument_name": "fastq_R2",
         "argument_type": "file",
-        "uuid": [["A2"], ["C2", "D2"], ["B2", "E2", "F2"]]
+        "file": [["A2"], ["C2", "D2"], ["B2", "E2", "F2"]]
       }
     ],
-    "status": "pending"
+    "final_status": "pending"
 }

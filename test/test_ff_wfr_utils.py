@@ -47,15 +47,15 @@ def test_wfr_run_status():
 
 def test_filter_wfr_output_minimal_processed(fake_wfr_output):
     filtered_output = FFWfrUtils.filter_wfr_output_minimal_processed(fake_wfr_output)
-    assert filtered_output == [{'uuid': 'someuuid', 'argument_name': 'somearg'},
-                               {'uuid': 'someuuid2', 'argument_name': 'somearg2'}]
+    assert filtered_output == [{'file': 'someuuid', 'argument_name': 'somearg'},
+                               {'file': 'someuuid2', 'argument_name': 'somearg2'}]
 
 def test_get_minimal_processed_output(fake_wfr_output):
     ff = FFWfrUtils('fourfront-cgapwolf')
     ff._metadata['jobid'] = {'output_files': fake_wfr_output}
     final_out = ff.get_minimal_processed_output('jobid')
-    assert final_out == [{'uuid': 'someuuid', 'argument_name': 'somearg'},
-                         {'uuid': 'someuuid2', 'argument_name': 'somearg2'}]
+    assert final_out == [{'file': 'someuuid', 'argument_name': 'somearg'},
+                         {'file': 'someuuid2', 'argument_name': 'somearg2'}]
 
 @pytest.mark.portaltest
 def test_get_minimal_processed_output_real():
@@ -65,7 +65,7 @@ def test_get_minimal_processed_output_real():
     ff = FFWfrUtils('fourfront-cgapwolf')
     final_out = ff.get_minimal_processed_output('c5TzfqljUygR')
     assert final_out == [{'argument_name': 'raw_bam',
-                          'uuid': '2313dd68-1e22-40c3-a56d-611e7900379f'}]
+                          'file': '2313dd68-1e22-40c3-a56d-611e7900379f'}]
 
 @pytest.mark.portaltest
 def test_wfr_run_status_real():

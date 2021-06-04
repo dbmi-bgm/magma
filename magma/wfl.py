@@ -82,7 +82,7 @@ class MetaWorkflow(object):
             """
             try:
                 getattr(self, 'name') #str, need to be unique
-                getattr(self, 'uuid') #str, need to be unique
+                getattr(self, 'workflow') #str, need to be unique
                 getattr(self, 'config') #dict
                 getattr(self, 'input') #list
             except AttributeError as e:
@@ -98,7 +98,7 @@ class MetaWorkflow(object):
             """
             for arg in self.input:
                 scatter = arg.get('scatter') #scatter dimension
-                if not self.is_scatter and scatter:
+                if scatter and scatter > self.is_scatter: # get max scatter
                     self.is_scatter = scatter
                 #end if
                 source = arg.get('source') #source step name
@@ -213,21 +213,21 @@ class MetaWorkflow(object):
         return steps_
     #end def
 
-    def _input_dimensions(self, input_argument):
+    def _input_dimensions(self, input_structure):
         """
-            given input_argument as list
+            given input_structure as list
             calculate dimensions
 
-                input_argument, input argument as list of strings
+                input_structure, structure for the input with maximum scatter as list
 
             # TODO
             rewrite the function and generalize using recursion
         """
         input_dimensions = {}
-        input_dimensions.setdefault(1, [len(input_argument)])
-        if isinstance(input_argument[0], list):
+        input_dimensions.setdefault(1, [len(input_structure)])
+        if isinstance(input_structure[0], list):
             input_dimensions.setdefault(2, [])
-            for i in input_argument:
+            for i in input_structure:
                 input_dimensions[2].append(len(i))
                 if isinstance(i[0], list):
                     input_dimensions.setdefault(3, [])
@@ -277,9 +277,9 @@ class MetaWorkflow(object):
         return shards
     #end def
 
-    def write_run(self, end_steps, input_argument):
+    def write_run(self, end_steps, input_structure):
         """
-            create json meta-workflow-run structure for meta-workflow given end_steps and input_argument
+            create json meta-workflow-run structure for meta-workflow given end_steps and input_structure
             _order_run to sort and list all step-workflows
             use scatter, gather_from and dependencies information
             to create and collect shards for individual step-workflows (workflow-runs)
@@ -287,20 +287,20 @@ class MetaWorkflow(object):
             return a json that represents a meta-workflow-run
 
                 end_steps, names list of end step-workflows to build meta-workflow-run for
-                input_argument, input argument as string or list of strings
+                input_structure, structure for the input with maximum scatter as list (e.g. [[A, B], [C, D], [E]])
         """
-        # Make input_argument a list if is string
-        if isinstance(input_argument, str):
-            input_argument = [input_argument]
+        # Make input_structure a list if is string
+        if isinstance(input_structure, str):
+            input_structure = [input_structure]
         #end if
         scatter = {} #{step_obj.name: dimension, ...}
-        dimensions = self._input_dimensions(input_argument)
+        dimensions = self._input_dimensions(input_structure)
         steps_ = self._order_run(end_steps)
         run_json = {
-            'meta_workflow_uuid': self.uuid,
+            'meta_workflow': self.uuid,
             'workflow_runs': [],
             'input': [],
-            'status': 'pending'
+            'final_status': 'pending'
         }
         for step_obj in steps_:
             run_step = {}

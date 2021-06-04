@@ -65,5 +65,5 @@ class AbstractCheckStatus(object):
         return 'running'
 
     def get_output(self, jobid):
-        return [{'argument_name': 'arg', 'uuid': 'uuid'}]
+        return [{'argument_name': 'arg', 'file': 'uuid'}]
 #end class

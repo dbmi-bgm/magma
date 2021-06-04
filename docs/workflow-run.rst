@@ -14,8 +14,8 @@ Structure
 
     {
       ## General meta-workflow-run information
-      "meta_workflow_uuid": "", # universally unique identifier
-                                #   for the corresponding meta-workflow
+      "meta_workflow": "", # universally unique identifier
+                           #   for the corresponding meta-workflow
 
       ## Workflow-runs for meta-workflow-run
       "workflow_runs" : [
@@ -35,44 +35,45 @@ Structure
                 {
                   # These are necessary fields
                   "argument_name": "",
-                  "uuid": ""
+                  "file": ""
                 }
               ],
               # Additonal fields created to link the actual run
-              "jobid": ""
+              "jobid": "",
+              "workflow_run":
             },
 
             # Example
             { "name": "step1",
-              "workflow_run_uuid": "uuid-step1:0-run",
+              "workflow_run": "uuid-step1:0-run",
               "status": "complete",
               "output": [
                 {
                   "argument_name": "out_step1",
-                  "uuid": "uuid-out_step1:0"
+                  "file": "uuid-out_step1:0"
                 }
               ],
               "shard": "0"
             },
             { "name": "step1",
-              "workflow_run_uuid": "uuid-step1:1-run",
+              "workflow_run": "uuid-step1:1-run",
               "status": "complete",
               "output": [
                 {
                   "argument_name": "out_step1",
-                  "uuid": "uuid-out_step1:1"
+                  "file": "uuid-out_step1:1"
                 }
               ],
               "shard": "1"
             },
             { "name": "step2",
-              "workflow_run_uuid": "uuid-step2:0-run",
+              "workflow_run": "uuid-step2:0-run",
               "status": "running",
               "dependencies": ["step1:0"],
               "shard": "0"
             },
             { "name": "step2",
-              "workflow_run_uuid": "uuid-step2:1-run",
+              "workflow_run": "uuid-step2:1-run",
               "status": "running",
               "dependencies": ["step1:1"],
               "shard": "1"
@@ -91,7 +92,7 @@ Structure
           # These are necessary fields
           "argument_name": "",
           "argument_type": "file",
-          "uuid": ""
+          "file": ""
         },
 
         # Structure for a parameter argument
@@ -104,7 +105,7 @@ Structure
       ],
 
       ## Final status
-      "status": "", # pending | running | completed | failed
+      "final_status": "", # pending | running | completed | failed
 
       ## Optional general fields for meta-workflow-run
       "common_fields": {}

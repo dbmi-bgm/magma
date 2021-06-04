@@ -86,10 +86,10 @@ class MetaWorkflowRun(object):
         """
         """
         try:
-            getattr(self, 'meta_workflow_uuid') #str
+            getattr(self, 'meta_workflow') #str
             getattr(self, 'input') #list
             getattr(self, 'workflow_runs') #list
-            getattr(self, 'status') #str, pending | running | completed | failed
+            getattr(self, 'final_status') #str, pending | running | completed | failed
         except AttributeError as e:
             raise ValueError('JSON validation error, {0}\n'
                                 .format(e.args[0]))
@@ -165,7 +165,7 @@ class MetaWorkflowRun(object):
 
     def runs_to_json(self):
         """
-            return workflow_runs as json
+            return workflow_runs as json (list of dictionaries)
             build workflow_runs from WorkflowRun objects
         """
         runs_ = []
@@ -244,18 +244,30 @@ class MetaWorkflowRun(object):
         #end for
     #end def
 
-    def update_status(self):
+    def update_status(self): # failed -> running -> completed
         """
-            check status for all WorkflowRun
-            if all are set as completed
-            set MetaWorkflowRun final status as completed
+            check status for all WorkflowRun objects
+            if at least one is failed, set final_status as failed
+            if no failed and at least one is running, set final_status as running
+            if all are completed set final_status as completed
+            return final_status
         """
+        self.final_status = 'pending' # initial set to pending
+        is_completed = True
         for _, run_obj in self.runs.items():
             if run_obj.status != 'completed':
-                return
+                is_completed = False
+                if run_obj.status == 'failed':
+                    self.final_status = 'failed'
+                    break
+                elif run_obj.status == 'running':
+                    self.final_status = 'running'
+                #end if
             #end if
         #end for
-        self.status = 'completed'
+        if is_completed: self.final_status = 'completed'
+        #end if
+        return self.final_status
     #end def
 
 #end class

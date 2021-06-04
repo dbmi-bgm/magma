@@ -8,42 +8,41 @@ import json
 from magma import wfl
 from magma import run
 from magma import utils
-# from tibanna_cgap.zebra_utils import ZebraInput
 
 #################################################################
 #   Vars
 #################################################################
 completed = {
     'workflow_bwa-mem_no_unzip-check:2:0': {'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:0'}],
+      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:0'}],
       'status': 'completed',
       'shard': '2:0',
       'jobid': 'a1b2c3d'},
     'workflow_bwa-mem_no_unzip-check:2:1': {'name': 'workflow_bwa-mem_no_unzip-check',
-     'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:1'}],
+     'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:1'}],
      'status': 'completed',
      'shard': '2:1',
      'jobid': 'e1f2g3h'},
     'workflow_bwa-mem_no_unzip-check:2:2': {'name': 'workflow_bwa-mem_no_unzip-check',
-     'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:2'}],
+     'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:2'}],
      'status': 'completed',
      'shard': '2:2',
      'jobid': 'AAAAAAa'},
     'workflow_add-readgroups-check:2:0': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'uuid': 'uuid-bam_w_readgroups-2:0'}],
+        'file': 'uuid-bam_w_readgroups-2:0'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'],
       'shard': '2:0'},
     'workflow_add-readgroups-check:2:1': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'uuid': 'uuid-bam_w_readgroups-2:1'}],
+        'file': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},
     'workflow_add-readgroups-check:2:2': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'uuid': 'uuid-bam_w_readgroups-2:2'}],
+        'file': 'uuid-bam_w_readgroups-2:2'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'],
       'shard': '2:2'}
@@ -55,7 +54,7 @@ pending_shards = { # pending only
                    #    workflow_add-readgroups-check:2:2
     'workflow_bwa-mem_no_unzip-check:2:0': {
       'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:0'}],
+      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:0'}],
       'status': 'completed',
       'shard': '2:0',
       'jobid': 'a1b2c3d'},
@@ -65,7 +64,7 @@ pending_shards = { # pending only
       'shard': '2:1'},
     'workflow_bwa-mem_no_unzip-check:2:2': {
       'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'uuid': 'uuid-raw_bam-2:2'}],
+      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:2'}],
       'status': 'completed',
       'shard': '2:2',
       'jobid': 'AAAAAAa'},
@@ -77,7 +76,7 @@ pending_shards = { # pending only
     'workflow_add-readgroups-check:2:1': {
       'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'uuid': 'uuid-bam_w_readgroups-2:1'}],
+        'file': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},
@@ -184,14 +183,14 @@ def test_inputgen_WGS_trio_scatter():
     ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
     ingen = ingen_obj.input_generator()
     # Test results
-    for i, (input_json, workflow_runs) in enumerate(ingen):
+    for i, (input_json, dict_out) in enumerate(ingen):
         if 'jobid' in input_json:
             input_json['jobid'] = 'JOBID'
         else:
             assert False
         #end if
         assert input_json == result[i]
-        for wflrun in workflow_runs:
+        for wflrun in dict_out['workflow_runs']:
             if wflrun['name'] + ':' + wflrun['shard'] == shard[i]:
                 assert wflrun['status'] == 'running'
             #end if
@@ -218,7 +217,7 @@ def test_runupdate_reset_steps():
     #end for
     runupdate = utils.RunUpdate(wflrun_obj)
     x = runupdate.reset_steps(['workflow_bwa-mem_no_unzip-check', 'workflow_add-readgroups-check'])
-    for workflow_run in x:
+    for workflow_run in x['workflow_runs']:
         shard_name = workflow_run['name'] + ':' + workflow_run['shard']
         if shard_name in final:
             assert final[shard_name] == workflow_run
@@ -244,7 +243,7 @@ def test_runupdate_reset_shards():
     #end for
     runupdate = utils.RunUpdate(wflrun_obj)
     x = runupdate.reset_shards(['workflow_bwa-mem_no_unzip-check:2:1', 'workflow_add-readgroups-check:2:0', 'workflow_add-readgroups-check:2:2'])
-    for workflow_run in x:
+    for workflow_run in x['workflow_runs']:
         shard_name = workflow_run['name'] + ':' + workflow_run['shard']
         if shard_name in final:
             assert final[shard_name] == workflow_run
@@ -263,12 +262,12 @@ def test_runupdate_import_step():
       {
         'argument_name': 'fastq_R1',
         'argument_type': 'file',
-        'uuid': [['A1'], ['C1', 'D1'], ['B1', 'E1', 'F1']]
+        'file': [['A1'], ['C1', 'D1'], ['B1', 'E1', 'F1']]
       },
       {
         'argument_name': 'fastq_R2',
         'argument_type': 'file',
-        'uuid': [['A2'], ['C2', 'D2'], ['B2', 'E2', 'F2']]
+        'file': [['A2'], ['C2', 'D2'], ['B2', 'E2', 'F2']]
       }
     ]
     initial = pending
@@ -311,7 +310,7 @@ def test_runupdate_import_step():
     runupdate = utils.RunUpdate(wflrun_i_obj)
     x = runupdate.import_steps(wflrun_obj, ['workflow_add-readgroups-check'])
     assert wflrun_i_obj.input == input
-    assert x['meta_workflow_uuid'] == 'UUID_NEW'
+    assert x['meta_workflow'] == 'UUID_NEW'
     for workflow_run in x['workflow_runs']:
         shard_name = workflow_run['name'] + ':' + workflow_run['shard']
         if shard_name in final:
@@ -323,7 +322,7 @@ def test_runupdate_import_step():
 def test_inputgen_formula_eval():
     # meta-worfklow-run json
     input_wflrun = {
-      'meta_workflow_uuid': 'DIUU',
+      'meta_workflow': 'DIUU',
       'workflow_runs' : [
             {
               'name': 'Foo',
@@ -346,7 +345,7 @@ def test_inputgen_formula_eval():
           'argument_type': 'parameter',
           'value': ['I', 'm', 'rename']
         }],
-        'status': 'pending'
+        'final_status': 'pending'
     }
     # meta-workflow json
     input_wfl = {
@@ -356,13 +355,13 @@ def test_inputgen_formula_eval():
             {
               'argument_name': 'a_global_file',
               'argument_type': 'file',
-              'uuid': 'a_global_file-UUID'
+              'file': 'a_global_file-UUID'
             }
           ],
           'workflows': [
             {
               'name': 'Foo',
-              'uuid': 'Foo-UUID',
+              'workflow': 'Foo-UUID',
               'config': {
                 'instance_type': 'm5.large',
                 'ebs_size': 'formula:pAram_x+10* y/(pAram_x)',
@@ -415,7 +414,7 @@ def test_inputgen_formula_eval():
     ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
     ingen = ingen_obj.input_generator()
     # Test results
-    for i, (input_json, workflow_runs) in enumerate(ingen):
+    for i, (input_json, dict_out) in enumerate(ingen):
         if 'jobid' in input_json:
             input_json['jobid'] = 'JOBID'
         else:
@@ -424,21 +423,3 @@ def test_inputgen_formula_eval():
         assert input_json == result[i]
     #end for
 #end def
-
-# def test_input_zebra():
-#     # Read input
-#     with open('test/files/CGAP_WGS_trio.json') as json_file:
-#         data_wfl = json.load(json_file)
-#     with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
-#         data_wflrun = json.load(json_file)
-#     # Create MetaWorkflow and MetaWorkflowRun objects
-#     wfl_obj = wfl.MetaWorkflow(data_wfl)
-#     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
-#     # Run test
-#     ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
-#     ingen = ingen_obj.input_generator()
-#     # Test results
-#     for input_json, workflow_runs in ingen:
-#         assert ZebraInput(**input_json)
-#     #end for
-# #end def

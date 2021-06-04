@@ -38,7 +38,7 @@ This will read meta-workflow-run ``.run.json`` content into a *MetaWorkflowRun* 
 Attributes
 **********
 
-  - ``wflrun_obj.meta_workflow_uuid``, stores ``meta_workflow_uuid`` content as string.
+  - ``wflrun_obj.meta_workflow``, stores ``meta_workflow`` content as string.
 
   - ``wflrun_obj.input``, stores ``input`` content as list.
 
@@ -55,6 +55,8 @@ Attributes
         ...
       }
 
+  - ``wflrun_obj.final_status``, stores ``final_status`` as string.
+
 Methods
 *******
 
@@ -62,19 +64,19 @@ The method ``wflrun_obj.to_run()`` returns a list of *WorkflowRun* objects that 
 
 The method ``wflrun_obj.running()`` returns a list of *WorkflowRun* objects with status set to running.
 
-The method ``wflrun_obj.update_attribute(shard_name<str>, attribute<str>, value<any>)`` update *attribute* *value* for *WorkflowRun* object corresponding to *shard_name* in ``wflrun_obj.runs``.
+The method ``wflrun_obj.update_attribute(shard_name<str>, attribute<str>, value<any>)`` updates *attribute* *value* for *WorkflowRun* object corresponding to *shard_name* in ``wflrun_obj.runs``.
 
-The method ``wflrun_obj.runs_to_json()`` return ``workflow_runs`` as json. Build ``workflow_runs`` directly from *WorkflowRun* objects in ``wflrun_obj.runs``.
+The method ``wflrun_obj.runs_to_json()`` returns ``workflow_runs`` as json. Builds ``workflow_runs`` directly from *WorkflowRun* objects in ``wflrun_obj.runs``.
 
-The method ``wflrun_obj.to_json()`` return meta-workflow-run as json. Build ``workflow_runs`` directly from *WorkflowRun* objects in ``wflrun_obj.runs``.
+The method ``wflrun_obj.to_json()`` returns meta-workflow-run as json. Builds ``workflow_runs`` directly from *WorkflowRun* objects in ``wflrun_obj.runs``.
 
-The method ``wflrun_obj.reset_step(step_name<str>)`` reset attributes value for *WorkflowRun* objects in runs corresponding to step-workflow specified as *step_name*.
-Reset all workflow-runs associated to specified step-workflow.
+The method ``wflrun_obj.reset_step(step_name<str>)`` resets attributes value for *WorkflowRun* objects in runs corresponding to step-workflow specified as *step_name*.
+Resets all workflow-runs associated to specified step-workflow.
 
-The method ``wflrun_obj.reset_shard(shard_name<str>)`` reset attributes value for *WorkflowRun* object in runs corresponding to workflow-run specified as *shard_name*.
-Reset only workflow-run specified by shard.
+The method ``wflrun_obj.reset_shard(shard_name<str>)`` resets attributes value for *WorkflowRun* object in runs corresponding to workflow-run specified as *shard_name*.
+Resets only workflow-run specified by shard.
 
-The method ``wflrun_obj.update_status()`` check the status for all *WorkflowRun* objects, if all are set as completed set *MetaWorkflowRun* final status as ``completed``.
+The method ``wflrun_obj.update_status()`` checks the status for all *WorkflowRun* objects, sets *MetaWorkflowRun* final status accordingly. Returns updated ``wflrun_obj.final_status``.
 
 WorkflowRun object
 ^^^^^^^^^^^^^^^^^^

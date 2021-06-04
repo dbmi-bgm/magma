@@ -1,5 +1,5 @@
 {
-    "meta_workflow_uuid": "UUID_NEW",
+    "meta_workflow": "UUID_NEW",
     "workflow_runs": [
         {
             "name": "workflow_bwa-mem_no_unzip-check",
@@ -156,5 +156,5 @@
         }
     ],
     "input": [],
-    "status": "pending"
+    "final_status": "pending"
 }

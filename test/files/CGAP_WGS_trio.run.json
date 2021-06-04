@@ -1,12 +1,12 @@
 {
-    "meta_workflow_uuid": "UUID",
+    "meta_workflow": "UUID",
     "workflow_runs": [
         {
             "name": "workflow_bwa-mem_no_unzip-check",
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-0:0"
+                "file": "uuid-raw_bam-0:0"
               }
             ],
             "status": "completed",
@@ -17,7 +17,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-1:0"
+                "file": "uuid-raw_bam-1:0"
               }
             ],
             "status": "completed",
@@ -28,7 +28,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-1:1"
+                "file": "uuid-raw_bam-1:1"
               }
             ],
             "status": "completed",
@@ -39,7 +39,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-2:0"
+                "file": "uuid-raw_bam-2:0"
               }
             ],
             "status": "completed",
@@ -50,7 +50,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-2:1"
+                "file": "uuid-raw_bam-2:1"
               }
             ],
             "status": "completed",
@@ -61,7 +61,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "uuid": "uuid-raw_bam-2:2"
+                "file": "uuid-raw_bam-2:2"
               }
             ],
             "status": "completed",
@@ -80,7 +80,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-1:0"
+                "file": "uuid-bam_w_readgroups-1:0"
               }
             ],
             "status": "completed",
@@ -94,7 +94,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-1:1"
+                "file": "uuid-bam_w_readgroups-1:1"
               }
             ],
             "status": "completed",
@@ -108,7 +108,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-2:0"
+                "file": "uuid-bam_w_readgroups-2:0"
               }
             ],
             "status": "completed",
@@ -122,7 +122,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "uuid": "uuid-bam_w_readgroups-2:1"
+                "file": "uuid-bam_w_readgroups-2:1"
               }
             ],
             "status": "completed",
@@ -307,5 +307,5 @@
         "value": "AVALUE"
       }
     ],
-    "status": "pending"
+    "final_status": "pending"
 }
