@@ -52,7 +52,8 @@ class AbstractCheckStatus(object):
 
             # Return the json to patch workflow_runs for both completed and failed
             # and keep going so that it can continue updating status for other runs.
-            yield self.wflrun_obj.runs_to_json()
+            yield {'final_status':  self.wflrun_obj.update_status(),
+                   'workflow_runs': self.wflrun_obj.runs_to_json()}
         #end for
     #end def
 
@@ -65,5 +66,5 @@ class AbstractCheckStatus(object):
         return 'running'
 
     def get_output(self, jobid):
-        return [{'argument_name': 'arg', 'file': 'uuid'}]
+        return [{'argument_name': 'arg', 'files': 'uuid'}]
 #end class

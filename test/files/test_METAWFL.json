@@ -7,7 +7,7 @@
     {
       "argument_name": "input_generic",
       "argument_type": "file",
-      "file": "input_generic-uuid"
+      "files": "input_generic-uuid"
     },
     {
       "argument_name": "pmtr_generic",

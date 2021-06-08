@@ -46,7 +46,7 @@ template = {
     {
       'argument_name': '',
       'argument_type': 'file',
-      'file': ''
+      'files': ''
     },
     {
       'argument_name': '',

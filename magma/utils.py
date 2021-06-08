@@ -142,7 +142,7 @@ class InputGenerator(object):
                     # Basic argument information
                     arg_ = {
                         'workflow_argument_name': arg_obj.argument_name,
-                        'uuid': arg_obj.file
+                        'uuid': arg_obj.files
                     }
                     # Additional information
                     if getattr(arg_obj, 'mount', None):
@@ -201,7 +201,7 @@ class InputGenerator(object):
             # Get workflow-run arguments
             run_args = self._run_arguments(run_obj)
             # Match and update workflow-run arguments
-            #   file arguments -> file
+            #   file arguments -> files
             #   parameter arguments -> value
             self._match_arguments(run_args, run_obj)
             out_.append((run_obj, run_args))
@@ -242,7 +242,7 @@ class InputGenerator(object):
             # Check Scatter
             if getattr(arg_obj, 'scatter', None):
                 shard = map(int, run_obj.shard.split(':'))
-                if is_file: in_ = arg_obj.file
+                if is_file: in_ = arg_obj.files
                 else: in_ = arg_obj.value
                 #end if
                 for idx in list(shard)[:arg_obj.scatter]:
@@ -250,7 +250,7 @@ class InputGenerator(object):
                     #   use scatter dimension to subset shard index list
                     in_ = in_[idx]
                 #end for
-                if is_file: arg_obj.file = in_
+                if is_file: arg_obj.files = in_
                 else: arg_obj.value = in_
                 #end if
             #end if
@@ -269,16 +269,16 @@ class InputGenerator(object):
                 if arg_obj.source == dependency.split(':')[0]:
                     for arg in self.wflrun_obj.runs[dependency].output:
                         if arg_obj.source_argument_name == arg['argument_name']:
-                            file_.append(arg['file'])
+                            file_.append(arg['files'])
                             break
                         #end if
                     #end for
                 #end if
             #end for
             if len(file_) > 1:
-                arg_obj.file = file_
+                arg_obj.files = file_
             else:
-                arg_obj.file = file_[0]
+                arg_obj.files = file_[0]
             #end if
             return True
         else:
@@ -324,7 +324,7 @@ class InputGenerator(object):
             if arg_obj.source_argument_name == arg['argument_name'] and \
                arg_obj.argument_type == arg['argument_type']:
                 if arg_obj.argument_type == 'file':
-                    arg_obj.file = arg['file']
+                    arg_obj.files = arg['files']
                 else:
                     arg_obj.value = arg['value']
                 #end if

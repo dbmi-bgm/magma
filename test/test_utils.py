@@ -14,35 +14,35 @@ from magma import utils
 #################################################################
 completed = {
     'workflow_bwa-mem_no_unzip-check:2:0': {'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:0'}],
+      'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:0'}],
       'status': 'completed',
       'shard': '2:0',
       'jobid': 'a1b2c3d'},
     'workflow_bwa-mem_no_unzip-check:2:1': {'name': 'workflow_bwa-mem_no_unzip-check',
-     'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:1'}],
+     'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:1'}],
      'status': 'completed',
      'shard': '2:1',
      'jobid': 'e1f2g3h'},
     'workflow_bwa-mem_no_unzip-check:2:2': {'name': 'workflow_bwa-mem_no_unzip-check',
-     'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:2'}],
+     'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:2'}],
      'status': 'completed',
      'shard': '2:2',
      'jobid': 'AAAAAAa'},
     'workflow_add-readgroups-check:2:0': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:0'}],
+        'files': 'uuid-bam_w_readgroups-2:0'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'],
       'shard': '2:0'},
     'workflow_add-readgroups-check:2:1': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:1'}],
+        'files': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},
     'workflow_add-readgroups-check:2:2': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:2'}],
+        'files': 'uuid-bam_w_readgroups-2:2'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'],
       'shard': '2:2'}
@@ -54,7 +54,7 @@ pending_shards = { # pending only
                    #    workflow_add-readgroups-check:2:2
     'workflow_bwa-mem_no_unzip-check:2:0': {
       'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:0'}],
+      'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:0'}],
       'status': 'completed',
       'shard': '2:0',
       'jobid': 'a1b2c3d'},
@@ -64,7 +64,7 @@ pending_shards = { # pending only
       'shard': '2:1'},
     'workflow_bwa-mem_no_unzip-check:2:2': {
       'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:2'}],
+      'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:2'}],
       'status': 'completed',
       'shard': '2:2',
       'jobid': 'AAAAAAa'},
@@ -76,7 +76,7 @@ pending_shards = { # pending only
     'workflow_add-readgroups-check:2:1': {
       'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:1'}],
+        'files': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},
@@ -262,12 +262,12 @@ def test_runupdate_import_step():
       {
         'argument_name': 'fastq_R1',
         'argument_type': 'file',
-        'file': [['A1'], ['C1', 'D1'], ['B1', 'E1', 'F1']]
+        'files': [['A1'], ['C1', 'D1'], ['B1', 'E1', 'F1']]
       },
       {
         'argument_name': 'fastq_R2',
         'argument_type': 'file',
-        'file': [['A2'], ['C2', 'D2'], ['B2', 'E2', 'F2']]
+        'files': [['A2'], ['C2', 'D2'], ['B2', 'E2', 'F2']]
       }
     ]
     initial = pending
@@ -355,7 +355,7 @@ def test_inputgen_formula_eval():
             {
               'argument_name': 'a_global_file',
               'argument_type': 'file',
-              'file': 'a_global_file-UUID'
+              'files': 'a_global_file-UUID'
             }
           ],
           'workflows': [

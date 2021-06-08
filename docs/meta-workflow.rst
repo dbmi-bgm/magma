@@ -29,7 +29,7 @@ Structure
           # These are necessary fields
           "argument_name": "",
           "argument_type": "file",
-          "file": ""
+          "files": ""
         },
 
         # Structure for a parameter argument
@@ -40,7 +40,7 @@ Structure
           "value": ""
         }
 
-        # Arguments with no value or uuid can be specified as well
+        # Arguments with no value or file uuid can be specified as well
         #   and will need to be provided as input in meta-worfklow-run
 
       ],

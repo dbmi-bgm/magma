@@ -7,38 +7,38 @@
     {
       "argument_name": "reference_bwa",
       "argument_type": "file",
-      "file": "b24ed5ed-a037-48a0-a938-3fecfb90d0cf"
+      "files": "b24ed5ed-a037-48a0-a938-3fecfb90d0cf"
     },
     {
       "argument_name": "reference_fa",
       "argument_type": "file",
-      "file": "1936f246-22e1-45dc-bb5c-9cfd55537fe7"
+      "files": "1936f246-22e1-45dc-bb5c-9cfd55537fe7"
     },
     {
       "argument_name": "known-sites-indels",
       "argument_type": "file",
-      "file": "55ac5044-f927-4df7-afa2-bf713764ee57"
+      "files": "55ac5044-f927-4df7-afa2-bf713764ee57"
     },
     {
       "argument_name": "known-sites-snp",
       "argument_type": "file",
-      "file": "8ed35691-0af4-467a-adbc-81eb088549f0"
+      "files": "8ed35691-0af4-467a-adbc-81eb088549f0"
     },
     {
       "argument_name": "regions",
       "argument_type": "file",
-      "file": "1c07a3aa-e2a3-498c-b838-15991c4a2f28"
+      "files": "1c07a3aa-e2a3-498c-b838-15991c4a2f28"
     },
     {
       "argument_name": "chromosomes",
       "argument_type": "file",
-      "file": "a1d504ee-a313-4064-b6ae-65fed9738980"
+      "files": "a1d504ee-a313-4064-b6ae-65fed9738980"
     },
 
     {
       "argument_name": "",
       "argument_type": "file",
-      "file": ""
+      "files": ""
     },
     {
       "argument_name": "",

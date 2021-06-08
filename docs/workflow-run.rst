@@ -35,7 +35,7 @@ Structure
                 {
                   # These are necessary fields
                   "argument_name": "",
-                  "file": ""
+                  "files": ""
                 }
               ],
               # Additonal fields created to link the actual run
@@ -50,7 +50,7 @@ Structure
               "output": [
                 {
                   "argument_name": "out_step1",
-                  "file": "uuid-out_step1:0"
+                  "files": "uuid-out_step1:0"
                 }
               ],
               "shard": "0"
@@ -61,7 +61,7 @@ Structure
               "output": [
                 {
                   "argument_name": "out_step1",
-                  "file": "uuid-out_step1:1"
+                  "files": "uuid-out_step1:1"
                 }
               ],
               "shard": "1"
@@ -92,7 +92,7 @@ Structure
           # These are necessary fields
           "argument_name": "",
           "argument_type": "file",
-          "file": ""
+          "files": ""
         },
 
         # Structure for a parameter argument
