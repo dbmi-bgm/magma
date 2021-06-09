@@ -3,7 +3,7 @@
 ################################################
 #
 #   Parser to handle compatibility between
-#       magma and fourfront json formats
+#       magma and portal json formats
 #
 #   Michele Berselli
 #   berselli.michele@gmail.com
@@ -37,6 +37,9 @@ class ParserFF(object):
 
     def arguments_to_json(self):
         """
+            parse meta-workflow or meta-workflow-run json stored as self.in_json
+            if input, convert and replace arguments in input from string to json
+            if workflows, for each step-workflow convert and replace arguments in input from string to json
         """
         if self.in_json.get('input'):
             self._input_to_json(self.in_json['input'])
@@ -57,6 +60,8 @@ class ParserFF(object):
 
     def _input_to_json(self, input):
         """
+            loop through arguments in input
+            call appropriate conversion function for argument_type
         """
         for arg in input:
             if arg['argument_type'] == 'file':
@@ -69,6 +74,8 @@ class ParserFF(object):
 
     def _file_to_json(self, arg):
         """
+            _files_to_json to convert file argument from string to json
+            replace the argument value (files)
         """
         if arg.get('files'):
             arg['files'] = self._files_to_json(arg['files'])
@@ -77,6 +84,8 @@ class ParserFF(object):
 
     def _files_to_json(self, files, sep=','):
         """
+            convert file argument from string to json
+            return the argument value (files)
 
                 files, is a list of dictionaries representing files
                         and information on their dimensional structure
@@ -84,6 +93,7 @@ class ParserFF(object):
                                         {
                                             "file": "A",
                                             "dimension": "0"
+                                            # 0D missing, 1D X, 2D X:X, 3D X:X:X, ...
                                         },
                                         {
                                            "file": "B",
@@ -131,8 +141,10 @@ class ParserFF(object):
 
     def _parameter_to_json(self, arg):
         """
+            convert parameter argument from string to json
+            replace the argument value (value)
 
-            value_type, json | string | integer | boolean | float
+                value_type, json | string | integer | boolean | float
         """
         if not arg.get('value'):
             return

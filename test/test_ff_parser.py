@@ -3,7 +3,6 @@
 #################################################################
 import sys, os
 import pytest
-import copy
 
 from magma import ff_parser
 
@@ -333,7 +332,157 @@ def test__files_to_json_3D():
     assert ffp._files_to_json(files) == files_out
 #end def
 
-def test_arguments_to_json_wf():
+def test_arguments_to_json_wfl():
+    # Test
+    ffp = ff_parser.ParserFF(input_wfl)
+    res = ffp.arguments_to_json()
+    assert res == input_wfl_out
+#end def
+
+def test_arguments_to_json_metawfl():
+    input_wfl = {
+        'meta_workflow': '',
+        'workflow_runs' : [],
+        'final_status': '',
+        'common_fields': {},
+        'input': [
+          {
+            'argument_name': 'no_file',
+            'argument_type': 'file'
+          },
+          {
+            'argument_name': 'no_parameter',
+            'argument_type': 'parameter'
+          },
+          {
+            'argument_name': 'a_file',
+            'argument_type': 'file',
+            'files': [{'file': 'AB'}]
+          },
+          {
+            'argument_name': 'a_file_1D',
+            'argument_type': 'file',
+            'files': [
+                {'file': 'A', 'dimension': '2'},
+                {'file': 'B', 'dimension': '0'},
+                {'file': 'C', 'dimension': '1'}]
+          },
+          {
+            'argument_name': 'a_file_2D',
+            'argument_type': 'file',
+            'files': [
+                    {'file': 'a', 'dimension': '0,1'},
+                    {'file': 'b', 'dimension': '0,0'},
+                    {'file': 'c', 'dimension': '1,0'},
+                    {'file': 'd', 'dimension': '1,1'}]
+          },
+          {
+            'argument_name': 'a_file_3D',
+            'argument_type': 'file',
+            'files': [
+                    {'file': 'a', 'dimension': '0,0,0'},
+                    {'file': 'b', 'dimension': '0,0,1'},
+                    {'file': 'c', 'dimension': '0,1,0'},
+                    {'file': 'd', 'dimension': '1,0,0'},
+                    {'file': 'e', 'dimension': '1,0,1'},
+                    {'file': 'f', 'dimension': '1,1,1'},
+                    {'file': 'g', 'dimension': '1,1,0'},
+                    {'file': 'h', 'dimension': '2,0,0'}]
+          },
+          {
+            'argument_name': 'a_json',
+            'argument_type': 'parameter',
+            'value': '["a", "b", ["c"], {"d": 1, "e": 2}]',
+            'value_type': 'json'
+          },
+          {
+            'argument_name': 'a_integer',
+            'argument_type': 'parameter',
+            'value': '12',
+            'value_type': 'integer'
+          },
+          {
+            'argument_name': 'a_float',
+            'argument_type': 'parameter',
+            'value': '2.5',
+            'value_type': 'float'
+          },
+          {
+            'argument_name': 'a_string',
+            'argument_type': 'parameter',
+            'value': 'STRINGA',
+            'value_type': 'string'
+          },
+          {
+            'argument_name': 'a_boolean',
+            'argument_type': 'parameter',
+            'value': 'fALSE',
+            'value_type': 'boolean'
+          }
+        ]
+    }
+
+    input_wfl_out = {
+        'meta_workflow': '',
+        'workflow_runs' : [],
+        'final_status': '',
+        'common_fields': {},
+        'input': [
+            {
+              'argument_name': 'no_file',
+              'argument_type': 'file'
+            },
+            {
+              'argument_name': 'no_parameter',
+              'argument_type': 'parameter'
+            },
+            {
+              'argument_name': 'a_file',
+              'argument_type': 'file',
+              'files': 'AB'
+            },
+            {
+              'argument_name': 'a_file_1D',
+              'argument_type': 'file',
+              'files': [ 'B', 'C', 'A']
+            },
+            {
+              'argument_name': 'a_file_2D',
+              'argument_type': 'file',
+              'files': [['b', 'a'], ['c', 'd']]
+            },
+            {
+              'argument_name': 'a_file_3D',
+              'argument_type': 'file',
+              'files': [[['a', 'b'], ['c']], [['d', 'e'], ['g', 'f']], [['h']]]
+            },
+            {
+              'argument_name': 'a_json',
+              'argument_type': 'parameter',
+              'value': ["a", "b", ["c"], {"d": 1, "e": 2}]
+            },
+            {
+              'argument_name': 'a_integer',
+              'argument_type': 'parameter',
+              'value': 12
+            },
+            {
+              'argument_name': 'a_float',
+              'argument_type': 'parameter',
+              'value': 2.5
+            },
+            {
+              'argument_name': 'a_string',
+              'argument_type': 'parameter',
+              'value': 'STRINGA'
+            },
+            {
+              'argument_name': 'a_boolean',
+              'argument_type': 'parameter',
+              'value': False
+            }
+        ]
+    }
     # Test
     ffp = ff_parser.ParserFF(input_wfl)
     res = ffp.arguments_to_json()

@@ -1,0 +1,28 @@
+================
+ff_parser module
+================
+
+ParserFF object
+^^^^^^^^^^^^^^^
+
+*ParserFF* object stores meta-workflow or meta-workflow-run as json.
+Provides methods to allow compatibility and convert between magma and portal (ff) json formats.
+
+Initialize ParserFF object
+**************************
+
+.. code-block:: python
+
+    from magma import ff_parser
+
+    #input_json -> meta-workflow or meta-workflow-run json
+
+    ffp = ff_parser.ParserFF(input_json)
+
+Methods
+*******
+
+The method ``ffp.arguments_to_json()`` allows to parse meta-workflow or meta-workflow-run json stored in ``self.in_json`` attribute.
+If ``input`` key is found, convert and replace arguments in ``input`` from *portal* string format to *magma* json format.
+If ``workflows``, for each step-workflow convert and replace arguments in ``input`` from *portal* string format to *magma* json format.
+Updates and returns the stored json.
