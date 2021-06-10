@@ -182,8 +182,12 @@ class InputGenerator(object):
                 re_match = re.findall('([a-zA-Z_]+)', frmla)
                 # replace parameters
                 for s in re_match:
-                    val = self._value_parameter(s, self.wflrun_obj.input)
-                    frmla = frmla.replace(s, str(val))
+                    try:
+                        val = self._value_parameter(s, self.wflrun_obj.input)
+                        frmla = frmla.replace(s, str(val))
+                    except Exception:
+                        pass
+                    #end try
                 #end for
                 v = eval(frmla)
             #end if

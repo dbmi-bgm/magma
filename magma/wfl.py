@@ -35,13 +35,12 @@ class MetaWorkflow(object):
         #end for
         # Calculated attributes
         self.steps = {} #{step_obj.name: step_obj, ...}
+        self._end_workflows = None
 
         # Calculate attributes
         self._validate()
         self._read_steps()
 
-        # cache
-        self._end_workflows = None
     #end def
 
     class StepWorkflow(object):
@@ -280,7 +279,7 @@ class MetaWorkflow(object):
         return shards
     #end def
 
-    def write_run(self, end_steps, input_structure):
+    def write_run(self, input_structure, end_steps=[]):
         """
             create json meta-workflow-run structure for meta-workflow given end_steps and input_structure
             _order_run to sort and list all step-workflows
@@ -290,8 +289,13 @@ class MetaWorkflow(object):
             return a json that represents a meta-workflow-run
 
                 end_steps, names list of end step-workflows to build meta-workflow-run for
+                           if no end_steps calculate using end_workflows
                 input_structure, structure for the input with maximum scatter as list (e.g. [[A, B], [C, D], [E]])
         """
+        # Get end_steps
+        if not end_steps:
+            end_steps = self.end_workflows
+        #end if
         # Make input_structure a list if is string
         if isinstance(input_structure, str):
             input_structure = [input_structure]
@@ -316,6 +320,13 @@ class MetaWorkflow(object):
             scatter_dimension = 0 #dimension to scatter if any
             if step_obj.is_scatter:
                 scatter_dimension = step_obj.is_scatter
+                # Check if higher dimension in scatter
+                #   get max scatter
+                for dependency in step_obj.dependencies:
+                    if dependency in scatter and scatter[dependency] > scatter_dimension:
+                        scatter_dimension = scatter[dependency]
+                    #end if
+                #end for
                 scatter.setdefault(step_obj.name, scatter_dimension)
             else:
                 in_gather, gather_dimensions = True, []
@@ -377,12 +388,15 @@ class MetaWorkflow(object):
     @property
     def end_workflows(self):
         if not self._end_workflows:
-            all_wfs = [wf.get('name') for wf in self.workflows]
+            all_wfls = [wfl.get('name') for wfl in self.workflows]
             sources = []
-            for wf in self.workflows:
-                sources.extend([ip.get('source') for ip in wf.get('input', [])])
-                sources.extend(wf.get('dependencies', []))
-            self._end_workflows = list(set(all_wfs).difference(set(sources)))
-        return self._end_workflows
+            for wfl in self.workflows:
+                sources.extend([arg.get('source') for arg in wfl.get('input')])
+                sources.extend(wfl.get('dependencies', []))
+            #end for
+            self._end_workflows = list(set(all_wfls).difference(set(sources)))
+        #end if
+        return sorted(self._end_workflows)
+    #end def
 
 #end class

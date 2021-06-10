@@ -112,7 +112,7 @@ def test_wfl_M_H():
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
     # Run test
-    x = wfl_obj.write_run(['M', 'H'], input_structure=['f1', 'f2', 'f3'])
+    x = wfl_obj.write_run(['f1', 'f2', 'f3'], ['M', 'H'])
     # Test steps
     assert sorted([wfl_['name'] for wfl_ in x['workflow_runs']]) == results['steps']
     # Test depencencies
@@ -142,7 +142,7 @@ def test_wfl_P():
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
     # Run test
-    x = wfl_obj.write_run(['P'], input_structure=['f1', 'f2', 'f3'])
+    x = wfl_obj.write_run(['f1', 'f2', 'f3'], end_steps=['P'])
     # Test steps
     assert sorted([wfl_['name'] for wfl_ in x['workflow_runs']]) == results['steps']
     # Test depencencies
@@ -163,7 +163,7 @@ def test_wfl_2D_WGS_trio():
     wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     input = [['A'], ['C', 'D'], ['B', 'E', 'F']]
-    x = wfl_obj.write_run(['workflow_gatk-CombineGVCFs'], input)
+    x = wfl_obj.write_run(input, end_steps=['workflow_gatk-CombineGVCFs'])
     # Test results
     assert x == result
 #end def
@@ -193,7 +193,7 @@ def test_wfl_3D_M_G_H_X():
     wfl_obj = wfl.MetaWorkflow(data)
     # Run test
     input = [[['a', 'b'], ['c']], [['h', 'i']]]
-    x = wfl_obj.write_run(['M', 'G', 'H', 'X'], input)
+    x = wfl_obj.write_run(input, end_steps=['M', 'G', 'H', 'X'])
     # Test depencencies
     for wfl_ in x['workflow_runs']:
         if 'dependencies' in wfl_:
@@ -302,3 +302,4 @@ def test_wfl_end_workflows():
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
     assert wfl_obj.end_workflows == ['H', 'M']
+#end def
