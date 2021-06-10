@@ -1,4 +1,4 @@
-from magma.ff_wfr_utils import FFWfrUtils
+from magma_ff.wfrutils_ff import FFWfrUtils
 import pytest
 
 

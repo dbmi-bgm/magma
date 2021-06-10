@@ -5,7 +5,7 @@ import sys, os
 import pytest
 import json
 
-from magma import run
+from magma import metawflrun as run
 
 #################################################################
 #   Tests

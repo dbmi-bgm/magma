@@ -19,8 +19,9 @@ Contents
 
    install
    meta-workflow
-   workflow-run
-   wfl
-   run
+   meta-workflow-run
+   metawfl
+   metawflrun
    utils
-   check_status
+   checkstatus
+   parser_ff

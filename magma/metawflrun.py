@@ -15,7 +15,7 @@
 import sys, os
 
 ################################################
-#   Objects
+#   MetaWorkflowRun
 ################################################
 class MetaWorkflowRun(object):
     """

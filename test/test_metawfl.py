@@ -5,7 +5,7 @@ import sys, os
 import pytest
 import json
 
-from magma import wfl
+from magma import metawfl as wfl
 
 #################################################################
 #   Tests

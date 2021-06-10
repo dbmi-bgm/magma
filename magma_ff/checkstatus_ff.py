@@ -1,11 +1,24 @@
-# dcicutils wrapper
-from .check_status import AbstractCheckStatus
-from .ff_wfr_utils import FFWfrUtils
+#!/usr/bin/env python3
 
+################################################
+#
+#   dcicutils wrapper
+#
+################################################
 
+################################################
+#   Libraries
+################################################
+import sys, os
+from magma.checkstatus import AbstractCheckStatus
+from magma_ff.wfrutils_ff import FFWfrUtils
+
+################################################
+#   CheckStatusFF
+################################################
 class CheckStatusFF(AbstractCheckStatus):
     """
-    CheckStatus Class for CGAP/4dn Portal (tibanna-ff-based)
+        CheckStatus Class for CGAP/4dn Portal (tibanna-ff-based)
     """
 
     def __init__(self, wflrun_obj, env=None):
@@ -24,7 +37,9 @@ class CheckStatusFF(AbstractCheckStatus):
 
     @property
     def status_map(self):
-        """Mapping from get_status output (e.g. portal WFR run status) to Magma status"""
+        """
+            Mapping from get_status output (e.g. portal WFR run status) to Magma status
+        """
         return {
             'started': 'running',
             'complete': 'completed',
@@ -40,9 +55,11 @@ class CheckStatusFF(AbstractCheckStatus):
 
     @property
     def ff(self):
-        """internal property used for get_status, get_output for portal
+        """
+            Internal property used for get_status, get_output for portal
         """
         if not self._ff:
             self._ff = FFWfrUtils(self._env)
         return self._ff
+
 #end class

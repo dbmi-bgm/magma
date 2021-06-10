@@ -1,6 +1,6 @@
-==========================
-wfl module (meta-worklfow)
-==========================
+=============================
+metawfl module (meta-worklfow)
+=============================
 
 This is a module to work with :ref:`meta-workflows <meta-workflow-label>` in json format.
 
@@ -9,7 +9,7 @@ Import the library
 
 .. code-block:: python
 
-    from magma import wfl
+    from magma import metawfl as wfl
 
 Usage
 +++++
@@ -60,7 +60,8 @@ Attributes
 Write meta-workflow-run
 ***********************
 
-The method ``wfl_obj.write_run(end_steps<str list>, input_argument<str | str list>)`` returns a json structure for a :ref:`meta-workflow-run-label` given specific end step-workflows and input_argument.
+The method ``wfl_obj.write_run(input_structure<str | str list>, [end_steps<str list>])`` returns a json structure for a :ref:`meta-workflow-run-label` given specific input_structure and end step-workflows.
+It is not necessary to specify end step-workflows names, if missing are automatically calculated to run everything in the meta-workflow.
 
 .. code-block:: python
 
@@ -68,10 +69,11 @@ The method ``wfl_obj.write_run(end_steps<str list>, input_argument<str | str lis
     input = [[['file_1', 'file_2'], ['file_3', 'file_4']]]
 
     # end_steps, is a list of the final step-workflows for the meta-workflow-run
+    # optional, if missing the end step are automatically calculated to run everything
     end_steps = ['step_5', 'step_6']
 
     # run wfl_obj.write_run
-    run_json = wfl_obj.write_run(end_steps, input)
+    run_json = wfl_obj.write_run(input, end_steps)
 
 StepWorkflow object
 ^^^^^^^^^^^^^^^^^^^

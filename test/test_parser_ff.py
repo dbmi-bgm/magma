@@ -4,7 +4,7 @@
 import sys, os
 import pytest
 
-from magma import ff_parser
+from magma_ff import parser_ff
 
 
 #################################################################
@@ -223,8 +223,8 @@ def test__files_to_json_0D():
     # Results
     files_out = 'AB'
     # Test
-    ffp = ff_parser.ParserFF(input_json)
-    assert ffp._files_to_json(files) == files_out
+    pff_obj = parser_ff.ParserFF(input_json)
+    assert pff_obj._files_to_json(files) == files_out
 #end def
 
 def test__files_to_json_1D():
@@ -259,9 +259,9 @@ def test__files_to_json_1D():
     files_1_out = ['B', 'C', 'A']
     files_2_out = ['C', 'A', 'B']
     # Test
-    ffp = ff_parser.ParserFF(input_json)
-    assert ffp._files_to_json(files_1) == files_1_out
-    assert ffp._files_to_json(files_2) == files_2_out
+    pff_obj = parser_ff.ParserFF(input_json)
+    assert pff_obj._files_to_json(files_1) == files_1_out
+    assert pff_obj._files_to_json(files_2) == files_2_out
 #end def
 
 def test__files_to_json_2D():
@@ -286,8 +286,8 @@ def test__files_to_json_2D():
     # Results
     files_out = [['b', 'a'], ['c', 'd']]
     # Test
-    ffp = ff_parser.ParserFF(input_json)
-    assert ffp._files_to_json(files) == files_out
+    pff_obj = parser_ff.ParserFF(input_json)
+    assert pff_obj._files_to_json(files) == files_out
 #end def
 
 def test__files_to_json_3D():
@@ -328,14 +328,14 @@ def test__files_to_json_3D():
     # Results
     files_out = [[['a', 'b'], ['c']], [['d', 'e'], ['g', 'f']], [['h']]]
     # Test
-    ffp = ff_parser.ParserFF(input_json)
-    assert ffp._files_to_json(files) == files_out
+    pff_obj = parser_ff.ParserFF(input_json)
+    assert pff_obj._files_to_json(files) == files_out
 #end def
 
 def test_arguments_to_json_wfl():
     # Test
-    ffp = ff_parser.ParserFF(input_wfl)
-    res = ffp.arguments_to_json()
+    pff_obj = parser_ff.ParserFF(input_wfl)
+    res = pff_obj.arguments_to_json()
     assert res == input_wfl_out
 #end def
 
@@ -484,7 +484,7 @@ def test_arguments_to_json_metawfl():
         ]
     }
     # Test
-    ffp = ff_parser.ParserFF(input_wfl)
-    res = ffp.arguments_to_json()
+    pff_obj = parser_ff.ParserFF(input_wfl)
+    res = pff_obj.arguments_to_json()
     assert res == input_wfl_out
 #end def

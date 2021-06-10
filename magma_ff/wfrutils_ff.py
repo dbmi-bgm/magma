@@ -1,10 +1,26 @@
+#!/usr/bin/env python3
+
+################################################
+#
+#
+#
+################################################
+
+################################################
+#   Libraries
+################################################
+import sys, os
 from dcicutils import ff_utils
 from dcicutils.s3_utils import s3Utils
 
-
+################################################
+#   FFWfrUtils
+################################################
 class FFWfrUtils(object):
     def __init__(self, env):
-        """env : e.g. 'fourfront-cgap', 'fourfront-cgap-wolf'"""
+        """
+                env : e.g. 'fourfront-cgap', 'fourfront-cgap-wolf'
+        """
         self.env = env
 
         # cache for metadata
@@ -13,23 +29,31 @@ class FFWfrUtils(object):
         self._ff_key = None
 
     def wfr_run_status(self, job_id):
-        """This is the function to be used by Magma."""
+        """
+            This is the function to be used by Magma.
+        """
         wfr_meta = self.wfr_metadata(job_id)
         return wfr_meta['run_status']
 
     def get_minimal_processed_output(self, job_id):
-        """This is the function to be used by Magma.
-        It returns a list of {'argument_name': <arg_name>, 'files': <uuid>}
-        for all processed file output"""
+        """
+            This is the function to be used by Magma.
+            It returns a list of {'argument_name': <arg_name>, 'files': <uuid>}
+            for all processed file output
+        """
         wfr_output = self.wfr_output(job_id)
         return self.filter_wfr_output_minimal_processed(wfr_output)
 
     def wfr_output(self, job_id):
-        """return the raw output from the wfr metadata"""
+        """
+            Return the raw output from the wfr metadata
+        """
         return self.wfr_metadata(job_id)['output_files']
 
     def wfr_metadata(self, job_id):
-        """get portal WorkflowRun metadata from job id"""
+        """
+            Get portal WorkflowRun metadata from job id
+        """
         # use cache
         if job_id in self._metadata:
             return self._metadata[job_id]
@@ -44,7 +68,9 @@ class FFWfrUtils(object):
 
     @property
     def ff_key(self):
-        """get access key for the portal"""
+        """
+            Get access key for the portal
+        """
         # use cache
         if not self._ff_key:
             # use tibanna key for now
@@ -53,13 +79,18 @@ class FFWfrUtils(object):
 
     @staticmethod
     def filter_wfr_output_minimal_processed(wfr_output):
-        """return a list of {'argument_name': <arg_name>, 'files': <uuid>}
-        for all processed file output"""
+        """
+            Return a list of {'argument_name': <arg_name>, 'files': <uuid>}
+            for all processed file output
+        """
         return [{'argument_name': opf['workflow_argument_name'],
                  'files': opf['value']['uuid']} \
                     for opf in wfr_output \
                         if opf['type'] == 'Output processed file']
 
+#end class
 
 class FdnConnectionException(Exception):
     pass
+
+#end class

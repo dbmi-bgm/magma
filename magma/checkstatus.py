@@ -1,6 +1,25 @@
+#!/usr/bin/env python3
+
+################################################
+#
+#   Library to work with meta-workflow-run objects
+#
+#   Implement the skeleton for a generic object
+#       and generic methods for status checking
+#
+################################################
+
+################################################
+#   Libraries
+################################################
+import sys, os
+
+################################################
+#   AbstractCheckStatus
+################################################
 class AbstractCheckStatus(object):
     """
-    Skeleton for CheckStatus Classes
+        Skeleton for CheckStatus Classes
     """
 
     def __init__(self, wflrun_obj):
@@ -13,8 +32,10 @@ class AbstractCheckStatus(object):
 
     @property
     def status_map(self):
-        """Mapping from get_status output to Magma status.
-        Set to property so that inherited classes can overwrite it."""
+        """
+            Mapping from get_status output to Magma status.
+            Set to property so that inherited classes can overwrite it.
+        """
         return {
             'pending': 'pending',
             'running': 'running',
@@ -57,14 +78,15 @@ class AbstractCheckStatus(object):
         #end for
     #end def
 
-    # inherited classes could define stuff to do with an error case.
+    # Inherited classes could define stuff to do with an error case.
     def handle_error(self, run_obj):
         pass
 
-    # replace them with real functions for getting status or (formatted) output
+    # Replace them with real functions for getting status or (formatted) output
     def get_status(self, jobid):
         return 'running'
 
     def get_output(self, jobid):
         return [{'argument_name': 'arg', 'files': 'uuid'}]
+
 #end class

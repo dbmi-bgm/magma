@@ -1,6 +1,6 @@
-==============================
-run module (meta-worklfow-run)
-==============================
+=====================================
+metawflrun module (meta-worklfow-run)
+=====================================
 
 This is a module to work with :ref:`meta-workflow-runs <meta-workflow-run-label>` in json format.
 
@@ -9,7 +9,7 @@ Import the library
 
 .. code-block:: python
 
-    from magma import run
+    from magma import metawflrun as run
 
 Usage
 +++++

@@ -16,7 +16,7 @@ import sys, os
 import copy
 
 ################################################
-#   Objects
+#   MetaWorkflow
 ################################################
 class MetaWorkflow(object):
     """

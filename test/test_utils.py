@@ -5,9 +5,10 @@ import sys, os
 import pytest
 import json
 
-from magma import wfl
-from magma import run
-from magma import utils
+from magma import metawfl as wfl
+from magma import metawflrun as run
+from magma import inputgenerator as ingen
+from magma import runupdate as runupd
 
 #################################################################
 #   Vars
@@ -180,10 +181,10 @@ def test_inputgen_WGS_trio_scatter():
     wfl_obj = wfl.MetaWorkflow(data_wfl)
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
     # Run test
-    ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
-    ingen = ingen_obj.input_generator()
+    ingen_obj = ingen.InputGenerator(wfl_obj, wflrun_obj)
+    in_gen = ingen_obj.input_generator()
     # Test results
-    for i, (input_json, dict_out) in enumerate(ingen):
+    for i, (input_json, dict_out) in enumerate(in_gen):
         if 'jobid' in input_json:
             input_json['jobid'] = 'JOBID'
         else:
@@ -215,7 +216,7 @@ def test_runupdate_reset_steps():
             assert initial[shard_name] == workflow_run
         #end if
     #end for
-    runupdate = utils.RunUpdate(wflrun_obj)
+    runupdate = runupd.RunUpdate(wflrun_obj)
     x = runupdate.reset_steps(['workflow_bwa-mem_no_unzip-check', 'workflow_add-readgroups-check'])
     for workflow_run in x['workflow_runs']:
         shard_name = workflow_run['name'] + ':' + workflow_run['shard']
@@ -241,7 +242,7 @@ def test_runupdate_reset_shards():
             assert initial[shard_name] == workflow_run
         #end if
     #end for
-    runupdate = utils.RunUpdate(wflrun_obj)
+    runupdate = runupd.RunUpdate(wflrun_obj)
     x = runupdate.reset_shards(['workflow_bwa-mem_no_unzip-check:2:1', 'workflow_add-readgroups-check:2:0', 'workflow_add-readgroups-check:2:2'])
     for workflow_run in x['workflow_runs']:
         shard_name = workflow_run['name'] + ':' + workflow_run['shard']
@@ -307,7 +308,7 @@ def test_runupdate_import_step():
             assert initial[shard_name] == workflow_run
         #end if
     #end for
-    runupdate = utils.RunUpdate(wflrun_i_obj)
+    runupdate = runupd.RunUpdate(wflrun_i_obj)
     x = runupdate.import_steps(wflrun_obj, ['workflow_add-readgroups-check'])
     assert wflrun_i_obj.input == input
     assert x['meta_workflow'] == 'UUID_NEW'
@@ -411,10 +412,10 @@ def test_inputgen_formula_eval():
     wfl_obj = wfl.MetaWorkflow(input_wfl)
     wflrun_obj = run.MetaWorkflowRun(input_wflrun)
     # Run test
-    ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
-    ingen = ingen_obj.input_generator()
+    ingen_obj = ingen.InputGenerator(wfl_obj, wflrun_obj)
+    in_gen = ingen_obj.input_generator()
     # Test results
-    for i, (input_json, dict_out) in enumerate(ingen):
+    for i, (input_json, dict_out) in enumerate(in_gen):
         if 'jobid' in input_json:
             input_json['jobid'] = 'JOBID'
         else:

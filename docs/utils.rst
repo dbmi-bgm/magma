@@ -1,21 +1,26 @@
-============
-utils module
-============
+===============
+Utility modules
+===============
 
-This is a module to work with *MetaWorkflow* and *MetaWorkflowRun* objects.
+Modules to work with *MetaWorkflow* and *MetaWorkflowRun* objects:
 
-Import the library
-++++++++++++++++++
+    - inputgenerator module -> *InputGenerator* object
+
+    - runupdate module -> *RunUpdate* object
+
+Import the libraries
+++++++++++++++++++++
 
 .. code-block:: python
 
-    # utils require wfl and run modules
-    #   wfl -> MetaWorkflow
-    #   run -> MetaWorkflowRun
-    from magma import wfl
-    from magma import run
+    # Require metawfl and metawflrun modules
+    #   metawfl -> MetaWorkflow
+    #   metawflrun -> MetaWorkflowRun
+    from magma import metawfl as wfl
+    from magma import metawflrun as run
 
-    from magma import utils
+    from magma import inputgenerator as ingen
+    from magma import runupdate as runupd
 
 Usage
 +++++
@@ -47,7 +52,7 @@ Initialize InputGenerator object
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
 
     # Create InputGenerator object
-    ingen_obj = utils.InputGenerator(wfl_obj, wflrun_obj)
+    ingen_obj = ingen.InputGenerator(wfl_obj, wflrun_obj)
 
 Create input json to run
 ************************
@@ -86,7 +91,7 @@ Initialize RunUpdate object
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
 
     # Create RunUpdate object
-    runupd_obj = utils.RunUpdate(wflrun_obj)
+    runupd_obj = runupd.RunUpdate(wflrun_obj)
 
 Methods
 *******
