@@ -295,3 +295,10 @@ def test_wfl__shards():
     assert dim3_2 == results['dim3_2']
     assert dim3_3 == results['dim3_3']
 #end def
+
+def test_wfl_end_workflows():
+    with open('test/files/test_METAWFL.json') as json_file:
+        data = json.load(json_file)
+    # Create MetaWorkflow object
+    wfl_obj = wfl.MetaWorkflow(data)
+    assert wfl_obj.end_workflows == ['H', 'M']

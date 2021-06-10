@@ -39,6 +39,9 @@ class MetaWorkflow(object):
         # Calculate attributes
         self._validate()
         self._read_steps()
+
+        # cache
+        self._end_workflows = None
     #end def
 
     class StepWorkflow(object):
@@ -370,5 +373,16 @@ class MetaWorkflow(object):
         #end for
         return run_json
     #end def
+
+    @property
+    def end_workflows(self):
+        if not self._end_workflows:
+            all_wfs = [wf.get('name') for wf in self.workflows]
+            sources = []
+            for wf in self.workflows:
+                sources.extend([ip.get('source') for ip in wf.get('input', [])])
+                sources.extend(wf.get('dependencies', []))
+            self._end_workflows = list(set(all_wfs).difference(set(sources)))
+        return self._end_workflows
 
 #end class
