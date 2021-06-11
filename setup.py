@@ -28,7 +28,7 @@ setup(
     author_email = 'berselli.michele@gmail.com',
     url='https://github.com/dbmi-bgm/magma',
     include_package_data=True,
-    packages=find_packages(),
+    packages=['magma', 'magma_ff'],
     classifiers=[
             'License :: OSI Approved :: MIT License',
             'Operating System :: POSIX :: Linux',

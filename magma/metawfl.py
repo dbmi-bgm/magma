@@ -29,9 +29,13 @@ class MetaWorkflow(object):
 
                 input_json is a meta-workflow in json format
         """
+
+        # copy it so that the original does not get changed unexpectedly
+        input_json_copy = copy.deepcopy(input_json)
+
         # Basic attributes
-        for key in input_json:
-            setattr(self, key, input_json[key])
+        for key in input_json_copy:
+            setattr(self, key, input_json_copy[key])
         #end for
         # Calculated attributes
         self.steps = {} #{step_obj.name: step_obj, ...}
