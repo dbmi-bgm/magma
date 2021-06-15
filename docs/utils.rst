@@ -1,6 +1,6 @@
-===============
-Utility modules
-===============
+=======================
+Utility modules (magma)
+=======================
 
 Modules to work with *MetaWorkflow* and *MetaWorkflowRun* objects:
 

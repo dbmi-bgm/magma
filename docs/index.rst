@@ -23,5 +23,5 @@ Contents
    metawfl
    metawflrun
    utils
-   checkstatus
+   checkstatus_ff
    parser_ff

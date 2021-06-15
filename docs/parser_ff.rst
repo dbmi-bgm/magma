@@ -1,6 +1,6 @@
-================
-parser_ff module
-================
+========================
+parser module (magma_ff)
+========================
 
 ParserFF object
 ^^^^^^^^^^^^^^^
@@ -13,11 +13,11 @@ Initialize ParserFF object
 
 .. code-block:: python
 
-    from magma_ff import parser_ff
+    from magma_ff import parser
 
     #input_json -> meta-workflow or meta-workflow-run json
 
-    pff_obj = parser_ff.ParserFF(input_json)
+    pff_obj = parser.ParserFF(input_json)
 
 Methods
 *******
