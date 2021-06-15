@@ -31,19 +31,19 @@ completed = {
      'jobid': 'AAAAAAa'},
     'workflow_add-readgroups-check:2:0': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:0'}], #test file key
+        'file': 'uuid-bam_w_readgroups-2:0'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'],
       'shard': '2:0'},
     'workflow_add-readgroups-check:2:1': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:1'}], #test files key
+        'file': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},
     'workflow_add-readgroups-check:2:2': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'file': 'uuid-bam_w_readgroups-2:2'}], #test file key
+        'file': 'uuid-bam_w_readgroups-2:2'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'],
       'shard': '2:2'}

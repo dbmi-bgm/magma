@@ -27,7 +27,7 @@ class InputGenerator(InputGeneratorFromMagma):
         super().__init__(wfl_obj, wflrun_obj)
 
         # Output from ff use file as key
-        #      istead of files for file arument value
+        #      instead of files for file argument value
         self.file_key = 'file'
     #end def
 
