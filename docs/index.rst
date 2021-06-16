@@ -25,3 +25,4 @@ Contents
    utils
    checkstatus_ff
    parser_ff
+   examples
