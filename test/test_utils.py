@@ -295,7 +295,7 @@ def test_runupdate_import_step():
     # Read input
     with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
         data_wflrun = json.load(json_file)
-    with open('test/files/CGAP_WGS_trio_scatter_import.run.json') as json_file:
+    with open('test/files/CGAP_WGS_trio_scatter_import_ExtraShard.run.json') as json_file:
         data_wflrun_i = json.load(json_file)
     # Create MetaWorkflowRun object
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
