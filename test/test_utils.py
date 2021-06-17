@@ -7,7 +7,7 @@ import json
 
 from magma import metawfl as wfl
 from magma import metawflrun as run
-from magma import inputgenerator as ingen
+from magma_ff import inputgenerator as ingen
 from magma import runupdate as runupd
 
 #################################################################
@@ -15,35 +15,35 @@ from magma import runupdate as runupd
 #################################################################
 completed = {
     'workflow_bwa-mem_no_unzip-check:2:0': {'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:0'}],
+      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:0'}],
       'status': 'completed',
       'shard': '2:0',
       'jobid': 'a1b2c3d'},
     'workflow_bwa-mem_no_unzip-check:2:1': {'name': 'workflow_bwa-mem_no_unzip-check',
-     'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:1'}],
+     'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:1'}],
      'status': 'completed',
      'shard': '2:1',
      'jobid': 'e1f2g3h'},
     'workflow_bwa-mem_no_unzip-check:2:2': {'name': 'workflow_bwa-mem_no_unzip-check',
-     'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:2'}],
+     'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:2'}],
      'status': 'completed',
      'shard': '2:2',
      'jobid': 'AAAAAAa'},
     'workflow_add-readgroups-check:2:0': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'files': 'uuid-bam_w_readgroups-2:0'}],
+        'file': 'uuid-bam_w_readgroups-2:0'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:0'],
       'shard': '2:0'},
     'workflow_add-readgroups-check:2:1': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'files': 'uuid-bam_w_readgroups-2:1'}],
+        'file': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},
     'workflow_add-readgroups-check:2:2': {'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'files': 'uuid-bam_w_readgroups-2:2'}],
+        'file': 'uuid-bam_w_readgroups-2:2'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:2'],
       'shard': '2:2'}
@@ -55,7 +55,7 @@ pending_shards = { # pending only
                    #    workflow_add-readgroups-check:2:2
     'workflow_bwa-mem_no_unzip-check:2:0': {
       'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:0'}],
+      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:0'}],
       'status': 'completed',
       'shard': '2:0',
       'jobid': 'a1b2c3d'},
@@ -65,7 +65,7 @@ pending_shards = { # pending only
       'shard': '2:1'},
     'workflow_bwa-mem_no_unzip-check:2:2': {
       'name': 'workflow_bwa-mem_no_unzip-check',
-      'output': [{'argument_name': 'raw_bam', 'files': 'uuid-raw_bam-2:2'}],
+      'output': [{'argument_name': 'raw_bam', 'file': 'uuid-raw_bam-2:2'}],
       'status': 'completed',
       'shard': '2:2',
       'jobid': 'AAAAAAa'},
@@ -77,7 +77,7 @@ pending_shards = { # pending only
     'workflow_add-readgroups-check:2:1': {
       'name': 'workflow_add-readgroups-check',
       'output': [{'argument_name': 'bam_w_readgroups',
-        'files': 'uuid-bam_w_readgroups-2:1'}],
+        'file': 'uuid-bam_w_readgroups-2:1'}],
       'status': 'completed',
       'dependencies': ['workflow_bwa-mem_no_unzip-check:2:1'],
       'shard': '2:1'},

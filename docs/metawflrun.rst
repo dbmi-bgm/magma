@@ -1,6 +1,6 @@
-=====================================
-metawflrun module (meta-worklfow-run)
-=====================================
+===========================
+*metawflrun* module (magma)
+===========================
 
 This is a module to work with :ref:`meta-workflow-runs <meta-workflow-run-label>` in json format.
 

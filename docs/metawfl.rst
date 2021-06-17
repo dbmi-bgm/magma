@@ -1,6 +1,6 @@
-=============================
-metawfl module (meta-worklfow)
-=============================
+========================
+*metawfl* module (magma)
+========================
 
 This is a module to work with :ref:`meta-workflows <meta-workflow-label>` in json format.
 

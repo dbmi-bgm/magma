@@ -10,6 +10,8 @@
 #   Libraries
 ################################################
 import sys, os
+
+# dcicutils
 from dcicutils import ff_utils
 from dcicutils.s3_utils import s3Utils
 
@@ -38,7 +40,7 @@ class FFWfrUtils(object):
     def get_minimal_processed_output(self, job_id):
         """
             This is the function to be used by Magma.
-            It returns a list of {'argument_name': <arg_name>, 'files': <uuid>}
+            It returns a list of {'argument_name': <arg_name>, 'file': <uuid>}
             for all processed file output
         """
         wfr_output = self.wfr_output(job_id)
@@ -80,11 +82,11 @@ class FFWfrUtils(object):
     @staticmethod
     def filter_wfr_output_minimal_processed(wfr_output):
         """
-            Return a list of {'argument_name': <arg_name>, 'files': <uuid>}
+            Return a list of {'argument_name': <arg_name>, 'file': <uuid>}
             for all processed file output
         """
         return [{'argument_name': opf['workflow_argument_name'],
-                 'files': opf['value']['uuid']} \
+                 'file': opf['value']['uuid']} \
                     for opf in wfr_output \
                         if opf['type'] == 'Output processed file']
 

@@ -1,7 +1,7 @@
 import mock
 import pytest
 import json
-from magma_ff import checkstatus_ff
+from magma_ff import checkstatus
 from magma import metawflrun as run
 
 
@@ -22,12 +22,12 @@ def test_CheckStatusFF():
 
     # Create MetaWorkflowRun object and check_running generator
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
-    cs = checkstatus_ff.CheckStatusFF(wflrun_obj)
+    cs = checkstatus.CheckStatusFF(wflrun_obj)
     cr = cs.check_running()
 
     # mock get_status and get_output
-    with mock.patch('magma_ff.checkstatus_ff.CheckStatusFF.get_status', return_value='complete'):
-        with mock.patch('magma_ff.checkstatus_ff.CheckStatusFF.get_output',
+    with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_status', return_value='complete'):
+        with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_output',
                         return_value=[{'argument_name': 'raw_bam', 'files': 'abc'}]):
             res = next(cr)
 
@@ -53,12 +53,12 @@ def test_CheckStatusFF_failed():
 
     # Create MetaWorkflowRun object and check_running generator
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
-    cs = checkstatus_ff.CheckStatusFF(wflrun_obj)
+    cs = checkstatus.CheckStatusFF(wflrun_obj)
     cr = cs.check_running()
 
     # mock get_status and get_output
-    with mock.patch('magma_ff.checkstatus_ff.CheckStatusFF.get_status', return_value='error'):
-        with mock.patch('magma_ff.checkstatus_ff.CheckStatusFF.get_output',
+    with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_status', return_value='error'):
+        with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_output',
                         return_value=[{'argument_name': 'raw_bam', 'files': 'abc'}]):
             res = next(cr)
 
@@ -83,12 +83,12 @@ def test_CheckStatusFF_running():
 
     # Create MetaWorkflowRun object and check_running generator
     wflrun_obj = run.MetaWorkflowRun(data_wflrun)
-    cs = checkstatus_ff.CheckStatusFF(wflrun_obj)
+    cs = checkstatus.CheckStatusFF(wflrun_obj)
     cr = cs.check_running()
 
     # mock get_status and get_output
-    with mock.patch('magma_ff.checkstatus_ff.CheckStatusFF.get_status', return_value='started'):
-        with mock.patch('magma_ff.checkstatus_ff.CheckStatusFF.get_output',
+    with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_status', return_value='started'):
+        with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_output',
                         return_value=[{'argument_name': 'raw_bam', 'files': 'abc'}]):
             res = next(cr)
 
@@ -109,7 +109,7 @@ def test_CheckStatusFF_real_failed():
     wflrun_obj = run.MetaWorkflowRun(small_wflrun)
 
     # use cgapwolf by specifying env
-    cs = checkstatus_ff.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
+    cs = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
     cr = cs.check_running()
     res = next(cr)
     assert res['workflow_runs'] == [{'jobid': 'c5TzfqljUygR',
@@ -131,7 +131,7 @@ def test_CheckStatusFF_real_completed():
     wflrun_obj = run.MetaWorkflowRun(small_wflrun)
 
     # use cgapwolf by specifying env
-    cs = checkstatus_ff.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
+    cs = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
     cr = cs.check_running()
     res = next(cr)
     assert res['workflow_runs'] == [{'jobid': 'RCYui9haX4Ea',
@@ -140,4 +140,4 @@ def test_CheckStatusFF_real_completed():
                     # add status and output
                     'status': 'completed',
                     'output': [{'argument_name': 'raw_bam',
-                                'files': '59939d48-1c7e-4b9d-a644-fdcaff8610be'}]}]
+                                'file': '59939d48-1c7e-4b9d-a644-fdcaff8610be'}]}]

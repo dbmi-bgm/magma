@@ -10,8 +10,10 @@
 #   Libraries
 ################################################
 import sys, os
+
+# magma
 from magma.checkstatus import AbstractCheckStatus
-from magma_ff.wfrutils_ff import FFWfrUtils
+from magma_ff.wfrutils import FFWfrUtils
 
 ################################################
 #   CheckStatusFF

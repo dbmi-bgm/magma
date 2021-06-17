@@ -1,18 +1,18 @@
-======================================
-checkstatus and checkstatus_ff modules
-======================================
+===============================
+*checkstatus* module (magma_ff)
+===============================
 
 Check Status and Output
 ***********************
 
 .. code-block:: python
 
-    from magma_ff import checkstatus_ff
+    from magma_ff import checkstatus
 
     wflrun_obj = None  # or any actual wflrun_obj
 
     # create a CheckStatus object with an environment name
-    cs_obj = checkstatus_ff.CheckStatusFF(wflrun_obj, env='fourfront-cgap')
+    cs_obj = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgap')
 
     # get_status funtion can be used as stand-alone
     cs_obj.get_status('RBwlMTyOWvpZ')

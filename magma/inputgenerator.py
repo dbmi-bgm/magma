@@ -78,6 +78,9 @@ class InputGenerator(object):
         # Basic attributes
         self.wfl_obj = wfl_obj
         self.wflrun_obj = wflrun_obj
+        # Key to use to access file value information
+        #   in workflow-runs output
+        self.file_key = 'files'
     #end def
 
     def input_generator(self):
@@ -266,7 +269,7 @@ class InputGenerator(object):
                 if arg_obj.source == dependency.split(':')[0]:
                     for arg in self.wflrun_obj.runs[dependency].output:
                         if arg_obj.source_argument_name == arg['argument_name']:
-                            file_.append(arg['files'])
+                            file_.append(arg[self.file_key])
                             break
                         #end if
                     #end for

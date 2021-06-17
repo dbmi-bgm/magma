@@ -21,7 +21,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "files": "uuid-raw_bam-2:0"
+                "file": "uuid-raw_bam-2:0"
               }
             ],
             "status": "completed",
@@ -33,7 +33,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "files": "uuid-raw_bam-2:1"
+                "file": "uuid-raw_bam-2:1"
               }
             ],
             "status": "completed",
@@ -45,7 +45,7 @@
             "output": [
               {
                 "argument_name": "raw_bam",
-                "files": "uuid-raw_bam-2:2"
+                "file": "uuid-raw_bam-2:2"
               }
             ],
             "status": "completed",
@@ -81,7 +81,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "files": "uuid-bam_w_readgroups-2:0"
+                "file": "uuid-bam_w_readgroups-2:0"
               }
             ],
             "status": "completed",
@@ -95,7 +95,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "files": "uuid-bam_w_readgroups-2:1"
+                "file": "uuid-bam_w_readgroups-2:1"
               }
             ],
             "status": "completed",
@@ -109,7 +109,7 @@
             "output": [
               {
                 "argument_name": "bam_w_readgroups",
-                "files": "uuid-bam_w_readgroups-2:2"
+                "file": "uuid-bam_w_readgroups-2:2"
               }
             ],
             "status": "completed",
