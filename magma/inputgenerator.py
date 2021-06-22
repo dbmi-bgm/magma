@@ -85,13 +85,15 @@ class InputGenerator(object):
 
     def input_generator(self):
         """
+            template function, can be customized to any specific format
+
             return a generator to input for workflow-run in json format
             and updated workflow-runs and final_status information in json format for patching
 
             for each workflow-run ready to run:
                 update workflow-run status to running
                 create and add a jobid
-                format input json for tibanna zebra
+                format input json
                 create an updated workflow_runs json for patching
                 yield input json and workflow_runs
         """
@@ -104,32 +106,13 @@ class InputGenerator(object):
             #       to change formatting just change this part
             step_obj = self.wfl_obj.steps[run_obj.name]
             input_json = {
-                'app_name': run_obj.name,
-                'workflow_uuid': step_obj.workflow,
+                'name': run_obj.name,
+                'workflow': step_obj.workflow,
                 'config': self._eval_formula(step_obj.config),
                 'parameters': {},
                 'input_files': [],
                 'jobid': jobid
             }
-
-            ####################################################################
-            # This should either come from run_obj or step_obj
-            #     at some point add that option and possibly merge the two
-            if getattr(step_obj, 'custom_pf_fields', None):
-                input_json.setdefault('custom_pf_fields', step_obj.custom_pf_fields)
-            #end if
-            if getattr(step_obj, 'custom_qc_fields', None):
-                input_json.setdefault('custom_qc_fields', step_obj.custom_qc_fields)
-            #end if
-            ####################################################################
-
-            ####################################################################
-            # This should either come from wflrun_obj or wfl_obj
-            #     at some point add that option and possibly merge the two
-            if getattr(self.wflrun_obj, 'common_fields', None):
-                input_json.setdefault('common_fields', self.wflrun_obj.common_fields)
-            #end if
-            ####################################################################
 
             for arg_obj in run_args:
                 if arg_obj.argument_type == 'parameter':
@@ -138,7 +121,7 @@ class InputGenerator(object):
                     # Basic argument information
                     arg_ = {
                         'workflow_argument_name': arg_obj.argument_name,
-                        'uuid': arg_obj.files
+                        'files': arg_obj.files
                     }
                     # Additional information
                     if getattr(arg_obj, 'mount', None):

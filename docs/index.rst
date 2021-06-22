@@ -26,3 +26,4 @@ Contents
    checkstatus_ff
    parser_ff
    examples
+   ff_functions

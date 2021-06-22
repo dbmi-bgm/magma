@@ -2,7 +2,7 @@
 
 ################################################
 #
-#   Function to handle the import from old
+#   Function to import from old
 #       meta-workflow-run
 #
 ################################################
@@ -11,11 +11,10 @@
 #   Libraries
 ################################################
 import sys, os
-import json
 
 # magma
-from magma import metawflrun as run
-from magma_ff import runupdate as runupd
+from magma.metawflrun import MetaWorkflowRun
+from magma_ff.runupdate import RunUpdate
 
 # dcicutils
 from dcicutils import ff_utils
@@ -38,15 +37,15 @@ def import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_meta
     # Create new meta-workflow-run json
     run_json = create_metawfr(metawf_uuid, case_uuid, ff_key)
     # Create MetaWorkflowRun object for new meta-workflow-run
-    run_obj = run.MetaWorkflowRun(run_json)
+    run_obj = MetaWorkflowRun(run_json)
 
     # Get old meta-workflow-run json from the portal
     run_json_toimport = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw', key=ff_key)
     # Create MetaWorkflowRun object for old meta-workflow-run
-    run_obj_toimport = run.MetaWorkflowRun(run_json_toimport)
+    run_obj_toimport = MetaWorkflowRun(run_json_toimport)
 
     # Create RunUpdate object for new meta-workflow-run
-    runupd_obj = runupd.RunUpdate(run_obj)
+    runupd_obj = RunUpdate(run_obj)
 
     # Import information
     run_json_updated = runupd_obj.import_steps(run_obj_toimport, steps_name)

@@ -130,6 +130,10 @@ def test_inputgen_WGS_trio_scatter():
             },
         'jobid': 'JOBID',
         'parameters': {},
+        '_tibanna': {
+          'run_type': 'workflow_bwa-mem_no_unzip-check',
+          'env': 'env'
+        },
         'input_files': [
             {'workflow_argument_name': 'fastq_R1', 'uuid': 'A1', 'mount': True},
             {'workflow_argument_name': 'fastq_R2', 'uuid': 'A2', 'mount': True},
@@ -141,6 +145,10 @@ def test_inputgen_WGS_trio_scatter():
             },
         'jobid': 'JOBID',
         'parameters': {},
+        '_tibanna': {
+          'run_type': 'workflow_bwa-mem_no_unzip-check',
+          'env': 'env'
+        },
         'input_files': [
             {'workflow_argument_name': 'fastq_R1', 'uuid': 'C1', 'mount': True},
             {'workflow_argument_name': 'fastq_R2', 'uuid': 'C2', 'mount': True},
@@ -152,6 +160,10 @@ def test_inputgen_WGS_trio_scatter():
             },
         'jobid': 'JOBID',
         'parameters': {},
+        '_tibanna': {
+          'run_type': 'workflow_bwa-mem_no_unzip-check',
+          'env': 'env'
+        },
         'input_files': [
             {'workflow_argument_name': 'fastq_R1', 'uuid': 'D1', 'mount': True},
             {'workflow_argument_name': 'fastq_R2', 'uuid': 'D2', 'mount': True},
@@ -163,6 +175,10 @@ def test_inputgen_WGS_trio_scatter():
             },
         'jobid': 'JOBID',
         'parameters': {},
+        '_tibanna': {
+          'run_type': 'workflow_merge-bam-check',
+          'env': 'env'
+        },
         'input_files': [
             {'workflow_argument_name': 'input_bams', 'uuid': ['uuid-bam_w_readgroups-2:0', 'uuid-bam_w_readgroups-2:1', 'uuid-bam_w_readgroups-2:2'], 'mount': True}]}
         ]
@@ -401,6 +417,10 @@ def test_inputgen_formula_eval():
             },
         'jobid': 'JOBID',
         'parameters': {},
+        '_tibanna': {
+          'run_type': 'Foo',
+          'env': 'env'
+        },
         'input_files': [
             {'workflow_argument_name': 'a_local_file', 'uuid': 'a_global_file-UUID',
             'rename': ['I', 'm', 'rename']},

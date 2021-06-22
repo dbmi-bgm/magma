@@ -19,7 +19,7 @@ import sys, os
 ################################################
 class AbstractCheckStatus(object):
     """
-        Skeleton for CheckStatus Classes
+        skeleton for CheckStatus object
     """
 
     def __init__(self, wflrun_obj):
@@ -33,8 +33,8 @@ class AbstractCheckStatus(object):
     @property
     def status_map(self):
         """
-            Mapping from get_status output to Magma status.
-            Set to property so that inherited classes can overwrite it.
+            mapping from get_status output to Magma status
+            set to property so that inherited classes can overwrite it
         """
         return {
             'pending': 'pending',
@@ -67,26 +67,30 @@ class AbstractCheckStatus(object):
                 yield None  # yield None so that it doesn't terminate iteration
                 continue
             else:  # failed
-                # handle error status - anything to do before yielding the updated json.
+                # handle error status - anything to do before yielding the updated json
                 self.handle_error(run_obj)
             #end if
 
             # Return the json to patch workflow_runs for both completed and failed
-            # and keep going so that it can continue updating status for other runs.
+            #   and keep going so that it can continue updating status for other runs
             yield {'final_status':  self.wflrun_obj.update_status(),
                    'workflow_runs': self.wflrun_obj.runs_to_json()}
         #end for
     #end def
 
-    # Inherited classes could define stuff to do with an error case.
+    # Inherited classes could define stuff to do with an error case
     def handle_error(self, run_obj):
         pass
 
     # Replace them with real functions for getting status or (formatted) output
     def get_status(self, jobid):
+        """
+        """
         return 'running'
 
     def get_output(self, jobid):
+        """
+        """
         return [{'argument_name': 'arg', 'files': 'uuid'}]
 
 #end class

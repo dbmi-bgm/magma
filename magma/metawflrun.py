@@ -257,19 +257,24 @@ class MetaWorkflowRun(object):
             return final_status
         """
         self.final_status = 'pending' # initial set to pending
-        is_completed = True
+        all_completed = True
+        is_completed = False
         for _, run_obj in self.runs.items():
             if run_obj.status != 'completed':
-                is_completed = False
+                all_completed = False
                 if run_obj.status == 'failed':
                     self.final_status = 'failed'
                     break
                 elif run_obj.status == 'running':
                     self.final_status = 'running'
                 #end if
+            else: is_completed = True
             #end if
         #end for
-        if is_completed: self.final_status = 'completed'
+        if all_completed:
+            self.final_status = 'completed'
+        elif self.final_status == 'pending' and is_completed:
+            self.final_status = 'inactive'
         #end if
         return self.final_status
     #end def

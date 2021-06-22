@@ -20,7 +20,7 @@ from magma_ff.wfrutils import FFWfrUtils
 ################################################
 class CheckStatusFF(AbstractCheckStatus):
     """
-        CheckStatus Class for CGAP/4dn Portal (tibanna-ff-based)
+        CheckStatus object for CGAP/4dn Portal (tibanna-ff-based)
     """
 
     def __init__(self, wflrun_obj, env=None):
@@ -31,16 +31,16 @@ class CheckStatusFF(AbstractCheckStatus):
         """
         super().__init__(wflrun_obj)
 
-        # portal-related attributes
+        # Portal-related attributes
         self._env = env
-        # cache for FFWfrUtils object
+        # Cache for FFWfrUtils object
         self._ff = None
     #end def
 
     @property
     def status_map(self):
         """
-            Mapping from get_status output (e.g. portal WFR run status) to Magma status
+            mapping from get_status output (e.g. portal WFR run status) to Magma status
         """
         return {
             'started': 'running',
@@ -48,7 +48,7 @@ class CheckStatusFF(AbstractCheckStatus):
             'error': 'failed'
         }
 
-    # the following three functions are for portal (cgap / 4dn)
+    # The following three functions are for portal (cgap / 4dn)
     def get_status(self, jobid):
         return self.ff.wfr_run_status(jobid)
 
@@ -58,7 +58,7 @@ class CheckStatusFF(AbstractCheckStatus):
     @property
     def ff(self):
         """
-            Internal property used for get_status, get_output for portal
+            internal property used for get_status, get_output for portal
         """
         if not self._ff:
             self._ff = FFWfrUtils(self._env)
