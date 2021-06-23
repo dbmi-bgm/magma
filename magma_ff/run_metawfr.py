@@ -30,7 +30,7 @@ from tibanna.core import API
 def run_metawfr(metawf_uuid, metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap'):
     """
             metawf_uuid, uuid for meta-workflow
-            metawfr_uuid, uuid for old meta-workflow-run to import
+            metawfr_uuid, uuid for meta-workflow-run to run
     """
     # Get meta-workflow json from the portal
     wfl_json = ff_utils.get_metadata(metawf_uuid, add_on='?frame=raw', key=ff_key)
