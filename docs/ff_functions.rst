@@ -8,7 +8,7 @@ run_metawfr
 Function to run workflow-runs in meta-workflow-run.
 Calculates which workflow-runs are ready to run, starts the run with tibanna and patch the metadata.
 
-``run_metawfr(metawf_uuid<str>, metawfr_uuid<str>, ff_key<key>, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap')``
+``run_metawfr(metawfr_uuid<str>, ff_key<key>, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap')``
 
 .. code-block:: python
 
