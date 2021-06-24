@@ -2,7 +2,7 @@ import json
 import copy
 import uuid
 from magma import metawfl
-from magma_ff import ff_parser
+from magma_ff import parser
 from dcicutils import ff_utils
 
 # ff_key = ff_utils.get_authentication_with_server(ff_env='fourfront-cgapwolf')
@@ -14,7 +14,7 @@ case_uuid = '81278096-7c10-4c5a-8ac3-5e3014e83bbb'  # NA12879 on cgap
 metawfr_uuid = 'b08760e4-3f5d-475b-be0f-b7c4e5a71e61'
 
 
-def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
+def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, fastq_order=1, patch=False):
     metawfr_meta = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw', key=ff_key)
 
     def fill_in(wfr_name, wfr_meta, file_uuid, shard=None, arg_name=None):
@@ -41,6 +41,8 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
     sp_uuid = case_meta['sample_processing']
     sp_meta = ff_utils.get_metadata(sp_uuid, add_on='?frame=object', key=ff_key)
 
+    if 'processed_files' not in sp_meta:
+        raise Exception("can't fine processed files on sample processing.")
     last_pf_id = sp_meta['processed_files'][1]
     last_pf_meta = ff_utils.get_metadata(last_pf_id, add_on='?frame=object', key=ff_key)
 
@@ -52,7 +54,7 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
     last_pf_wfr_meta = ff_utils.get_metadata(last_pf_wfr_id, add_on='?frame=raw', key=ff_key)
 
     if not last_pf_wfr_meta['title'].startswith('workflow_hg19lo_hgvsg-check v22'):
-        raise Exception("Error: last processed file workflow rub is not workflow_hg19lo_hgvsg-check.")
+            raise Exception("Error: last processed file workflow rub is not workflow_hg19lo_hgvsg-check.")
 
     # workflow_hg19lo_hgvsg-check
     fill_in('workflow_hg19lo_hgvsg-check', last_pf_wfr_meta, last_pf_meta['uuid'])
@@ -193,94 +195,143 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
             prev_file_uuids.append(ipf['value'])
     ## IMPORTANT! V22 rcktar was run with samples in the order of proband-last. We need to switch that
     ## for consistenty with other shard ordering.
-    #prev_file_uuids.reverse()
-    #prev_file_uuids_reordered = prev_file_uuids
-    prev_file_uuids_reordered = [prev_file_uuids[-1]]
-    prev_file_uuids_reordered.extend(prev_file_uuids[0:-1])
+    if fastq_order == 1:
+        prev_file_uuids.reverse()
+        prev_file_uuids_reordered = prev_file_uuids
+    elif fastq_order == 2:
+        prev_file_uuids_reordered = [prev_file_uuids[-1]]
+        prev_file_uuids_reordered.extend(prev_file_uuids[0:-1])
 
-    shard = 0
-    for prev_file_uuid in prev_file_uuids_reordered:
-        prev_file_meta = ff_utils.get_metadata(prev_file_uuid, add_on='?frame=object', key=ff_key)
-        prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
-        prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
-        fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
+    while(True):
+        shard = 0
+        for prev_file_uuid in prev_file_uuids_reordered:
+            prev_file_meta = ff_utils.get_metadata(prev_file_uuid, add_on='?frame=object', key=ff_key)
+            prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+            prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+            fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
 
-        # workflow_gatk-ApplyBQSR-check
-        prevprev_file_uuid = ''
-        for ipf in prev_wfr_meta['input_files']:
-            if ipf['workflow_argument_name'] == 'input_bam':
-                prevprev_file_uuid = ipf['value']
-                break
-        prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
-        prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
-        prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
-        fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
+            # workflow_gatk-ApplyBQSR-check
+            prevprev_file_uuid = ''
+            for ipf in prev_wfr_meta['input_files']:
+                if ipf['workflow_argument_name'] == 'input_bam':
+                    prevprev_file_uuid = ipf['value']
+                    break
+            prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+            prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+            prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+            fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
 
-        # workflow_sort-bam-check
-        prevprev_file_uuid = ''
-        for ipf in prev_wfr_meta['input_files']:
-            if ipf['workflow_argument_name'] == 'input_bam':
-                prevprev_file_uuid = ipf['value']
-                break
-        prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
-        prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
-        prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
-        fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
+            # workflow_sort-bam-check
+            prevprev_file_uuid = ''
+            for ipf in prev_wfr_meta['input_files']:
+                if ipf['workflow_argument_name'] == 'input_bam':
+                    prevprev_file_uuid = ipf['value']
+                    break
+            prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+            prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+            prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+            fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
 
-        # workflow_picard-MarkDuplicates-check
-        prevprev_file_uuid = ''
-        for ipf in prev_wfr_meta['input_files']:
-            if ipf['workflow_argument_name'] == 'input_bam':
-                prevprev_file_uuid = ipf['value']
-                break
-        prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
-        prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
-        prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
-        fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
+            # workflow_picard-MarkDuplicates-check
+            prevprev_file_uuid = ''
+            for ipf in prev_wfr_meta['input_files']:
+                if ipf['workflow_argument_name'] == 'input_bam':
+                    prevprev_file_uuid = ipf['value']
+                    break
+            prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+            prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+            prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+            fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
 
-        # workflow_add-readgroups-check
-        prevprev_file_uuid = ''
-        for ipf in prev_wfr_meta['input_files']:
-            if ipf['workflow_argument_name'] == 'input_bam':
-                prevprev_file_uuid = ipf['value']
-                break
-        prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
-        prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
-        prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
-        fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard) + ':0')
+            # workflow_merge-bam
+            prevprev_file_uuid = ''
+            for ipf in prev_wfr_meta['input_files']:
+                if ipf['workflow_argument_name'] == 'input_bam':
+                    prevprev_file_uuid = ipf['value']
+                    break
+            prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+            print(prev_file_meta)
+            prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+            prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
 
-        # workflow_bwa-mem_no_unzip-check
-        prevprev_file_uuid = ''
-        for ipf in prev_wfr_meta['input_files']:
-            if ipf['workflow_argument_name'] == 'input_bam':
-                prevprev_file_uuid = ipf['value']
-                break
-        prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
-        prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
-        prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
-        fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard) + ':0')
+            # workflow_add-readgroups
+            print(prev_wfr_meta['awsem_app_name'])
+            if prev_wfr_meta['awsem_app_name'] == 'workflow_merge-bam-check':
 
-        shard += 1
+                fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard))
 
-    # check fastq shard matching
-    fastqs_R1 = []
-    fastqs_R2 = []
-    for wfr in metawfr_meta['workflow_runs']:
-        if wfr['name'] == 'workflow_bwa-mem_no_unzip-check':
-            wfr_meta = ff_utils.get_metadata(wfr['workflow_run'], add_on='?frame=raw', key=ff_key)
-            for ipf in wfr_meta['input_files']:
-                if ipf['workflow_argument_name'] == 'fastq_R1':
-                    fastqs_R1.append(ipf['value'])
-                elif ipf['workflow_argument_name'] == 'fastq_R2':
-                    fastqs_R2.append(ipf['value'])
+                prevprev_file_uuids = []
+                for ipf in prev_wfr_meta['input_files']:
+                    if ipf['workflow_argument_name'] == 'input_bams':
+                        prevprev_file_uuids.append(ipf['value'])
+                shard2 = 0
+                #random.shuffle(prevprev_file_uuids)
+                for prevprev_file_uuid in prevprev_file_uuids:
+                    prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+                    print(prev_file_meta)
+                    prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+                    prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+                    fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard) + ':' + str(shard2))
 
-    metawfr_input_fastqs_R1 = [ipf['file'] for ipf in metawfr_meta['input'][0]['files']]
-    metawfr_input_fastqs_R2 = [ipf['file'] for ipf in metawfr_meta['input'][1]['files']]
+                    # workflow_bwa-mem_no_unzip-check
+                    prevprev_file_uuid = ''
+                    for ipf in prev_wfr_meta['input_files']:
+                        if ipf['workflow_argument_name'] == 'input_bam':
+                            prevprev_file_uuid = ipf['value']
+                            break
+                    prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+                    print(prev_file_meta)
+                    prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+                    prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+                    fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard) + ':' + str(shard2))
 
-    if fastqs_R1 != metawfr_input_fastqs_R1:
-        raise Exception("Error: fastq ordering does not match.")
-    if fastqs_R2 != metawfr_input_fastqs_R2:
-        raise Exception("Error: fastq ordering does not match.")
+                    shard2 += 1
+
+                shard += 1
+
+            else:  # no merge-bam
+                fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard) + ':0')
+
+                # workflow_bwa-mem_no_unzip-check
+                prevprev_file_uuid = ''
+                for ipf in prev_wfr_meta['input_files']:
+                    if ipf['workflow_argument_name'] == 'input_bam':
+                        prevprev_file_uuid = ipf['value']
+                        break
+                prev_file_meta = ff_utils.get_metadata(prevprev_file_uuid, add_on='?frame=object', key=ff_key)
+                print(prev_file_meta)
+                prev_wfr_id = prev_file_meta['workflow_run_outputs'][0]
+                prev_wfr_meta = ff_utils.get_metadata(prev_wfr_id, add_on='?frame=raw', key=ff_key)
+                fill_in(prev_wfr_meta['awsem_app_name'], prev_wfr_meta, prev_file_meta['uuid'], shard=str(shard) + ':0')
+
+                shard += 1
+
+        print(json.dumps(metawfr_meta, indent=4))
+
+        # check fastq shard matching
+        fastqs_R1 = []
+        fastqs_R2 = []
+        for wfr in metawfr_meta['workflow_runs']:
+            if wfr['name'] == 'workflow_bwa-mem_no_unzip-check':
+                wfr_meta = ff_utils.get_metadata(wfr['workflow_run'], add_on='?frame=raw', key=ff_key)
+                for ipf in wfr_meta['input_files']:
+                    if ipf['workflow_argument_name'] == 'fastq_R1':
+                        fastqs_R1.append(ipf['value'])
+                    elif ipf['workflow_argument_name'] == 'fastq_R2':
+                        fastqs_R2.append(ipf['value'])
+
+        metawfr_input_fastqs_R1 = [ipf['file'] for ipf in metawfr_meta['input'][0]['files']]
+        metawfr_input_fastqs_R2 = [ipf['file'] for ipf in metawfr_meta['input'][1]['files']]
+
+        if fastqs_R1 != metawfr_input_fastqs_R1:
+            print("Error: fastq ordering does not match.")
+            #continue
+        if fastqs_R2 != metawfr_input_fastqs_R2:
+            print("Error: fastq ordering does not match.")
+            #continue
+        break
+
+    metawfr_input_fastq_shards = [ipf['dimension'].replace(',', ':') for ipf in metawfr_meta['input'][0]['files']]
 
     # fastqc
     # r1
@@ -295,9 +346,10 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                         if wfri_meta['run_status'] == 'complete':
                             all_runs.append(wfri_meta)
                 if len(all_runs) == 1:
-                    fill_in('fastqc-r1', wfri_meta, None, shard=str(i) + ':0')
+                    fill_in('fastqc-r1', all_runs[0], None, shard=metawfr_input_fastq_shards[i])
                 elif len(all_runs) > 1:
-                    raise Exception("Error: multiple fastq runs! : %s" % str(all_runs))
+                    wfri_meta = sorted(all_runs, key=lambda x: x['title'])[-1]
+                    fill_in('fastqc-r1', wfri_meta, None, shard=metawfr_input_fastq_shards[i])
                 else:
                     failed_runs = []
                     for wfri in fastq_meta['workflow_run_inputs']:
@@ -306,8 +358,8 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                             if wfri_meta['run_status'] == 'error' or wfri_meta['run_status'] == 'started':
                                 failed_runs.append(wfri_meta)
                     if len(failed_runs) == 1:
-                        fill_in('fastqc-r1', wfri_meta, None, shard=str(i) + ':0')
-                    elif len(all_runs) > 1:
+                        fill_in('fastqc-r1', failed_runs[0], None, shard=metawfr_input_fastq_shards[i])
+                    elif len(failed_runs) > 1:
                         raise Exception("Error: multiple failed fastq runs! : %s" % str(failed_runs))
     # r2
     for wfr in metawfr_meta['workflow_runs']:
@@ -321,9 +373,10 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                         if wfri_meta['run_status'] == 'complete':
                             all_runs.append(wfri_meta)
                 if len(all_runs) == 1:
-                    fill_in('fastqc-r2', wfri_meta, None, shard=str(i) + ':0')
+                    fill_in('fastqc-r2', all_runs[0], None, shard=metawfr_input_fastq_shards[i])
                 elif len(all_runs) > 1:
-                    raise Exception("Error: multiple fastq runs! %s" % str(all_runs))
+                    wfri_meta = sorted(all_runs, key=lambda x: x['title'])[-1]
+                    fill_in('fastqc-r2', wfri_meta, None, shard=metawfr_input_fastq_shards[i])
                 else:
                     failed_runs = []
                     for wfri in fastq_meta['workflow_run_inputs']:
@@ -332,8 +385,8 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                             if wfri_meta['run_status'] == 'error' or wfri_meta['run_status'] == 'started':
                                 failed_runs.append(wfri_meta)
                     if len(failed_runs) == 1:
-                        fill_in('fastqc-r1', wfri_meta, None, shard=str(i) + ':0')
-                    elif len(all_runs) > 1:
+                        fill_in('fastqc-r1', failed_runs[0], None, shard=metawfr_input_fastq_shards[i])
+                    elif len(failed_runs) > 1:
                         raise Exception("Error: multiple failed fastq runs! : %s" % str(failed_runs))
 
     # merge-bam
@@ -343,8 +396,9 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
             bams.append(wfr['output'][0]['file'])
     for wfr in metawfr_meta['workflow_runs']:
         if wfr['name'] == 'workflow_merge-bam-check':
-            wfr['output'] = [{'file': bams[int(wfr['shard'])], 'argument_name': 'merged_bam'}]
-            wfr['status'] = 'completed'
+            if 'output' not in wfr:
+                wfr['output'] = [{'file': bams[int(wfr['shard'])], 'argument_name': 'merged_bam'}]
+                wfr['status'] = 'completed'
 
     # workflow_gatk-BaseRecalibrator
     bams = []
@@ -364,9 +418,22 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                         all_runs.append(wfri_meta)
                         outfile_uuid = wfri_meta['output_files'][0]['value']  # recalibration report
             if len(all_runs) == 1:
-                fill_in('workflow_gatk-BaseRecalibrator', wfri_meta, outfile_uuid, shard=wfr['shard'])
+                fill_in('workflow_gatk-BaseRecalibrator', all_runs[0], outfile_uuid, shard=wfr['shard'])
+            elif len(all_runs) > 1:
+                wfri_meta = sorted(all_runs, key=lambda x: x['title'])[-1]
+                fill_in('workflow_gatk-BaseRecalibrator', wfri_meta, None, shard=wfr['shard'])
             else:
-                raise Exception("Error: multiple workflow_gatk-BaseRecalibrator runs!")
+                failed_runs = []
+                for wfri in bam_meta['workflow_run_inputs']:
+                    if wfri['display_title'].startswith('workflow_gatk-BaseRecalibrator'):
+                        wfri_meta = ff_utils.get_metadata(wfri['uuid'], add_on='?frame=raw', key=ff_key)
+                        if wfri_meta['run_status'] == 'error' or wfri_meta['run_status'] == 'started':
+                            failed_runs.append(wfri_meta)
+                if len(failed_runs) == 1:
+                    fill_in('workflow_gatk-BaseRecalibrator', failed_runs[0], None, shard=wfr['shard'])
+                elif len(failed_runs) > 1:
+                    wfri_meta = sorted(failed_runs, key=lambda x: x['title'])[-1]
+                    fill_in('workflow_gatk-BaseRecalibrator', wfri_meta, None, shard=wfr['shard'])
 
     # bamqc
     bams = []
@@ -384,9 +451,22 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                     if wfri_meta['run_status'] == 'complete':
                         all_runs.append(wfri_meta)
             if len(all_runs) == 1:
+                fill_in('cgap-bamqc', all_runs[0], None, shard=wfr['shard'])
+            elif len(all_runs) > 1:
+                wfri_meta = sorted(all_runs, key=lambda x: x['title'])[-1]
                 fill_in('cgap-bamqc', wfri_meta, None, shard=wfr['shard'])
             else:
-                raise Exception("Error: multiple cgap-bamqc runs!")
+                failed_runs = []
+                for wfri in bam_meta['workflow_run_inputs']:
+                    if wfri['display_title'].startswith('cgap-bamqc'):
+                        wfri_meta = ff_utils.get_metadata(wfri['uuid'], add_on='?frame=raw', key=ff_key)
+                        if wfri_meta['run_status'] == 'error' or wfri_meta['run_status'] == 'started':
+                            failed_runs.append(wfri_meta)
+                if len(failed_runs) == 1:
+                    fill_in('cgap-bamqc', failed_runs[0], None, shard=wfr['shard'])
+                elif len(failed_runs) > 1:
+                    wfri_meta = sorted(failed_runs, key=lambda x: x['title'])[-1]
+                    fill_in('cgap-bamqc', wfri_meta, None, shard=wfr['shard'])
 
     # workflow_gatk-HaplotypeCaller
     for wfr in metawfr_meta['workflow_runs']:
@@ -401,9 +481,21 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
                         all_runs.append(wfri_meta)
                         outfile_uuid = wfri_meta['output_files'][0]['value']
             if len(all_runs) == 1:
-                fill_in('workflow_gatk-HaplotypeCaller', wfri_meta, outfile_uuid, shard=wfr['shard'])
+                fill_in('workflow_gatk-HaplotypeCaller', all_runs[0], outfile_uuid, shard=wfr['shard'])
+            elif len(all_runs) > 1:
+                wfri_meta = sorted(all_runs, key=lambda x: x['title'])[-1]
+                fill_in('workflow_gatk-HaplotypeCaller', wfri_meta, None, shard=wfr['shard'])
             else:
-                raise Exception("Error: multiple workflow_gatk-HaplotypeCaller runs!")
+                failed_runs = []
+                for wfri in bam_meta['workflow_run_inputs']:
+                    if wfri['display_title'].startswith('workflow_gatk-HaplotypeCaller'):
+                        wfri_meta = ff_utils.get_metadata(wfri['uuid'], add_on='?frame=raw', key=ff_key)
+                        if wfri_meta['run_status'] == 'error' or wfri_meta['run_status'] == 'started':
+                            failed_runs.append(wfri_meta)
+                if len(failed_runs) == 1:
+                    fill_in('workflow_gatk-HaplotypeCaller', failed_runs[0], None, shard=wfr['shard'])
+                elif len(failed_runs) > 1:
+                    raise Exception("Error: multiple failed workflow_gatk-HaplotypeCaller runs! : %s" % str(failed_runs))
 
 
     final_status = 'completed'
@@ -414,6 +506,8 @@ def fill_in_metawfr_with_existing_wfrs(metawfr_uuid, case_uuid, patch=False):
         if wfr['status'] == 'pending':
             final_status = 'running'
             break
+    if final_status == 'completed':  # temporary fix till schema enum gets fixed
+        final_status = 'failed'
     metawfr_meta['final_status'] = final_status
 
     # patch the metadata!
