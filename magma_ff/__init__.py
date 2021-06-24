@@ -1,3 +1,0 @@
-from magma import (
-    runupdate
-)

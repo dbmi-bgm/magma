@@ -1,0 +1,18 @@
+Collecting tibanna
+  Using cached tibanna-1.3.1-py3-none-any.whl (93 kB)
+Requirement already satisfied: botocore>=1.12.1 in ./.eggs/botocore-1.20.99-py3.6.egg (from tibanna) (1.20.99)
+Requirement already satisfied: requests>=2.22.0 in ./.eggs/requests-2.25.1-py3.6.egg (from tibanna) (2.25.1)
+Requirement already satisfied: python-lambda-4dn==0.12.3 in ./.eggs/python_lambda_4dn-0.12.3-py3.6.egg (from tibanna) (0.12.3)
+Requirement already satisfied: boto3>=1.9.0 in ./.eggs/boto3-1.17.99-py3.6.egg (from tibanna) (1.17.99)
+Requirement already satisfied: urllib3>=1.24 in ./.eggs/urllib3-1.26.5-py3.6.egg (from tibanna) (1.26.5)
+Requirement already satisfied: Benchmark-4dn>=0.5.8 in ./.eggs/Benchmark_4dn-0.5.15-py3.6.egg (from tibanna) (0.5.15)
+Requirement already satisfied: docutils>=0.14 in ./.eggs/docutils-0.17.1-py3.6.egg (from python-lambda-4dn==0.12.3->tibanna) (0.17.1)
+Requirement already satisfied: jmespath<1.0.0,>=0.7.1 in ./.eggs/jmespath-0.10.0-py3.6.egg (from boto3>=1.9.0->tibanna) (0.10.0)
+Requirement already satisfied: s3transfer<0.5.0,>=0.4.0 in ./.eggs/s3transfer-0.4.2-py3.6.egg (from boto3>=1.9.0->tibanna) (0.4.2)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in ./.eggs/python_dateutil-2.8.1-py3.6.egg (from botocore>=1.12.1->tibanna) (2.8.1)
+Requirement already satisfied: six>=1.5 in /Users/soo/.pyenv/versions/3.6.10/envs/magma/lib/python3.6/site-packages (from python-dateutil<3.0.0,>=2.1->botocore>=1.12.1->tibanna) (1.16.0)
+Requirement already satisfied: certifi>=2017.4.17 in ./.eggs/certifi-2021.5.30-py3.6.egg (from requests>=2.22.0->tibanna) (2021.5.30)
+Requirement already satisfied: chardet<5,>=3.0.2 in ./.eggs/chardet-4.0.0-py3.6.egg (from requests>=2.22.0->tibanna) (4.0.0)
+Requirement already satisfied: idna<3,>=2.5 in ./.eggs/idna-2.10-py3.6.egg (from requests>=2.22.0->tibanna) (2.10)
+Installing collected packages: tibanna
+Successfully installed tibanna-1.3.1
