@@ -22,6 +22,8 @@ from magma_ff.parser import ParserFF
 class MetaWorkflow(MetaWorkflowFromMagma):
 
     def __init__(self, input_json):
+        """
+        """
         input_json_ = copy.deepcopy(input_json)
         ParserFF(input_json_).arguments_to_json()
 

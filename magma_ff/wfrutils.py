@@ -25,22 +25,22 @@ class FFWfrUtils(object):
         """
         self.env = env
 
-        # cache for metadata
+        # Cache for metadata
         self._metadata = dict()
-        # cache for access key
+        # Cache for access key
         self._ff_key = None
 
     def wfr_run_status(self, job_id):
         """
-            This is the function to be used by Magma.
+            this is the function to be used by Magma.
         """
         wfr_meta = self.wfr_metadata(job_id)
         return wfr_meta['run_status']
 
     def get_minimal_processed_output(self, job_id):
         """
-            This is the function to be used by Magma.
-            It returns a list of {'argument_name': <arg_name>, 'file': <uuid>}
+            this is the function to be used by Magma.
+            returns a list of {'argument_name': <arg_name>, 'file': <uuid>}
             for all processed file output
         """
         wfr_output = self.wfr_output(job_id)
@@ -48,18 +48,18 @@ class FFWfrUtils(object):
 
     def wfr_output(self, job_id):
         """
-            Return the raw output from the wfr metadata
+            return the raw output from the wfr metadata
         """
         return self.wfr_metadata(job_id)['output_files']
 
     def wfr_metadata(self, job_id):
         """
-            Get portal WorkflowRun metadata from job id
+            get portal WorkflowRun metadata from job id
         """
-        # use cache
+        # Use cache
         if job_id in self._metadata:
             return self._metadata[job_id]
-        # search by job id
+        # Search by job id
         query='/search/?type=WorkflowRun&awsem_job_id=%s' % job_id
         try:
             search_res = ff_utils.search_metadata(query, key=self.ff_key)
@@ -71,18 +71,18 @@ class FFWfrUtils(object):
     @property
     def ff_key(self):
         """
-            Get access key for the portal
+            get access key for the portal
         """
-        # use cache
+        # Use cache
         if not self._ff_key:
-            # use tibanna key for now
+            # Use tibanna key for now
             self._ff_key = s3Utils(env=self.env).get_access_keys('access_key_tibanna')
         return self._ff_key
 
     @staticmethod
     def filter_wfr_output_minimal_processed(wfr_output):
         """
-            Return a list of {'argument_name': <arg_name>, 'file': <uuid>}
+            return a list of {'argument_name': <arg_name>, 'file': <uuid>}
             for all processed file output
         """
         return [{'argument_name': opf['workflow_argument_name'],

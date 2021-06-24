@@ -1,0 +1,168 @@
+{
+    "meta_workflow": "UUID_NEW",
+    "workflow_runs": [
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "0:0"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "1:0"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "1:1"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "2:0"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "2:1"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "2:2"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:0:0"
+            ],
+            "shard": "0:0"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:1:0"
+            ],
+            "shard": "1:0"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:1:1"
+            ],
+            "shard": "1:1"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:0"
+            ],
+            "shard": "2:0"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:1"
+            ],
+            "shard": "2:1"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:2"
+            ],
+            "shard": "2:2"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:3"
+            ],
+            "shard": "2:3"
+        },
+        {
+            "name": "workflow_merge-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_add-readgroups-check:0:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_merge-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_add-readgroups-check:1:0",
+                "workflow_add-readgroups-check:1:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_merge-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_add-readgroups-check:2:0",
+                "workflow_add-readgroups-check:2:1",
+                "workflow_add-readgroups-check:2:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_picard-MarkDuplicates-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_merge-bam-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_picard-MarkDuplicates-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_merge-bam-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_picard-MarkDuplicates-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_merge-bam-check:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "FOO",
+            "status": "pending",
+            "dependencies": [
+                "workflow_picard-MarkDuplicates-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "FOO",
+            "status": "pending",
+            "dependencies": [
+                "workflow_picard-MarkDuplicates-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "FOO",
+            "status": "pending",
+            "dependencies": [
+                "workflow_picard-MarkDuplicates-check:2"
+            ],
+            "shard": "2"
+        }
+    ],
+    "input": [],
+    "final_status": "pending"
+}

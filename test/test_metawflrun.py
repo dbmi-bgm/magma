@@ -87,3 +87,33 @@ def test_update_functs_2():
     wflrun_obj.update_status() #now all step are pending
     assert wflrun_obj.final_status == 'pending'
 #end def
+
+def test_update_functs_3():
+    # meta-worfklow-run json
+    input_wflrun = {
+      'meta_workflow': 'AAID',
+      'workflow_runs' : [
+            {
+              'name': 'Foo',
+              'status': 'completed',
+              'shard': '0'
+            },
+            {
+              'name': 'Bar',
+              'status': 'pending',
+              'shard': '0'
+            },
+            {
+              'name': 'Poo',
+              'status': 'completed',
+              'shard': '0'
+            }],
+      'input': [],
+      'final_status': 'pending'
+    }
+    # Create object
+    wflrun_obj = run.MetaWorkflowRun(input_wflrun)
+    # Test update and inactive
+    wflrun_obj.update_status()
+    assert wflrun_obj.final_status == 'inactive'
+#end def
