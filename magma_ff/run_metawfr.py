@@ -19,7 +19,7 @@ from magma_ff import inputgenerator as ingen
 
 # dcicutils
 from dcicutils import ff_utils
-from tibanna.core import API
+from tibanna_ffcommon.core import API
 
 ################################################
 #   Functions
