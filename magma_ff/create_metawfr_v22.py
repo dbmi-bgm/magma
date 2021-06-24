@@ -67,7 +67,7 @@ def create_metawfr_from_case_proband_only(metawf_uuid, case_uuid, ff_key, post=F
     input = [{'argument_name': 'fastqs_R1', 'argument_type': 'file', 'files': r1_uuids},
              {'argument_name': 'fastqs_R2', 'argument_type': 'file', 'files': r2_uuids},
              {'argument_name': 'sample_names', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'},
-             {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'json'}]
+             {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'}]
 
     metawfr = {'meta_workflow': metawf_uuid,
                'input': input,
@@ -158,7 +158,7 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, ff_key, post=False, verbose
     input = [{'argument_name': 'fastqs_proband_first_R1', 'argument_type': 'file', 'files': r1_uuids_fam},
              {'argument_name': 'fastqs_proband_first_R2', 'argument_type': 'file', 'files': r2_uuids_fam},
              {'argument_name': 'sample_names_proband_first', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'},
-             {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'json'},
+             {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'},
              {'argument_name': 'family_size', 'argument_type': 'parameter', 'value': str(family_size), 'value_type': 'integer'},
              {'argument_name': 'rcktar_content_file_names', 'argument_type': 'parameter', 'value': rcktar_content_file_names_str, 'value_type': 'json'}]
 
