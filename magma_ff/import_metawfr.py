@@ -25,7 +25,7 @@ from dcicutils import ff_utils
 ################################################
 #   import_metawfr
 ################################################
-def import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_metawfr, ff_key, post=False, verbose=False):
+def import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_metawfr, type, ff_key, post=False, verbose=False):
     """
             metawf_uuid, uuid for meta-workflow
             metawfr_uuid, uuid for old meta-workflow-run to import
@@ -35,7 +35,7 @@ def import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_meta
             create_metawfr, is a function to create a new meta-workflow-run from meta-workflow and case metadata
     """
     # Create new meta-workflow-run json
-    run_json = create_metawfr(metawf_uuid, case_uuid, ff_key)
+    run_json = create_metawfr(metawf_uuid, case_uuid, type, ff_key)
     # Create MetaWorkflowRun object for new meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 
