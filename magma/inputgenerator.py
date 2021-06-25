@@ -258,9 +258,14 @@ class InputGenerator(object):
                     #end for
                 #end if
             #end for
-            if len(file_) > 1:
+            gather = getattr(arg_obj, 'gather', 0)
+            if gather == 1:  # gather 1 dimension
                 arg_obj.files = file_
-            else:
+            elif gather > 1:  # gather 2 dimensions
+                arg_obj.files = file_
+                for i in range(1, gather):
+                    arg_obj.files = [arg_obj.files]
+            else:  # no gather
                 arg_obj.files = file_[0]
             #end if
             return True

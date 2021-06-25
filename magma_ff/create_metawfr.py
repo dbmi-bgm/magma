@@ -79,11 +79,12 @@ def create_metawfr_input_from_pedigree_cram_proband_only(pedigree):
     # qc pedigree parameter
     qc_pedigree_str = json.dumps(pedigree_to_qc_pedigree(pedigree))
 
-    # family size
-    family_size = len(pedigree)
+    # bamsnap titles
+    bamsnap_titles_str = json.dumps([sample_names[0] + ' (proband)'])
 
     # create metawfr input
     input = [{'argument_name': 'crams', 'argument_type': 'file', 'files': cram_files},
+             {'argument_name': 'bamsnap_titles', 'argument_type': 'parameter', 'value': bamsnap_titles_str, 'value_type': 'json'},
              {'argument_name': 'sample_names', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'},
              {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'}]
 
@@ -120,13 +121,14 @@ def create_metawfr_input_from_pedigree_proband_only(pedigree):
     # qc pedigree parameter
     qc_pedigree_str = json.dumps(pedigree_to_qc_pedigree(pedigree))
 
-    # family size
-    family_size = len(pedigree)
+    # bamsnap titles
+    bamsnap_titles_str = json.dumps([sample_names[0] + ' (proband)'])
 
     # create metawfr
     input = [{'argument_name': 'fastqs_R1', 'argument_type': 'file', 'files': r1_uuids},
              {'argument_name': 'fastqs_R2', 'argument_type': 'file', 'files': r2_uuids},
              {'argument_name': 'sample_names', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'},
+             {'argument_name': 'bamsnap_titles', 'argument_type': 'parameter', 'value': bamsnap_titles_str, 'value_type': 'json'},
              {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'}]
 
     return input
@@ -169,11 +171,15 @@ def create_metawfr_input_from_pedigree_trio(pedigree):
     rcktar_content_file_names = [s + '.rck.gz' for s in sample_names]
     rcktar_content_file_names_str = json.dumps(rcktar_content_file_names)
 
+    # bamsnap titles
+    bamsnap_titles_str = json.dumps(['%s (%s)' % (s['sample_name'], s['relationship']) for s in pedigree])
+
     # create metawfr
     input = [{'argument_name': 'fastqs_proband_first_R1', 'argument_type': 'file', 'files': r1_uuids_fam},
              {'argument_name': 'fastqs_proband_first_R2', 'argument_type': 'file', 'files': r2_uuids_fam},
              {'argument_name': 'sample_names_proband_first', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'},
              {'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'},
+             {'argument_name': 'bamsnap_titles', 'argument_type': 'parameter', 'value': bamsnap_titles_str, 'value_type': 'json'},
              {'argument_name': 'family_size', 'argument_type': 'parameter', 'value': str(family_size), 'value_type': 'integer'},
              {'argument_name': 'rcktar_content_file_names', 'argument_type': 'parameter', 'value': rcktar_content_file_names_str, 'value_type': 'json'}]
 
