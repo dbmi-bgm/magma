@@ -98,7 +98,7 @@ def reset_status(metawfr_uuid, status, step_name, ff_key, verbose=False):
 
     # Get shards to reset
     to_reset = []
-    for shard_name, obj in run_obj.runs:
+    for shard_name, obj in run_obj.runs.items():
         if obj.status in status and obj.name in step_name:
             to_reset.append(shard_name)
         #end if
