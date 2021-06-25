@@ -77,14 +77,18 @@ def reset_shards(metawfr_uuid, shards_name, ff_key, verbose=False):
 ################################################
 #   reset_status
 ################################################
-def reset_status(metawfr_uuid, status, ff_key, verbose=False):
+def reset_status(metawfr_uuid, status, step_name, ff_key, verbose=False):
     """
             metawfr_uuid, uuid for meta-workflow-run
             status, status or list of status to reset
+            step_name, name or list of names for step-workflows that need to be reset
     """
     # Make status as list if it is string
     if isinstance(status, str):
         status = [status]
+    #end if
+    if isinstance(step_name, str):
+        step_name = [step_name]
     #end if
 
     # Get meta-workflow-run json from the portal
@@ -95,7 +99,7 @@ def reset_status(metawfr_uuid, status, ff_key, verbose=False):
     # Get shards to reset
     to_reset = []
     for shard_name, obj in run_obj.runs:
-        if obj.status in status:
+        if obj.status in status and obj.name in step_name:
             to_reset.append(shard_name)
         #end if
     #end for
