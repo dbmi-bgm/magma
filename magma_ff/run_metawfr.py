@@ -27,7 +27,7 @@ from tibanna_ffcommon.core import API
 ################################################
 #   run_metawfr
 ################################################
-def run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap'):
+def run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap', maxcount=None):
     """
             metawfr_uuid, uuid for meta-workflow-run to run
     """
@@ -52,6 +52,7 @@ def run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='f
     in_gen = ingen_obj.input_generator(env)
 
     # Start run and patch
+    count = 0
     for input_json, patch_dict in in_gen:
         # Start tibanna run
         API().run_workflow(input_json=input_json, sfn=sfn)
@@ -60,5 +61,8 @@ def run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='f
         if verbose:
             print(res_post)
         #end if
+        count += 1
+        if maxcount and count >= maxcount:
+            break
     #end for
 #end def
