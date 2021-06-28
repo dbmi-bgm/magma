@@ -62,11 +62,13 @@ def test_CheckStatusFF_failed():
     with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_status', return_value='error'):
         with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_output',
                         return_value=[{'argument_name': 'raw_bam', 'files': 'abc'}]):
-            res = next(cr)
+            with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_uuid', return_value='run_uuid'):
+                res = next(cr)
 
     # check yielded result
     assert len(res['workflow_runs']) == len(data_wflrun['workflow_runs'])  # same as original
     assert res['workflow_runs'][0] == {'name': 'workflow_bwa-mem_no_unzip-check',
+                      'workflow_run': 'run_uuid',
                       'shard': '0:0',
                       'jobid': 'somejobid',
                       'status': 'failed'}  # changed from running to failed, no output.
@@ -92,7 +94,8 @@ def test_CheckStatusFF_running():
     with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_status', return_value='started'):
         with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_output',
                         return_value=[{'argument_name': 'raw_bam', 'files': 'abc'}]):
-            res = next(cr)
+            with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_uuid', return_value='run_uuid'):
+                res = next(cr)
 
     # check yielded result
     assert res is None
@@ -115,6 +118,7 @@ def test_CheckStatusFF_real_failed():
     cr = cs.check_running()
     res = next(cr)
     assert res['workflow_runs'] == [{'jobid': 'c5TzfqljUygR',
+                    'workflow_run': '750851fd-00ad-49d9-98db-468cbdd552b5',
                     'name': 'workflow_bwa-mem_no_unzip-check',
                     'shard': '0:0',
                     'status': 'failed'}]  # add failed status, not adding output
