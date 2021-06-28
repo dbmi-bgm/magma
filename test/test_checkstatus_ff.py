@@ -29,11 +29,13 @@ def test_CheckStatusFF():
     with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_status', return_value='complete'):
         with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_output',
                         return_value=[{'argument_name': 'raw_bam', 'files': 'abc'}]):
-            res = next(cr)
+            with mock.patch('magma_ff.checkstatus.CheckStatusFF.get_uuid', return_value='run_uuid'):
+                res = next(cr)
 
     # check yielded result
     assert len(res['workflow_runs']) == len(data_wflrun['workflow_runs'])  # same as original
     assert res['workflow_runs'][0] == {'name': 'workflow_bwa-mem_no_unzip-check',
+                      'workflow_run': 'run_uuid',
                       'shard': '0:0',
                       'jobid': 'somejobid',
                       'status': 'completed',  # changed from running to completed
@@ -135,6 +137,7 @@ def test_CheckStatusFF_real_completed():
     cr = cs.check_running()
     res = next(cr)
     assert res['workflow_runs'] == [{'jobid': 'RCYui9haX4Ea',
+                    'workflow_run': 'aee412ea-02ad-4dc7-b470-011fdbacf60f',
                     'name': 'workflow_bwa-mem_no_unzip-check',
                     'shard': '0:0',
                     # add status and output

@@ -60,8 +60,14 @@ class AbstractCheckStatus(object):
                 # Get formatted output
                 output = self.get_output(run_obj.jobid)
 
-                # Update output only if it the run succeeded
+                # Update output
                 self.wflrun_obj.update_attribute(run_obj.shard_name, 'output', output)
+
+                # Get run uuid
+                run_uuid = self.get_uuid(run_obj.jobid)
+
+                # Update run uuid
+                self.wflrun_obj.update_attribute(run_obj.shard_name, 'workflow_run', run_uuid)
 
             elif status == 'running':
                 yield None  # yield None so that it doesn't terminate iteration
@@ -92,5 +98,10 @@ class AbstractCheckStatus(object):
         """
         """
         return [{'argument_name': 'arg', 'files': 'uuid'}]
+
+    def get_uuid(self, jobid):
+        """
+        """
+        return 'uuid'
 
 #end class

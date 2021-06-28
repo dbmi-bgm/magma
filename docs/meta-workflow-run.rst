@@ -39,8 +39,8 @@ Structure
                 }
               ],
               # Additonal fields created to link the actual run
-              "jobid": "",
-              "workflow_run":
+              "jobid": "", # run identifier
+              "workflow_run": # universally unique identifier
             },
 
             # Example

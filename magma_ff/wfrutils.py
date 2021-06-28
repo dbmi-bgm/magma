@@ -30,6 +30,13 @@ class FFWfrUtils(object):
         # Cache for access key
         self._ff_key = None
 
+    def wfr_run_uuid(self, job_id):
+        """
+            this is the function to be used by Magma.
+        """
+        wfr_meta = self.wfr_metadata(job_id)
+        return wfr_meta['uuid']
+
     def wfr_run_status(self, job_id):
         """
             this is the function to be used by Magma.

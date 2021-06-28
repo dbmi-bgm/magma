@@ -49,6 +49,9 @@ class CheckStatusFF(AbstractCheckStatus):
         }
 
     # The following three functions are for portal (cgap / 4dn)
+    def get_uuid(self, jobid):
+        return self.ff.wfr_run_uuid(jobid)
+
     def get_status(self, jobid):
         return self.ff.wfr_run_status(jobid)
 
