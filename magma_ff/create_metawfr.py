@@ -10,9 +10,9 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, v
     """This is the main API - the rest are internal functions.
     type should be 'WGS trio', 'WGS proband', 'WGS cram proband'
     """
-    case_meta = ff_utils.get_metadata(case_uuid, add_on='?frame=raw', key=ff_key)
+    case_meta = ff_utils.get_metadata(case_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
     sp_uuid = case_meta['sample_processing']
-    sp_meta = ff_utils.get_metadata(sp_uuid, add_on='?frame=object', key=ff_key)
+    sp_meta = ff_utils.get_metadata(sp_uuid, add_on='?frame=object&datastore=database', key=ff_key)
     pedigree = sp_meta['samples_pedigree']
     pedigree = remove_parents_without_sample(pedigree)  # remove no-sample individuals
     pedigree = sort_pedigree(pedigree)
@@ -38,7 +38,7 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, v
 
 
 def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta):
-    metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='?frame=raw', key=ff_key)
+    metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
     metawfr = {'meta_workflow': metawf_uuid,
                'input': metawfr_input,
                'title': 'MetaWorkflowRun %s on case %s' % (metawf_meta['title'], case_meta['accession']),
@@ -68,7 +68,7 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta):
 def create_metawfr_input_from_pedigree_cram_proband_only(pedigree):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
-    sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw', key=ff_key)
+    sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
     cram_uuids = sample_meta['cram_files']
     cram_files = [{'file': cf, 'dimension': str(i)} for i, cf in enumerate(cram_uuids)]
 
@@ -94,13 +94,13 @@ def create_metawfr_input_from_pedigree_cram_proband_only(pedigree):
 def create_metawfr_input_from_pedigree_proband_only(pedigree):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
-    sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw', key=ff_key)
+    sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
     fastq_uuids = sample_meta['files']
     r1_uuids =[]
     r2_uuids = []
     j = 0  # second dimension of files
     for fastq_uuid in fastq_uuids:
-        fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw', key=ff_key)
+        fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
         #if fastq_meta['paired_end'] == '1':
         #    dimension = str(j)  # dimension string for files
         #    r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
@@ -141,13 +141,13 @@ def create_metawfr_input_from_pedigree_trio(pedigree):
     i = 0  # first dimension of files
     for sample in pedigree:
         sample_acc = sample['sample_accession']
-        sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw', key=ff_key)
+        sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
         fastq_uuids = sample_meta['files']
         r1_uuids =[]
         r2_uuids = []
         j = 0  # second dimension of files
         for fastq_uuid in fastq_uuids:
-            fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw', key=ff_key)
+            fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
             if fastq_meta['paired_end'] == '1':
                 dimension = '%d,%d' % (i, j)  # dimension string for files
                 r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
