@@ -1,2 +1,3 @@
-dcicutils
-tibanna_ff>=0.20.0b
+mock
+dcicutils>=1.19.0
+tibanna-ff>=0.20.0
