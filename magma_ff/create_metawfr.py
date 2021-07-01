@@ -6,7 +6,7 @@ from magma_ff.metawflrun import MetaWorkflowRun
 from dcicutils import ff_utils
 
 
-def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, verbose=False):
+def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
     """This is the main API - the rest are internal functions.
     type should be 'WGS trio', 'WGS proband', 'WGS cram proband'
     """
@@ -30,10 +30,16 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, v
 
     # post meta-wfr
     if post:
+        print("posting metawfr...")
         res_post = ff_utils.post_metadata(metawfr, 'MetaWorkflowRun', key=ff_key)
         if verbose:
             print(res_post)
 
+    if patch_case:
+        print("patching case with metawfr...")
+        res_patch = ff_utils.patch_metadata({'meta_workflow_run': metawfr['uuid']}, case_uuid, key=ff_key)
+        if verbose:
+            print(res_patch)
     return metawfr
 
 
