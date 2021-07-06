@@ -5,11 +5,9 @@ FF_functions
 create_metawfr
 **************
 
-Function to create a meta-workflow-run json structure for case from case metadata.
+The function ``create_metawfr_from_case(metawf_uuid<str>, case_uuid<str>, type<str>, ff_key<key>, post=False, patch_case=False, verbose=False)`` allows to create a meta-workflow-run json structure for case from case metadata.
 Return json structure for the meta-workflow-run.
 Can automatically post the meta-workflow-run as *MetaWorkflowRun* object on the portal and patch ``meta_workflow_run`` key for case with the new uuid.
-
-``create_metawfr_from_case(metawf_uuid<str>, case_uuid<str>, type<str>, ff_key<key>, post=False, patch_case=False, verbose=False)``
 
 .. code-block:: python
 
@@ -36,10 +34,8 @@ Can automatically post the meta-workflow-run as *MetaWorkflowRun* object on the 
 run_metawfr
 ***********
 
-Function to run workflow-runs in meta-workflow-run.
-Calculates which workflow-runs are ready to run, starts the run with tibanna and patch the metadata.
-
-``run_metawfr(metawfr_uuid<str>, ff_key<key>, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap', maxcount=None)``
+The function ``run_metawfr(metawfr_uuid<str>, ff_key<key>, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap', maxcount=None)`` allows to run workflow-runs in meta-workflow-run.
+Calculates which workflow-runs are ready to run, starts the run with tibanna and patches the metadata.
 
 .. code-block:: python
 
@@ -65,10 +61,8 @@ Calculates which workflow-runs are ready to run, starts the run with tibanna and
 status_metawfr
 **************
 
-Function to check and patch status for workflow-runs in meta-workflow-run that are running.
+The function ``status_metawfr(metawfr_uuid<str>, ff_key<key>, verbose=False, env='fourfront-cgap')`` allows to check and patch status for workflow-runs in meta-workflow-run that are running.
 Update the status to ``completed`` or ``failed`` for finished runs.
-
-``status_metawfr(metawfr_uuid<str>, ff_key<key>, verbose=False, env='fourfront-cgap')``
 
 .. code-block:: python
 
@@ -90,12 +84,10 @@ Update the status to ``completed`` or ``failed`` for finished runs.
 import_metawfr
 **************
 
-Creates a new meta-workflow-run json structure for case using specified ``create_metawfr`` function.
+The function ``import_metawfr(metawf_uuid<str>, metawfr_uuid<str>, case_uuid<str>, steps_name<str list>, create_metawfr<function>, type<str>, ff_key<key>, post=False, verbose=False)`` allows to create a new meta-workflow-run json structure for case using specified ``create_metawfr`` function.
 Imports information from different meta-workflow-run specified as ``metawfr_uuid`` for steps that are listed in ``steps_name``.
 Return json structure for the new meta-workflow-run.
 Can automatically post the new meta-workflow-run as *MetaWorkflowRun* object on the portal.
-
-``import_metawfr(metawf_uuid<str>, metawfr_uuid<str>, case_uuid<str>, steps_name<str list>, create_metawfr<function>, type<str>, ff_key<key>, post=False, verbose=False)``
 
 .. code-block:: python
 
@@ -121,7 +113,7 @@ Can automatically post the new meta-workflow-run as *MetaWorkflowRun* object on 
     steps_name = ['workflow_granite-mpileupCounts', 'workflow_gatk-ApplyBQSR-check']
 
     # create_metawfr
-    #   function to use to create a new meta-workflow-run structure from case
+    #   function to create a new meta-workflow-run structure from case
     #   e.g. create_metawfr.create_metawfr_from_case
 
     metawfr_json = import_metawfr.import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_metawfr.create_metawfr_from_case, type, ff_key)
@@ -130,9 +122,7 @@ Can automatically post the new meta-workflow-run as *MetaWorkflowRun* object on 
 reset_metawfr
 *************
 
-Re-set workflow-runs in meta-workflow-run that correspond to a step defined in ``step_name`` and with status in ``status``.
-
-``reset_status(metawfr_uuid<str>, status<str | str list>, step_name<str | str list>, ff_key<key>, verbose=False)``
+The function ``reset_status(metawfr_uuid<str>, status<str | str list>, step_name<str | str list>, ff_key<key>, verbose=False)`` allows to re-set workflow-runs in meta-workflow-run that correspond to a step defined in ``step_name`` and with status in ``status``.
 
 .. code-block:: python
 
