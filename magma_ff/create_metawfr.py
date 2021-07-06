@@ -19,14 +19,14 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
 
     if type == 'WGS cram proband':
         pedigree = pedigree[0:1]
-        input = create_metawfr_input_from_pedigree_proband_only(pedigree)
+        input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
     elif type == 'WGS proband':
         pedigree = pedigree[0:1]
-        input = create_metawfr_input_from_pedigree_proband_only(pedigree)
+        input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
     elif type == 'WGS trio':
-        input = create_metawfr_input_from_pedigree_trio(pedigree)
+        input = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
 
-    metawfr = create_metawfr_from_input(input, metawf_uuid, case_meta)
+    metawfr = create_metawfr_from_input(input, metawf_uuid, case_meta, ff_key)
 
     # post meta-wfr
     if post:
@@ -40,10 +40,11 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
         res_patch = ff_utils.patch_metadata({'meta_workflow_run': metawfr['uuid']}, case_uuid, key=ff_key)
         if verbose:
             print(res_patch)
+
     return metawfr
 
 
-def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta):
+def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
     metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
     metawfr = {'meta_workflow': metawf_uuid,
                'input': metawfr_input,
@@ -71,7 +72,7 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta):
     return metawfr
 
 
-def create_metawfr_input_from_pedigree_cram_proband_only(pedigree):
+def create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
     sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
@@ -97,7 +98,7 @@ def create_metawfr_input_from_pedigree_cram_proband_only(pedigree):
     return input
 
 
-def create_metawfr_input_from_pedigree_proband_only(pedigree):
+def create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
     sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
@@ -140,7 +141,7 @@ def create_metawfr_input_from_pedigree_proband_only(pedigree):
     return input
 
 
-def create_metawfr_input_from_pedigree_trio(pedigree):
+def create_metawfr_input_from_pedigree_trio(pedigree, ff_key):
     # prepare fastq input
     r1_uuids_fam = []
     r2_uuids_fam = []
@@ -195,6 +196,7 @@ def create_metawfr_input_from_pedigree_trio(pedigree):
 def sort_pedigree(pedigree):
     sorted_pedigree = sorted(pedigree, key=lambda x: x['relationship'] != 'proband') # make it proband-first
     sorted_pedigree[1:] = sorted(sorted_pedigree[1:], key=lambda x: x['relationship'] not in ['mother','father']) # parents next
+
     return sorted_pedigree
 
 
@@ -213,6 +215,7 @@ def pedigree_to_qc_pedigree(samples_pedigree):
             'sample_name': sample.get('sample_name', '')
             }
         qc_pedigree.append(member_qc_pedigree)
+
     return qc_pedigree
 
 
@@ -222,4 +225,5 @@ def remove_parents_without_sample(samples_pedigree):
         parents = a_member['parents']
         new_parents = [i for i in parents if i in individuals]
         a_member['parents'] = new_parents
+
     return samples_pedigree

@@ -57,4 +57,6 @@ def import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_meta
             print(res_post)
         #end if
     #end if
+
+    return run_json_updated
 #end def
