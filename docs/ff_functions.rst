@@ -6,7 +6,7 @@ create_metawfr
 **************
 
 The function ``create_metawfr_from_case(metawf_uuid<str>, case_uuid<str>, type<str>, ff_key<key>, post=False, patch_case=False, verbose=False)`` allows to create a meta-workflow-run json structure for case from case metadata.
-Return json structure for the meta-workflow-run.
+Returns json structure for the meta-workflow-run.
 Can automatically post the meta-workflow-run as *MetaWorkflowRun* object on the portal and patch ``meta_workflow_run`` key for case with the new uuid.
 
 .. code-block:: python
@@ -55,14 +55,14 @@ Calculates which workflow-runs are ready to run, starts the run with tibanna and
     #   step function to use for tibanna
     sfn = 'tibanna_zebra'
 
-    run_metawfr.run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap', maxcount=None)
+    run_metawfr.run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn=sfn, env=env, maxcount=None)
 
 
 status_metawfr
 **************
 
 The function ``status_metawfr(metawfr_uuid<str>, ff_key<key>, verbose=False, env='fourfront-cgap')`` allows to check and patch status for workflow-runs in meta-workflow-run that are running.
-Update the status to ``completed`` or ``failed`` for finished runs.
+Updates the status to ``completed`` or ``failed`` for finished runs.
 
 .. code-block:: python
 
@@ -86,7 +86,7 @@ import_metawfr
 
 The function ``import_metawfr(metawf_uuid<str>, metawfr_uuid<str>, case_uuid<str>, steps_name<str list>, create_metawfr<function>, type<str>, ff_key<key>, post=False, verbose=False)`` allows to create a new meta-workflow-run json structure for case using specified ``create_metawfr`` function.
 Imports information from different meta-workflow-run specified as ``metawfr_uuid`` for steps that are listed in ``steps_name``.
-Return json structure for the new meta-workflow-run.
+Returns json structure for the new meta-workflow-run.
 Can automatically post the new meta-workflow-run as *MetaWorkflowRun* object on the portal.
 
 .. code-block:: python
