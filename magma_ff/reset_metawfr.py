@@ -116,3 +116,34 @@ def reset_status(metawfr_uuid, status, step_name, ff_key, verbose=False):
         print(res_post)
     #end if
 #end def
+
+################################################
+#   reset_all
+################################################
+def reset_all(metawfr_uuid, ff_key, verbose=False):
+    """
+            metawfr_uuid, uuid for meta-workflow-run
+    """
+    # Get meta-workflow-run json from the portal
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    # Create MetaWorkflowRun object for meta-workflow-run
+    run_obj = MetaWorkflowRun(run_json)
+
+    # Get shards to reset
+    to_reset = []
+    for shard_name in run_obj.runs:
+        to_reset.append(shard_name)
+    #end for
+
+    # Create RunUpdate object for new meta-workflow-run
+    runupd_obj = RunUpdate(run_obj)
+
+    # Reset shards
+    patch_dict = runupd_obj.reset_shards(to_reset)
+
+    # Patch
+    res_post = ff_utils.patch_metadata(patch_dict, metawfr_uuid, key=ff_key)
+    if verbose:
+        print(res_post)
+    #end if
+#end def
