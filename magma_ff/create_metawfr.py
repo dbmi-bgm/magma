@@ -19,7 +19,7 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
 
     if type == 'WGS cram proband':
         pedigree = pedigree[0:1]
-        input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
+        input = create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key)
     elif type == 'WGS proband':
         pedigree = pedigree[0:1]
         input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
