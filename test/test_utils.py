@@ -180,7 +180,7 @@ def test_inputgen_WGS_trio_scatter():
           'env': 'env'
         },
         'input_files': [
-            {'workflow_argument_name': 'input_bams', 'uuid': ['uuid-bam_w_readgroups-2:0', 'uuid-bam_w_readgroups-2:1', 'uuid-bam_w_readgroups-2:2'], 'mount': True}]}
+            {'workflow_argument_name': 'input_bams', 'uuid': [['uuid-bam_w_readgroups-2:0', 'uuid-bam_w_readgroups-2:1', 'uuid-bam_w_readgroups-2:2']], 'mount': True}]}
         ]
     shard = [
         'workflow_bwa-mem_no_unzip-check:0:0',

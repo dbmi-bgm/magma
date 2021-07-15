@@ -100,6 +100,7 @@ Structure
               #   These are optional fields that can be used to change input argument dimension
               "scatter": 2, # dimension to scatter list argument if any
               "gather": 1, # increment for input argument dimension if previous steps were scattered
+              "extra_dimension": 1, # additional increment for input dimension on top of gather
 
               # These are optional fields
               #   It is possible to skip these fields or add custom ones

@@ -79,6 +79,8 @@ def reset_shards(metawfr_uuid, shards_name, ff_key, verbose=False):
 ################################################
 def reset_status(metawfr_uuid, status, step_name, ff_key, verbose=False):
     """
+        reset shards with status in status and with name in step_name
+
             metawfr_uuid, uuid for meta-workflow-run
             status, status or list of status to reset
             step_name, name or list of names for step-workflows that need to be reset
@@ -122,6 +124,8 @@ def reset_status(metawfr_uuid, status, step_name, ff_key, verbose=False):
 ################################################
 def reset_all(metawfr_uuid, ff_key, verbose=False):
     """
+        reset all shards
+
             metawfr_uuid, uuid for meta-workflow-run
     """
     # Get meta-workflow-run json from the portal
@@ -133,6 +137,41 @@ def reset_all(metawfr_uuid, ff_key, verbose=False):
     to_reset = []
     for shard_name in run_obj.runs:
         to_reset.append(shard_name)
+    #end for
+
+    # Create RunUpdate object for new meta-workflow-run
+    runupd_obj = RunUpdate(run_obj)
+
+    # Reset shards
+    patch_dict = runupd_obj.reset_shards(to_reset)
+
+    # Patch
+    res_post = ff_utils.patch_metadata(patch_dict, metawfr_uuid, key=ff_key)
+    if verbose:
+        print(res_post)
+    #end if
+#end def
+
+################################################
+#   reset_failed
+################################################
+def reset_failed(metawfr_uuid, ff_key, verbose=False):
+    """
+        reset all shards with status failed
+
+            metawfr_uuid, uuid for meta-workflow-run
+    """
+    # Get meta-workflow-run json from the portal
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    # Create MetaWorkflowRun object for meta-workflow-run
+    run_obj = MetaWorkflowRun(run_json)
+
+    # Get shards to reset
+    to_reset = []
+    for shard_name, obj in run_obj.runs.items():
+        if obj.status == 'failed':
+            to_reset.append(shard_name)
+        #end if
     #end for
 
     # Create RunUpdate object for new meta-workflow-run
