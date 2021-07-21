@@ -14,6 +14,8 @@ import sys, os
 # dcicutils
 from dcicutils import ff_utils
 from dcicutils.s3_utils import s3Utils
+from tibanna.job import Job
+
 
 ################################################
 #   FFWfrUtils
@@ -35,33 +37,47 @@ class FFWfrUtils(object):
             this is the function to be used by Magma.
         """
         wfr_meta = self.wfr_metadata(job_id)
+        if not wfr_meta:
+            return None
         return wfr_meta['uuid']
 
     def wfr_run_status(self, job_id):
         """
-            this is the function to be used by Magma.
+            This is the function to be used by Magma.
+            Returns the run status of the wfr associated with the job id.
+            If wfr associated with job id is not found, we consider it failed.
         """
         wfr_meta = self.wfr_metadata(job_id)
-        return wfr_meta['run_status']
+        if not wfr_meta:
+            return 'failed'
+        else:
+            return wfr_meta['run_status']
 
     def get_minimal_processed_output(self, job_id):
         """
             this is the function to be used by Magma.
             returns a list of {'argument_name': <arg_name>, 'file': <uuid>}
-            for all processed file output
+            for all processed file output.
+            If no output, returns None.
         """
         wfr_output = self.wfr_output(job_id)
         return self.filter_wfr_output_minimal_processed(wfr_output)
 
     def wfr_output(self, job_id):
         """
-            return the raw output from the wfr metadata
+            return the raw output from the wfr metadata.
+            returns None if wfr metadata associated with the job is not found or
+            does not have associated output files.
         """
-        return self.wfr_metadata(job_id)['output_files']
+        if self.wfr_metadata(job_id):
+            return self.wfr_metadata(job_id).get('output_files', None)
+        else:
+            return None
 
     def wfr_metadata(self, job_id):
         """
             get portal WorkflowRun metadata from job id
+            returns None if a workflow run associated with job id cannot be found.
         """
         # Use cache
         if job_id in self._metadata:
@@ -72,8 +88,19 @@ class FFWfrUtils(object):
             search_res = ff_utils.search_metadata(query, key=self.ff_key)
         except Exception as e:
             raise FdnConnectionException(e)
-        self._metadata[job_id] = search_res[0]
-        return search_res[0]
+        if search_res:
+            self._metadata[job_id] = search_res[0]
+            return self._metadata[job_id]
+        else:
+            # find it from dynamoDB
+            job_info = Job.info(job_id)
+            if not job_info:
+                return None
+            wfr_uuid = job_info.get('WorkflowRun uuid', '')
+            if not wfr_uuid:
+                return None
+            self._metadata[job_id] = ff_utils.get_metadata(wfr_uuid, key=self.ff_key)
+            return self._metadata[job_id]
 
     @property
     def ff_key(self):
@@ -92,12 +119,16 @@ class FFWfrUtils(object):
             return a list of {'argument_name': <arg_name>, 'file': <uuid>}
             for all processed file output
         """
-        return [{'argument_name': opf['workflow_argument_name'],
-                 'file': opf['value']['uuid']} \
-                    for opf in wfr_output \
-                        if opf['type'] == 'Output processed file']
+        if wfr_output:
+            return [{'argument_name': opf['workflow_argument_name'],
+                     'file': opf['value']['uuid']} \
+                        for opf in wfr_output \
+                            if opf['type'] == 'Output processed file']
+        else:
+            return None
 
 #end class
+
 
 class FdnConnectionException(Exception):
     pass
