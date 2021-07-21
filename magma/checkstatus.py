@@ -58,8 +58,9 @@ class AbstractCheckStatus(object):
             # Get run uuid
             run_uuid = self.get_uuid(run_obj.jobid)
 
-            # Update run uuid no matter what
-            self.wflrun_obj.update_attribute(run_obj.shard_name, 'workflow_run', run_uuid)
+            # Update run uuid regardless of the status
+            if run_uuid:  # some failed runs don't have run uuid
+                self.wflrun_obj.update_attribute(run_obj.shard_name, 'workflow_run', run_uuid)
 
             if status == 'completed':
 
@@ -67,7 +68,8 @@ class AbstractCheckStatus(object):
                 output = self.get_output(run_obj.jobid)
 
                 # Update output
-                self.wflrun_obj.update_attribute(run_obj.shard_name, 'output', output)
+                if output:
+                    self.wflrun_obj.update_attribute(run_obj.shard_name, 'output', output)
 
             elif status == 'running':
                 yield None  # yield None so that it doesn't terminate iteration
