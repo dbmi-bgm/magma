@@ -14,6 +14,8 @@ import sys, os
 # dcicutils
 from dcicutils import ff_utils
 from dcicutils.s3_utils import s3Utils
+from tibanna.job import Job
+
 
 ################################################
 #   FFWfrUtils
