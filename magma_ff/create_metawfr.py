@@ -5,7 +5,9 @@ from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
 from dcicutils import ff_utils
 
-
+################################################
+#   create_metawfr_from_case (main)
+################################################
 def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
     """This is the main API - the rest are internal functions.
     type should be 'WGS trio', 'WGS proband', 'WGS cram proband'
@@ -25,6 +27,8 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
         input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
     elif type == 'WGS trio':
         input = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
+    elif type == 'SV proband' or type == 'SV trio':
+        input = create_metawfr_input_from_pedigree_SV(pedigree)
 
     metawfr = create_metawfr_from_input(input, metawf_uuid, case_meta, ff_key)
 
@@ -37,13 +41,18 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
 
     if patch_case:
         print("patching case with metawfr...")
-        res_patch = ff_utils.patch_metadata({'meta_workflow_run': metawfr['uuid']}, case_uuid, key=ff_key)
+        if type in ['WGS cram proband', 'WGS proband', 'WGS trio']:
+            res_patch = ff_utils.patch_metadata({'meta_workflow_run': metawfr['uuid']}, case_uuid, key=ff_key)
+        elif type in ['SV proband', 'SV trio']:
+            res_patch = ff_utils.patch_metadata({'meta_workflow_run_sv': metawfr['uuid']}, case_uuid, key=ff_key)
         if verbose:
             print(res_patch)
 
     return metawfr
 
-
+################################################
+#   create_metawfr_from_input
+################################################
 def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
     metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
     metawfr = {'meta_workflow': metawf_uuid,
@@ -71,7 +80,25 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
 
     return metawfr
 
+################################################
+#   create_metawfr_input_from_pedigree_SV
+################################################
+def create_metawfr_input_from_pedigree_SV(pedigree):
+    input = {
+        'argument_name': 'input_bams',
+        'argument_type': 'file', 'files':[]}
 
+    dimension = -1
+    for a_member in pedigree:
+        dimension += 1
+        x = a_member['bam_location'].split("/")[0]
+        input['files'].append({'file': x, 'dimension': str(dimension)})
+
+    return [input] #need to return a list also if it's only one argument
+
+################################################
+#   create_metawfr_input_from_pedigree_cram_proband_only
+################################################
 def create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
@@ -97,7 +124,9 @@ def create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key):
 
     return input
 
-
+################################################
+#   create_metawfr_input_from_pedigree_proband_only
+################################################
 def create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
@@ -140,7 +169,9 @@ def create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key):
 
     return input
 
-
+################################################
+#   create_metawfr_input_from_pedigree_trio
+################################################
 def create_metawfr_input_from_pedigree_trio(pedigree, ff_key):
     # prepare fastq input
     r1_uuids_fam = []
@@ -192,14 +223,18 @@ def create_metawfr_input_from_pedigree_trio(pedigree, ff_key):
 
     return input
 
-
+################################################
+#   sort_pedigree
+################################################
 def sort_pedigree(pedigree):
     sorted_pedigree = sorted(pedigree, key=lambda x: x['relationship'] != 'proband') # make it proband-first
     sorted_pedigree[1:] = sorted(sorted_pedigree[1:], key=lambda x: x['relationship'] not in ['mother','father']) # parents next
 
     return sorted_pedigree
 
-
+################################################
+#   pedigree_to_qc_pedigree
+################################################
 def pedigree_to_qc_pedigree(samples_pedigree):
     """extract pedigree for qc for every family member
     - input samples accession list
@@ -218,7 +253,9 @@ def pedigree_to_qc_pedigree(samples_pedigree):
 
     return qc_pedigree
 
-
+################################################
+#   remove_parents_without_sample
+################################################
 def remove_parents_without_sample(samples_pedigree):
     individuals = [i['individual'] for i in samples_pedigree]
     for a_member in samples_pedigree:
