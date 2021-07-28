@@ -23,6 +23,7 @@ Can automatically post the meta-workflow-run as *MetaWorkflowRun* object on the 
 
     # type
     #   'WGS trio', 'WGS proband', 'WGS cram proband'
+    #   'SV trio', 'SV proband'
     type = 'WGS trio'
 
     # ff_key
