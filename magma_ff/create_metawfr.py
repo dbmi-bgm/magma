@@ -12,6 +12,9 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
     """This is the main API - the rest are internal functions.
     type should be 'WGS trio', 'WGS proband', 'WGS cram proband'
     """
+    if patch_case:
+        post = True
+
     case_meta = ff_utils.get_metadata(case_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
     sp_uuid = case_meta['sample_processing']
     sp_meta = ff_utils.get_metadata(sp_uuid, add_on='?frame=object&datastore=database', key=ff_key)
@@ -29,6 +32,11 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
         input = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
     elif type == 'SV proband' or type == 'SV trio':
         input = create_metawfr_input_from_pedigree_SV(pedigree)
+
+    # check if input
+    #   else exit function
+    if not input:
+        return
 
     metawfr = create_metawfr_from_input(input, metawf_uuid, case_meta, ff_key)
 
@@ -91,8 +99,10 @@ def create_metawfr_input_from_pedigree_SV(pedigree):
     dimension = -1
     for a_member in pedigree:
         dimension += 1
-        x = a_member['bam_location'].split("/")[0]
-        input['files'].append({'file': x, 'dimension': str(dimension)})
+        if 'bam_location' in a_member:
+            x = a_member['bam_location'].split("/")[0]
+            input['files'].append({'file': x, 'dimension': str(dimension)})
+        else: return
 
     return [input] #need to return a list also if it's only one argument
 

@@ -19,7 +19,8 @@ Can automatically post the meta-workflow-run as *MetaWorkflowRun* object on the 
 
     # Post | Patch
     #   post=True to automatically post a new MetaWorkflowRun object on the portal
-    #   patch_case=True to update meta_workflow_run for case with uuid for new meta-workflow-run
+    #   patch_case=True will automatically set post to True and
+    #     update meta_workflow_run for case with uuid for new meta-workflow-run
 
     # type
     #   'WGS trio', 'WGS proband', 'WGS cram proband'
