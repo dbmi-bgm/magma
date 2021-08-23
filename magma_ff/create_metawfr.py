@@ -10,7 +10,8 @@ from dcicutils import ff_utils
 ################################################
 def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
     """This is the main API - the rest are internal functions.
-    type should be 'WGS trio', 'WGS proband', 'WGS cram proband'
+    type should be 'WGS trio', 'WGS proband', 'WGS cram proband',
+    'SV proband', or 'SV trio'
     """
     if patch_case:
         post = True
@@ -30,8 +31,10 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
         input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
     elif type == 'WGS trio':
         input = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
-    elif type == 'SV proband' or type == 'SV trio':
-        input = create_metawfr_input_from_pedigree_SV(pedigree)
+    elif type == 'SV proband':
+        input = create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key)
+    elif type == 'SV trio':
+        input = create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key)
 
     # check if input
     #   else exit function
@@ -89,10 +92,18 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
     return metawfr
 
 ################################################
-#   create_metawfr_input_from_pedigree_SV
+#   create_metawfr_input_from_pedigree_SV_proband_only
 ################################################
-def create_metawfr_input_from_pedigree_SV(pedigree):
-    input = {
+
+def create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key):
+    # sample names
+    sample = pedigree[0]
+    sample_names = [sample['sample_name']]
+    sample_names_str = json.dumps(sample_names)
+    # qc pedigree parameter
+    qc_pedigree_str = json.dumps(pedigree_to_qc_pedigree(pedigree))
+
+    input_bams = {
         'argument_name': 'input_bams',
         'argument_type': 'file', 'files':[]}
 
@@ -101,10 +112,44 @@ def create_metawfr_input_from_pedigree_SV(pedigree):
         dimension += 1
         if 'bam_location' in a_member:
             x = a_member['bam_location'].split("/")[0]
-            input['files'].append({'file': x, 'dimension': str(dimension)})
+            input_bams['files'].append({'file': x, 'dimension': str(dimension)})
         else: return
 
-    return [input] #need to return a list also if it's only one argument
+    input = []
+    input.append(input_bams)
+    input.append({'argument_name': 'sample_names_proband_first_if_trio', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'})
+    input.append({'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'})
+
+    return input
+
+################################################
+#   create_metawfr_input_from_pedigree_SV_trio
+################################################
+
+def create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key):
+    # sample names
+    sample_names = [s['sample_name'] for s in pedigree]
+    sample_names_str = json.dumps(sample_names)
+
+    # qc pedigree parameter
+    qc_pedigree_str = json.dumps(pedigree_to_qc_pedigree(pedigree))
+    input_bams = {
+        'argument_name': 'input_bams',
+        'argument_type': 'file', 'files':[]}
+
+    dimension = -1
+    for a_member in pedigree:
+        dimension += 1
+        if 'bam_location' in a_member:
+            x = a_member['bam_location'].split("/")[0]
+            input_bams['files'].append({'file': x, 'dimension': str(dimension)})
+        else: return
+
+    input = []
+    input.append(input_bams)
+    input.append({'argument_name': 'sample_names_proband_first_if_trio', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'})
+    input.append({'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'})
+    return input
 
 ################################################
 #   create_metawfr_input_from_pedigree_cram_proband_only
