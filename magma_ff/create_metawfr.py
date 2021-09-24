@@ -192,18 +192,18 @@ def create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key):
     j = 0  # second dimension of files
     for fastq_uuid in fastq_uuids:
         fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
-        #if fastq_meta['paired_end'] == '1':
-        #    dimension = str(j)  # dimension string for files
-        #    r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
-        #    r2_uuids.append({'file': fastq_meta['related_files'][0]['file'], 'dimension': dimension})
-        #    j += 1
-        # below is temporary code for a case with no paired_end / related_files fields in fastq metadata.
-        # only works for a single pair
-        dimention = str(j)
-        if fastq_meta['description'].endswith('paired end:1'):
-            r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
-        else:
-            r2_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
+        if fastq_meta['paired_end'] == '1':
+           dimension = str(j)  # dimension string for files
+           r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
+           r2_uuids.append({'file': fastq_meta['related_files'][0]['file'], 'dimension': dimension})
+           j += 1
+        # # below is temporary code for a case with no paired_end / related_files fields in fastq metadata.
+        # # only works for a single pair !! NOT SURE WHAT THIS WAS FOR, LEGACY FROM SOO
+        # dimension = str(j)
+        # if fastq_meta['description'].endswith('paired end:1'):
+        #     r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
+        # else:
+        #     r2_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
 
     # sample names
     sample_names = [sample['sample_name']]
