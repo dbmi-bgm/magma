@@ -2,7 +2,8 @@ import mock
 import pytest
 import json
 from magma_ff import checkstatus
-from magma import metawflrun as run
+#from magma import metawflrun as run
+from magma_ff import metawflrun as run_ff
 
 
 # tests requiring connection are marked 'portaltest'.
@@ -13,7 +14,7 @@ def test_CheckStatusFF():
     """This check does not actually connect to the portal.
     It uses mocks for get_status and get_output
     """
-    with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
+    with open('test/files/CGAP_WGS_trio_scatter_ff.run.json') as json_file:
         data_wflrun = json.load(json_file)
 
     # fake that the first one is running
@@ -21,7 +22,7 @@ def test_CheckStatusFF():
     data_wflrun['workflow_runs'][0]['jobid'] = 'somejobid'
 
     # Create MetaWorkflowRun object and check_running generator
-    wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+    wflrun_obj = run_ff.MetaWorkflowRun(data_wflrun)
     cs = checkstatus.CheckStatusFF(wflrun_obj)
     cr = cs.check_running()
 
@@ -40,13 +41,14 @@ def test_CheckStatusFF():
                       'jobid': 'somejobid',
                       'status': 'completed',  # changed from running to completed
                       'output': [{'argument_name': 'raw_bam', 'files': 'abc'}]}  # output is filled in
+    assert 'failed_jobs' not in res # if nothing failed, '' failed_jobs should not be in the patch dict
 
 
 def test_CheckStatusFF_failed():
     """This check does not actually connect to the portal.
     It uses mocks for get_status and get_output
     """
-    with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
+    with open('test/files/CGAP_WGS_trio_scatter_ff.run.json') as json_file:
         data_wflrun = json.load(json_file)
 
     # fake that the first one is running
@@ -54,7 +56,7 @@ def test_CheckStatusFF_failed():
     data_wflrun['workflow_runs'][0]['jobid'] = 'somejobid'
 
     # Create MetaWorkflowRun object and check_running generator
-    wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+    wflrun_obj = run_ff.MetaWorkflowRun(data_wflrun)
     cs = checkstatus.CheckStatusFF(wflrun_obj)
     cr = cs.check_running()
 
@@ -71,14 +73,15 @@ def test_CheckStatusFF_failed():
                       'workflow_run': 'run_uuid',
                       'shard': '0:0',
                       'jobid': 'somejobid',
-                      'status': 'failed'}  # changed from running to failed, no output.
+                      'status': 'failed'}  # changed from running to failed, no output
+    assert res['failed_jobs'] == ['somejobid']
 
 
 def test_CheckStatusFF_running():
     """This check does not actually connect to the portal.
     It uses mocks for get_status and get_output
     """
-    with open('test/files/CGAP_WGS_trio_scatter.run.json') as json_file:
+    with open('test/files/CGAP_WGS_trio_scatter_ff.run.json') as json_file:
         data_wflrun = json.load(json_file)
 
     # fake that the first one is running
@@ -86,7 +89,7 @@ def test_CheckStatusFF_running():
     data_wflrun['workflow_runs'][0]['jobid'] = 'somejobid'
 
     # Create MetaWorkflowRun object and check_running generator
-    wflrun_obj = run.MetaWorkflowRun(data_wflrun)
+    wflrun_obj = run_ff.MetaWorkflowRun(data_wflrun)
     cs = checkstatus.CheckStatusFF(wflrun_obj)
     cr = cs.check_running()
 
@@ -111,7 +114,7 @@ def test_CheckStatusFF_real_failed():
                                        'status': 'running',
                                        'name': 'workflow_bwa-mem_no_unzip-check',
                                        'shard': '0:0'}]}
-    wflrun_obj = run.MetaWorkflowRun(small_wflrun)
+    wflrun_obj = run_ff.MetaWorkflowRun(small_wflrun)
 
     # use cgapwolf by specifying env
     cs = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
@@ -122,6 +125,8 @@ def test_CheckStatusFF_real_failed():
                     'name': 'workflow_bwa-mem_no_unzip-check',
                     'shard': '0:0',
                     'status': 'failed'}]  # add failed status, not adding output
+    assert res['failed_jobs'] == ['c5TzfqljUygR']
+    assert 'cost' not in res # since the meta workflow run failes, cost should be  computed
 
 
 @pytest.mark.portaltest
@@ -134,7 +139,7 @@ def test_CheckStatusFF_real_completed():
                                        'status': 'running',
                                        'name': 'workflow_bwa-mem_no_unzip-check',
                                        'shard': '0:0'}]}
-    wflrun_obj = run.MetaWorkflowRun(small_wflrun)
+    wflrun_obj = run_ff.MetaWorkflowRun(small_wflrun)
 
     # use cgapwolf by specifying env
     cs = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
@@ -148,3 +153,54 @@ def test_CheckStatusFF_real_completed():
                     'status': 'completed',
                     'output': [{'argument_name': 'raw_bam',
                                 'file': '59939d48-1c7e-4b9d-a644-fdcaff8610be'}]}]
+
+@pytest.mark.portaltest
+def test_CheckStatusFF_real_completed_with_cost():
+    """check status for two real jobs 'gjpZKLQ4R6M3' and 'npFSgRy9cllw' (successful run) on cgapwolf"""
+    small_wflrun = {'meta_workflow': 'somemwfuuid',
+                    'input': {},
+                    'final_status': 'pending',
+                    'workflow_runs': [{'jobid': 'gjpZKLQ4R6M3',
+                                       'status': 'running',
+                                       'name': 'workflow_manta_vcf-check',
+                                       'shard': '0'},
+                                       {'jobid': 'npFSgRy9cllw',
+                                       'status': 'running',
+                                       'name': 'workflow_annotateSV_sansa_vep_vcf-check',
+                                       'shard': '0'}]}
+    wflrun_obj = run_ff.MetaWorkflowRun(small_wflrun)
+
+    # use cgapwolf by specifying env
+    cs = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
+    cr = cs.check_running()
+    res = next(cr)
+    assert 'cost' not in res
+    res = next(cr)
+    assert 'cost' in res # we only expect cost to be there, when the whole MetaWorflowRun completed
+    assert res['cost'] > 0.0
+    cost_without_failed = res['cost']
+
+    # Repeat the above, where we add the jobs to failed_jobs as well. Not realistic, but tests the cost estimation
+    small_wflrun = {'meta_workflow': 'somemwfuuid',
+                    'input': {},
+                    'final_status': 'pending',
+                    'failed_jobs': ['gjpZKLQ4R6M3','npFSgRy9cllw'],
+                    'workflow_runs': [{'jobid': 'gjpZKLQ4R6M3',
+                                       'status': 'running',
+                                       'name': 'workflow_manta_vcf-check',
+                                       'shard': '0'},
+                                       {'jobid': 'npFSgRy9cllw',
+                                       'status': 'running',
+                                       'name': 'workflow_annotateSV_sansa_vep_vcf-check',
+                                       'shard': '0'}]}
+    wflrun_obj = run_ff.MetaWorkflowRun(small_wflrun)
+    # use cgapwolf by specifying env
+    cs = checkstatus.CheckStatusFF(wflrun_obj, env='fourfront-cgapwolf')
+    cr = cs.check_running()
+    res = next(cr)
+    assert 'cost' not in res
+    res = next(cr)
+    assert 'cost' in res # we only expect cost to be there, when the whole MetaWorflowRun completed
+    assert res['cost'] == 2 * cost_without_failed
+
+
