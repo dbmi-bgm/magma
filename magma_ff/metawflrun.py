@@ -61,9 +61,9 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         for _, run_obj in self.runs.items():
             if run_obj.status == 'failed':
                 self.failed_jobs.append(run_obj.jobid)
-                self.failed_jobs = list(set(self.failed_jobs)) # Remove duplicates
             #end if
         #end for
+        self.failed_jobs = list(set(self.failed_jobs)) # Remove duplicates
         return self.failed_jobs
     #end def
 
