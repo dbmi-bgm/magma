@@ -48,6 +48,22 @@ class CheckStatusFF(AbstractCheckStatus):
             'error': 'failed'
         }
 
+    def check_running(self):
+        for patch_dict in super().check_running():
+            if patch_dict: 
+                failed_jobs = self.wflrun_obj.update_failed_jobs()
+                if len(failed_jobs) > 0:
+                    patch_dict['failed_jobs'] = failed_jobs
+                # Currently, we are only calculating the cost when the MetaWorkflow completed, 
+                # as computing the estimated cost for each workflow is rather expensive.
+                if patch_dict['final_status'] == 'completed':
+                    cost = self.wflrun_obj.update_cost()
+                    if cost is not None and cost > 0:
+                        patch_dict['cost'] = cost
+                yield patch_dict
+            else:
+                yield None
+
     # The following three functions are for portal (cgap / 4dn)
     def get_uuid(self, jobid):
         return self.ff.wfr_run_uuid(jobid)

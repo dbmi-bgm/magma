@@ -49,7 +49,7 @@ class FFWfrUtils(object):
         """
         wfr_meta = self.wfr_metadata(job_id)
         if not wfr_meta:
-            return 'failed'
+            return 'error'
         else:
             return wfr_meta['run_status']
 
