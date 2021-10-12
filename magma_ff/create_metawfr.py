@@ -9,9 +9,14 @@ from dcicutils import ff_utils
 #   create_metawfr_from_case (main)
 ################################################
 def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
-    """This is the main API - the rest are internal functions.
-    type should be 'WGS trio', 'WGS proband', 'WGS cram proband',
-    'SV proband', or 'SV trio'
+    """
+        create meta-workflow-run from case depending on type
+        this is the main API
+
+        type
+            'WGS trio', 'WGS family', 'WGS proband', 'WGS cram proband',
+            'WES trio', 'WES family', 'WES proband', 'WES cram proband',
+            'SV trio', 'SV proband'
     """
     if patch_case:
         post = True
@@ -23,18 +28,21 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
     pedigree = remove_parents_without_sample(pedigree)  # remove no-sample individuals
     pedigree = sort_pedigree(pedigree)
 
-    if type == 'WGS cram proband':
+    if type in ['WGS cram proband', 'WES cram proband']:
         pedigree = pedigree[0:1]
         input = create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key)
-    elif type == 'WGS proband':
+    elif type in ['WGS proband', 'WES proband']:
         pedigree = pedigree[0:1]
         input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
-    elif type == 'WGS trio':
+    elif type in ['WGS trio', 'WES trio']:
         input = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
-    elif type == 'SV proband':
+    elif type in ['SV proband']:
         input = create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key)
-    elif type == 'SV trio':
+    elif type in ['SV trio']:
         input = create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key)
+    elif type in ['WGS family', 'WES family']:
+        input = create_metawfr_input_from_pedigree_family(pedigree, ff_key)
+
 
     # check if input
     #   else exit function
@@ -275,6 +283,29 @@ def create_metawfr_input_from_pedigree_trio(pedigree, ff_key):
              {'argument_name': 'bamsnap_titles', 'argument_type': 'parameter', 'value': bamsnap_titles_str, 'value_type': 'json'},
              {'argument_name': 'family_size', 'argument_type': 'parameter', 'value': str(family_size), 'value_type': 'integer'},
              {'argument_name': 'rcktar_content_file_names', 'argument_type': 'parameter', 'value': rcktar_content_file_names_str, 'value_type': 'json'}]
+
+    return input
+
+################################################
+#   create_metawfr_input_from_pedigree_family
+################################################
+def create_metawfr_input_from_pedigree_family(pedigree, ff_key):
+    # create trio input
+    input_ = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
+
+    # modify it for family
+    input = []
+    for i in input_:
+        if i['argument_name'] == 'rcktar_content_file_names':
+            pass
+        else:
+            input.append(i)
+            if i['argument_name'] == 'sample_names_proband_first':
+                sample_name_proband = json.dumps([json.loads(i['value'])[0]])
+                input.append({'argument_name': 'sample_name_proband',
+                              'argument_type': 'parameter',
+                              'value': sample_name_proband,
+                              'value_type': 'json'})
 
     return input
 

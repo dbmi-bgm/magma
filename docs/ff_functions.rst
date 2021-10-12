@@ -23,7 +23,8 @@ Can automatically post the meta-workflow-run as *MetaWorkflowRun* object on the 
     #     update meta_workflow_run for case with uuid for new meta-workflow-run
 
     # type
-    #   'WGS trio', 'WGS proband', 'WGS cram proband'
+    #   'WGS trio', 'WGS family', 'WGS proband', 'WGS cram proband',
+    #   'WES trio', 'WES family', 'WES proband', 'WES cram proband',
     #   'SV trio', 'SV proband'
     type = 'WGS trio'
 
