@@ -34,14 +34,14 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
     elif type in ['WGS proband', 'WES proband']:
         pedigree = pedigree[0:1]
         input = create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key)
-    elif type in ['WGS trio', 'WES trio']:
+    elif type in ['WGS trio', 'WES trio']: # parents are required
         input = create_metawfr_input_from_pedigree_trio(pedigree, ff_key)
+    elif type in ['WGS family', 'WES family']: # trio like but parents may be missing
+        input = create_metawfr_input_from_pedigree_family(pedigree, ff_key)
     elif type in ['SV proband']:
         input = create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key)
     elif type in ['SV trio']:
         input = create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key)
-    elif type in ['WGS family', 'WES family']:
-        input = create_metawfr_input_from_pedigree_family(pedigree, ff_key)
 
 
     # check if input
@@ -60,7 +60,8 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
 
     if patch_case:
         print("patching case with metawfr...")
-        if type in ['WGS cram proband', 'WGS proband', 'WGS trio']:
+        if type in ['WGS cram proband', 'WGS proband', 'WGS trio', 'WGS family'
+                    'WES cram proband', 'WES proband', 'WES trio', 'WES family']:
             res_patch = ff_utils.patch_metadata({'meta_workflow_run': metawfr['uuid']}, case_uuid, key=ff_key)
         elif type in ['SV proband', 'SV trio']:
             res_patch = ff_utils.patch_metadata({'meta_workflow_run_sv': metawfr['uuid']}, case_uuid, key=ff_key)
