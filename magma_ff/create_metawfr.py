@@ -39,7 +39,7 @@ def create_metawfr_from_cohort(metawf_uuid, sp_uuid, type, ff_key, post=False, p
         return
 
     # metawfr = create_metawfr_from_input(input, metawf_uuid, cohort_meta, ff_key)
-    metawfr = create_metawfr_from_input(input, metawf_uuid, sp_meta, ff_key)
+    metawfr = create_metawfr_from_input_TMP(input, metawf_uuid, sp_meta, ff_key)
 
 
     # post meta-wfr
@@ -127,6 +127,37 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
 ################################################
 #   Helper functions
 ################################################
+################################################
+#   create_metawfr_from_input_TMP
+#       just a very temporary solution until
+#       we have a cohort in place
+################################################
+def create_metawfr_from_input_TMP(metawfr_input, metawf_uuid, case_meta, ff_key):
+    metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='frame=raw&datastore=database', key=ff_key)
+    metawfr = {'meta_workflow': metawf_uuid,
+               'input': metawfr_input,
+               'title': 'MetaWorkflowRun %s on sample_processing %s' % (metawf_meta['title'], case_meta['uuid']),
+               'project': case_meta['project'],
+               'institution': case_meta['institution'],
+               'common_fields': {'project': case_meta['project'],
+                                 'institution': case_meta['institution']},
+               'final_status': 'pending',
+               'workflow_runs' : [],
+               'uuid': str(uuid.uuid4())}
+
+    mwf = MetaWorkflow(metawf_meta)
+
+    # get the input structure in magma format
+    metawfr_mgm = MetaWorkflowRun(metawfr).to_json()
+    input_structure = metawfr_mgm['input'][0]['files']
+    # this is expecting the argument for input files first in the input list
+
+    # create workflow_runs
+    mwfr = mwf.write_run(input_structure)
+    metawfr['workflow_runs'] = mwfr['workflow_runs']
+
+    return metawfr
+
 ################################################
 #   create_metawfr_from_input
 ################################################
@@ -381,7 +412,7 @@ def create_metawfr_input_from_samples_gvcf(sample_uuids, ff_key):
     # get gvcfs and add to argument
     for i, sample_uuid in enumerate(sample_uuids):
         sample_meta = ff_utils.get_metadata(sample_uuid, add_on='frame=raw&datastore=database', key=ff_key)
-        uuid_ = processed_file_from_sample_by_type(sample_meta, 'gVCF')
+        uuid_ = processed_file_from_sample_by_type(sample_meta, 'gVCF', ff_key)
         input_gvcfs['files'].append({'file': uuid_, 'dimension': str(i)})
 
     # create input
@@ -436,7 +467,7 @@ def remove_parents_without_sample(samples_pedigree):
 ################################################
 #   processed_file_from_sample_by_type
 ################################################
-def processed_file_from_sample_by_type(sample_meta, type):
+def processed_file_from_sample_by_type(sample_meta, type, ff_key):
     """
         given sample metadata extract processed file with specified file_type
     """
