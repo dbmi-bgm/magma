@@ -29,7 +29,7 @@ def update_cost_metawfr(metawfr_uuid, ff_key, verbose=False):
             metawfr_uuid, uuid for meta-workflow-run to update costs
     """
     # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     # Create MetaWorkflowRun object for meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 

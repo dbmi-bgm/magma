@@ -6,12 +6,65 @@ from magma_ff.metawflrun import MetaWorkflowRun
 from dcicutils import ff_utils
 
 ################################################
-#   create_metawfr_from_case (main)
+#   Main functions
+################################################
+################################################
+#   create_metawfr_from_cohort
+################################################
+def create_metawfr_from_cohort(metawf_uuid, sp_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
+# def create_metawfr_from_cohort(metawf_uuid, cohort_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
+    """
+        create meta-workflow-run from cohort depending on type
+
+        type
+            'Joint-calling gvcf'
+    """
+    if patch_case:
+        post = True
+
+    # !!! temporarily we don't have a cohort object so we start from sample_processing !!!
+    # cohort_meta = ff_utils.get_metadata(cohort_uuid, add_on='frame=raw&datastore=database', key=ff_key)
+    # sp_uuid = cohort_meta['sample_processing']
+    sp_meta = ff_utils.get_metadata(sp_uuid, add_on='frame=raw&datastore=database', key=ff_key)
+    sample_uuids = sp_meta['samples']
+
+    if type in ['Joint-calling gvcf']:
+        input = create_metawfr_input_from_samples_gvcf(sample_uuids, ff_key)
+    else:
+        raise ValueError('type argument is not recognized')
+
+    # check if input
+    #   else exit function
+    if not input:
+        return
+
+    # metawfr = create_metawfr_from_input(input, metawf_uuid, cohort_meta, ff_key)
+    metawfr = create_metawfr_from_input(input, metawf_uuid, sp_meta, ff_key)
+
+
+    # post meta-wfr
+    if post:
+        print("posting metawfr...")
+        res_post = ff_utils.post_metadata(metawfr, 'MetaWorkflowRun', key=ff_key)
+        if verbose:
+            print(res_post)
+
+    if patch_case:
+        pass
+        # print("patching case with metawfr...")
+        # if type in ['Joint-calling gvcf']:
+        #     res_patch = ff_utils.patch_metadata({'': metawfr['uuid']}, , key=ff_key)
+        # if verbose:
+        #     print(res_patch)
+
+    return metawfr
+
+################################################
+#   create_metawfr_from_case
 ################################################
 def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, patch_case=False, verbose=False):
     """
         create meta-workflow-run from case depending on type
-        this is the main API
 
         type
             'WGS trio', 'WGS family', 'WGS proband', 'WGS cram proband',
@@ -21,9 +74,9 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
     if patch_case:
         post = True
 
-    case_meta = ff_utils.get_metadata(case_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    case_meta = ff_utils.get_metadata(case_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     sp_uuid = case_meta['sample_processing']
-    sp_meta = ff_utils.get_metadata(sp_uuid, add_on='?frame=object&datastore=database', key=ff_key)
+    sp_meta = ff_utils.get_metadata(sp_uuid, add_on='frame=object&datastore=database', key=ff_key)
     pedigree = sp_meta['samples_pedigree']
     pedigree = remove_parents_without_sample(pedigree)  # remove no-sample individuals
     pedigree = sort_pedigree(pedigree)
@@ -42,7 +95,8 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
         input = create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key)
     elif type in ['SV trio']:
         input = create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key)
-
+    else:
+        raise ValueError('type argument is not recognized')
 
     # check if input
     #   else exit function
@@ -71,15 +125,16 @@ def create_metawfr_from_case(metawf_uuid, case_uuid, type, ff_key, post=False, p
     return metawfr
 
 ################################################
+#   Helper functions
+################################################
+################################################
 #   create_metawfr_from_input
 ################################################
 def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
-    metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    metawf_meta = ff_utils.get_metadata(metawf_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     metawfr = {'meta_workflow': metawf_uuid,
                'input': metawfr_input,
                'title': 'MetaWorkflowRun %s on case %s' % (metawf_meta['title'], case_meta['accession']),
-               #'name': 'metawf_%s_on_case_%s' % (metawf_meta['accession'], case_meta['accession']),
-               #'name': 'MetaWorkflowRun %s for case %s' % (metawf_meta['title'], case_meta['accession']),
                'project': case_meta['project'],
                'institution': case_meta['institution'],
                'common_fields': {'project': case_meta['project'],
@@ -93,6 +148,7 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
     # get the input structure in magma format
     metawfr_mgm = MetaWorkflowRun(metawfr).to_json()
     input_structure = metawfr_mgm['input'][0]['files']
+    # this is expecting the argument for input files first in the input list
 
     # create workflow_runs
     mwfr = mwf.write_run(input_structure)
@@ -103,7 +159,6 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
 ################################################
 #   create_metawfr_input_from_pedigree_SV_proband_only
 ################################################
-
 def create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key):
     # sample names
     sample = pedigree[0]
@@ -134,7 +189,6 @@ def create_metawfr_input_from_pedigree_SV_proband_only(pedigree, ff_key):
 ################################################
 #   create_metawfr_input_from_pedigree_SV_trio
 ################################################
-
 def create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key):
     # sample names
     sample_names = [s['sample_name'] for s in pedigree]
@@ -158,6 +212,7 @@ def create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key):
     input.append(input_bams)
     input.append({'argument_name': 'sample_names_proband_first_if_trio', 'argument_type': 'parameter', 'value': sample_names_str, 'value_type': 'json'})
     input.append({'argument_name': 'pedigree', 'argument_type': 'parameter', 'value': qc_pedigree_str, 'value_type': 'string'})
+
     return input
 
 ################################################
@@ -166,7 +221,7 @@ def create_metawfr_input_from_pedigree_SV_trio(pedigree, ff_key):
 def create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
-    sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
+    sample_meta = ff_utils.get_metadata(sample_acc, add_on='frame=raw&datastore=database', key=ff_key)
     cram_uuids = sample_meta['cram_files']
     cram_files = [{'file': cf, 'dimension': str(i)} for i, cf in enumerate(cram_uuids)]
 
@@ -194,13 +249,13 @@ def create_metawfr_input_from_pedigree_cram_proband_only(pedigree, ff_key):
 def create_metawfr_input_from_pedigree_proband_only(pedigree, ff_key):
     sample = pedigree[0]
     sample_acc = sample['sample_accession']
-    sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
+    sample_meta = ff_utils.get_metadata(sample_acc, add_on='frame=raw&datastore=database', key=ff_key)
     fastq_uuids = sample_meta['files']
     r1_uuids =[]
     r2_uuids = []
     j = 0  # second dimension of files
     for fastq_uuid in fastq_uuids:
-        fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+        fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='frame=raw&datastore=database', key=ff_key)
         if fastq_meta['paired_end'] == '1':
            dimension = str(j)  # dimension string for files
            r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
@@ -243,13 +298,13 @@ def create_metawfr_input_from_pedigree_trio(pedigree, ff_key):
     i = 0  # first dimension of files
     for sample in pedigree:
         sample_acc = sample['sample_accession']
-        sample_meta = ff_utils.get_metadata(sample_acc, add_on='?frame=raw&datastore=database', key=ff_key)
+        sample_meta = ff_utils.get_metadata(sample_acc, add_on='frame=raw&datastore=database', key=ff_key)
         fastq_uuids = sample_meta['files']
         r1_uuids =[]
         r2_uuids = []
         j = 0  # second dimension of files
         for fastq_uuid in fastq_uuids:
-            fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+            fastq_meta = ff_utils.get_metadata(fastq_uuid, add_on='frame=raw&datastore=database', key=ff_key)
             if fastq_meta['paired_end'] == '1':
                 dimension = '%d,%d' % (i, j)  # dimension string for files
                 r1_uuids.append({'file': fastq_meta['uuid'], 'dimension': dimension})
@@ -311,6 +366,31 @@ def create_metawfr_input_from_pedigree_family(pedigree, ff_key):
     return input
 
 ################################################
+#   create_metawfr_input_from_samples_gvcf
+################################################
+def create_metawfr_input_from_samples_gvcf(sample_uuids, ff_key):
+    """
+        create meta-workflow-run input for joint calling
+        for samples specified in sample_uuids
+    """
+    # initialize argument
+    input_gvcfs = {
+        'argument_name': 'input_gvcfs',
+        'argument_type': 'file', 'files':[]}
+
+    # get gvcfs and add to argument
+    for i, sample_uuid in enumerate(sample_uuids):
+        sample_meta = ff_utils.get_metadata(sample_uuid, add_on='frame=raw&datastore=database', key=ff_key)
+        uuid_ = processed_file_from_sample_by_type(sample_meta, 'gVCF')
+        input_gvcfs['files'].append({'file': uuid_, 'dimension': str(i)})
+
+    # create input
+    input = []
+    input.append(input_gvcfs)
+
+    return input
+
+################################################
 #   sort_pedigree
 ################################################
 def sort_pedigree(pedigree):
@@ -323,9 +403,10 @@ def sort_pedigree(pedigree):
 #   pedigree_to_qc_pedigree
 ################################################
 def pedigree_to_qc_pedigree(samples_pedigree):
-    """extract pedigree for qc for every family member
-    - input samples accession list
-    - qc pedigree
+    """
+        extract pedigree for qc for every family member
+            - input samples accession list
+            - qc pedigree
     """
     qc_pedigree = []
     # get samples
@@ -351,3 +432,15 @@ def remove_parents_without_sample(samples_pedigree):
         a_member['parents'] = new_parents
 
     return samples_pedigree
+
+################################################
+#   processed_file_from_sample_by_type
+################################################
+def processed_file_from_sample_by_type(sample_meta, type):
+    """
+        given sample metadata extract processed file with specified file_type
+    """
+    for file_uuid in sample_meta['processed_files']:
+        file_meta = ff_utils.get_metadata(file_uuid, add_on='frame=raw&datastore=database', key=ff_key)
+        if file_meta['file_type'] == type:
+            return file_meta['uuid']

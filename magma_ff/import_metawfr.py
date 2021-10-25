@@ -40,7 +40,7 @@ def import_metawfr(metawf_uuid, metawfr_uuid, case_uuid, steps_name, create_meta
     run_obj = MetaWorkflowRun(run_json)
 
     # Get old meta-workflow-run json from the portal
-    run_json_toimport = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw', key=ff_key)
+    run_json_toimport = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw', key=ff_key)
     # Create MetaWorkflowRun object for old meta-workflow-run
     run_obj_toimport = MetaWorkflowRun(run_json_toimport)
 

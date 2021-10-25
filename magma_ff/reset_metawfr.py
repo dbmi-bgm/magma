@@ -31,7 +31,7 @@ def reset_steps(metawfr_uuid, steps_name, ff_key, verbose=False):
             steps_name, list of names for step-workflows that need to be reset
     """
     # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     # Create MetaWorkflowRun object for meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 
@@ -57,7 +57,7 @@ def reset_shards(metawfr_uuid, shards_name, ff_key, verbose=False):
             shards_name, list of names for workflow-runs that need to be reset
     """
     # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     # Create MetaWorkflowRun object for meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 
@@ -94,7 +94,7 @@ def reset_status(metawfr_uuid, status, step_name, ff_key, verbose=False):
     #end if
 
     # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     # Create MetaWorkflowRun object for meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 
@@ -129,7 +129,7 @@ def reset_all(metawfr_uuid, ff_key, verbose=False):
             metawfr_uuid, uuid for meta-workflow-run
     """
     # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     # Create MetaWorkflowRun object for meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 
@@ -162,7 +162,7 @@ def reset_failed(metawfr_uuid, ff_key, verbose=False):
             metawfr_uuid, uuid for meta-workflow-run
     """
     # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='?frame=raw&datastore=database', key=ff_key)
+    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
     # Create MetaWorkflowRun object for meta-workflow-run
     run_obj = MetaWorkflowRun(run_json)
 
