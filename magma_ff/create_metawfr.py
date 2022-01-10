@@ -169,7 +169,8 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
                'project': case_meta['project'],
                'institution': case_meta['institution'],
                'common_fields': {'project': case_meta['project'],
-                                 'institution': case_meta['institution']},
+                                 'institution': case_meta['institution']
+                                 'associated_case': case_meta['accession']},
                'final_status': 'pending',
                'workflow_runs' : [],
                'uuid': str(uuid.uuid4())}

@@ -8,3 +8,9 @@ dist
 _build
 _static
 _templates
+
+# pyenv
+.python-version
+
+# Vim
+*.swp
