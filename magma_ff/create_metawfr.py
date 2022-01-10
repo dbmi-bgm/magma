@@ -169,7 +169,8 @@ def create_metawfr_from_input(metawfr_input, metawf_uuid, case_meta, ff_key):
                'project': case_meta['project'],
                'institution': case_meta['institution'],
                'common_fields': {'project': case_meta['project'],
-                                 'institution': case_meta['institution']},
+                                 'institution': case_meta['institution'],
+                                 'case_accession': case_meta['accession']},
                'final_status': 'pending',
                'workflow_runs' : [],
                'uuid': str(uuid.uuid4())}
@@ -475,3 +476,123 @@ def processed_file_from_sample_by_type(sample_meta, type, ff_key):
         file_meta = ff_utils.get_metadata(file_uuid, add_on='frame=raw&datastore=database', key=ff_key)
         if file_meta['file_type'] == type:
             return file_meta['uuid']
+
+
+
+
+
+""""""
+def make_embed_request(ids=None, fields=None, key=None):
+    """"""
+    post_body = {"ids": ids, "fields": fields}
+    result = ff_utils.authorized_request(
+        "/embed", verb="POST", auth=key, data=json.dumps(post_body)
+    )
+    return result
+
+
+def create_meta_workflow_run_from_case_v2(
+    case_uuid, key, post=False, patch_case=False, verbose=False,
+    structural_variant=False, high_coverage=False,
+):
+    """"""
+    case_fields_to_get = [
+        "accession",
+        "project",
+        "institution",
+        "sample_processing.samples_pedigree",
+        "sample_processing.samples.workup_type",
+        "sample_processing.samples.bam_sample_id",
+        "sample_processing.samples.files.uuid",
+        "sample_processing.samples.files.paired_end",
+        "sample_processing.samples.files.related_files",
+        "sample_processing.samples.files.file_format.file_format",
+        "sample_processing.samples.cram_files",
+    ]
+    case = make_embed_request(ids=[case_uuid], fields=case_fields_to_get, key=key)
+    sample_processing = case.get("sample_processing")
+    if not sample_processing:
+        raise Exception("No sample processing on Case")
+    pedigree = sample_processing.get("samples_predigree")
+    if not pedigree:
+        raise Exception("No pedigree on SampleProcessing")
+    pedigree = remove_parents_without_sample(pedigree)  # Merge and clean this w/ below
+    pedigree = sort_pedigree(pedigree)
+    samples = sample_processing.get("samples")
+    if not samples:
+        raise Exception("No samples on SampleProcessing")
+    if structural_variant:
+        meta_workflow_uuid, meta_workflow_run_input = parse_structural_variant_samples(
+            pedigree, samples, key=key
+        )
+    else:
+        meta_workflow_uuid, meta_workflow_run_input = parse_samples(
+            pedigree, samples, key=key
+        )
+    meta_workflow_run = create_metawfr_from_input(
+        meta_workflow_run_input, meta_workflow_uuid, case, key
+    )
+    if post:
+        pass
+    if patch_case:
+        if structural_variant:
+            pass
+        else:
+            pass
+    return meta_workflow_run
+
+
+def order_samples_for_pedigree(pedigree, samples):
+    """"""
+    pedigree_samples = []
+    for individual in pedigree:
+        sample_name = individual.get("sample_name")
+        if not sample_name:
+            raise Exception("Missing \"sample_name\" field in pedigree")
+        for sample in samples:
+            bam_sample_id = sample.get("bam_sample_id")
+            if bam_sample_id == sample_name:
+                pedigree_samples.append(sample)
+                break
+    if len(pedigree_samples) != len(pedigree):
+        raise Exception("Could not find Sample for member in pedigree")
+    return pedigree_samples
+
+
+def parse_samples(pedigree, samples, key=key):
+    """"""
+    case_workup_type = None
+    file_type = None
+    crams = []
+    fastqs_r1 = []
+    fastqs_r2 = []
+    pedigree_samples = order_samples_for_pedigree(pedigree, samples)
+    for sample_idx, sample in enumerate(pedigree_samples):
+        sample_workup_type = sample.get("workup_type")
+        if sample_workup_type is None:
+            raise Exception("No work up type on sample")
+        elif case_workup_type is None:
+            case_workup_type = sample_workup_type
+        elif sample_workup_type != case_workup_type:
+            raise Exception("Multiple work up types on case")
+        cram_files = sample.get("cram_files")
+        fastq_files = sample.get("files")
+        if cram_files:
+            if file_type is None:
+                file_type = "cram"
+            elif file_type != "cram":
+                raise Exception("Multiple file types on case")
+            for file_idx, cram_file in enumerate(cram_files):
+                crams.append({"file": cram_file, "dimension": (sample_idx, file_idx)})
+        elif fastq_files:
+            if file_type is None:
+                file_type = "fastq"
+            elif file_type != "fastq":
+                raise Exception("Multiple file types on case")
+            for file_idx, file_item in enumerate(fastq_files):
+
+
+        
+    family_type = infer_family_from_pedigree(pedigree)
+
+
