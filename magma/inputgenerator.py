@@ -222,14 +222,18 @@ class InputGenerator(object):
                 raise ValueError('Value error, cannot find a match for argument "{0}"\n'
                                     .format(arg_obj.argument_name))
             #end if
-            # Check Scatter
-            if getattr(arg_obj, 'scatter', None):
+            # Check scatter and input_dimension
+            dimension_ = getattr(arg_obj, 'scatter', 0)
+            dimension_ += getattr(arg_obj, 'input_dimension', 0)
+            # input_dimension is additional dimension used to subset the input argument
+            #   when creating the step specific input
+            if dimension_:
                 shard = map(int, run_obj.shard.split(':'))
                 if is_file: in_ = arg_obj.files
                 else: in_ = arg_obj.value
                 #end if
-                for idx in list(shard)[:arg_obj.scatter]:
-                    # [:arg_obj.scatter] handle multiple scatter in same shard,
+                for idx in list(shard)[:dimension_]:
+                    # [:dimension_] handle multiple scatter in same shard,
                     #   use scatter dimension to subset shard index list
                     in_ = in_[idx]
                 #end for
@@ -259,7 +263,9 @@ class InputGenerator(object):
                 #end if
             #end for
             gather = getattr(arg_obj, 'gather', 0)
-            gather += getattr(arg_obj, 'extra_dimension', 0) # extra input dimension
+            gather += getattr(arg_obj, 'extra_dimension', 0)
+            # extra_dimension is additional increment to dimension used
+            #   when creating the step specific input
             if gather == 1:  # gather 1 dimension
                 arg_obj.files = file_
             elif gather > 1:  # gather 2+ dimensions
