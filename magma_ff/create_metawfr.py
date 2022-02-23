@@ -480,119 +480,574 @@ def processed_file_from_sample_by_type(sample_meta, type, ff_key):
 
 
 
-
-""""""
-def make_embed_request(ids=None, fields=None, key=None):
+class MetaWorkflowRunCreationError(Exception):
     """"""
-    post_body = {"ids": ids, "fields": fields}
-    result = ff_utils.authorized_request(
-        "/embed", verb="POST", auth=key, data=json.dumps(post_body)
+    pass
+
+
+class MetaWorkflowRunFromItem:
+
+    # Schema constants
+    TITLE = "title"
+    INPUT = "input"
+    ARGUMENT_NAME = "argument_name"
+    ARGUMENT_TYPE = "argument_type"
+    VALUE = "value"
+    VALUE_TYPE = "value_type"
+    FILE = "file"
+    FILES = "files"
+    PARAMETER = "parameter"
+    PROJECT = "project"
+    INSTITUTION = "institution"
+    UUID = "uuid"
+    COMMON_FIELDS = "common_fields"
+    META_WORKFLOW = "meta_workflow"
+    FINAL_STATUS = "final_status"
+    PENDING = "pending"
+    WORKFLOW_RUNS = "workflow_runs"
+    DIMENSION = "dimension"
+
+    def __init__(self, meta_workflow_uuid):
+        """"""
+        self.meta_workflow_run_uuid = str(uuid.uuid4())
+        self.meta_workflow_properties = self.get_item_properties(meta_workflow_uuid)
+        self.meta_workflow_run_input = self.create_meta_workflow_run_input()
+        self.meta_workflow_run = self.create_meta_workflow_run()
+
+    def post_meta_workflow_run(self):
+        """"""
+        try:
+            ff_utils.post_metadata(
+                self.meta_workflow_run, self.META_WORKFLOW_RUN, key=self.auth_key
+            )
+        except: # Catch and try patch
+            pass
+
+    def create_meta_workflow_run(self):
+        """"""
+        meta_workflow_title = self.meta_workflow_properties.get(self.TITLE)
+        title = (
+            "MetaWorkflowRun %s on %s %s"
+            % (meta_workflow_title, self.item_type, self.accession)
+        )
+        meta_workflow_run = {
+            self.META_WORKFLOW: self.meta_workflow_properties,
+            self.INPUT: self.meta_workflow_run_input,
+            self.TITLE: title,
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.COMMON_FIELDS: self.common_fields,
+            self.FINAL_STATUS: self.PENDING,
+            self.WORKFLOW_RUNS: [],
+            self.UUID: self.meta_workflow_run_uuid,
+        }
+        self.create_workflow_runs(meta_workflow_run)
+        return meta_workflow_run
+
+    def create_workflow_runs(self, meta_workflow_run):
+        """"""
+        reformatted_file_input = None
+        reformatted_meta_workflow_run = MetaWorkflowRun(meta_workflow_run).to_json()
+        reformatted_input = reformatted_meta_workflow_run[self.INPUT]
+        for input_item in reformatted_input:
+            input_files = input_item.get(self.FILES)
+            if input_files is None:
+                continue
+            reformatted_file_input = input_files
+            break
+        if reformatted_file_input is None:
+            raise MetaWorkflowRunCreationError(
+                "No input files were provided for the MetaWorkflowRun: %s"
+                % meta_workflow_run
+            )
+        run_with_workflows = MetaWorkflow(self.meta_workflow_properties).write_run(
+            reformatted_file_input
+        )
+        meta_workflow_run[self.WORKFLOW_RUNS] = run_with_workflows[self.WORKFLOW_RUNS]
+
+    def get_item_properties(self, item_uuid):
+        """"""
+        result = ff_utils.get_metadata(
+            item_uuid, key=self.auth_key, add_on="frame=raw"
+        )
+        return result
+
+    def create_meta_workflow_run_input(self):
+        """"""
+        result = []
+        input_files_to_fetch = []
+        input_parameters_to_fetch = []
+        input_files = []
+        input_parameters = []
+        meta_workflow_input = self.meta_workflow_properties.get(self.INPUT, [])
+        for input_arg in meta_workflow_input:
+            if self.FILES in input_arg or self.VALUE in input_arg:
+                continue
+            input_arg_name = input_arg.get(self.ARGUMENT_NAME)
+            input_arg_type = input_arg.get(self.ARGUMENT_TYPE)
+            if input_arg_type == self.FILE:
+                input_files_to_fetch.append(input_arg_name)
+            elif input_arg_type == self.PARAMETER:
+                parameter_value_type = input_arg.get(self.VALUE_TYPE)
+                input_parameters_to_fetch.append((input_arg_name, parameter_value_type))
+            else:
+                raise MetaWorkflowRunCreationError(
+                    "Found an unexpected MetaWorkflow input argument type (%s) for"
+                    " MetaWorkflow with uuid: %s"
+                    % (input_arg_type, self.meta_workflow_properties.get(self.UUID))
+                )
+        if input_parameters_to_fetch:
+            input_parameters = self.fetch_parameters(input_parameters_to_fetch)
+            result += input_parameters
+        if input_files_to_fetch:
+            input_files = self.fetch_files(input_files_to_fetch)
+            result += input_files
+        return result
+
+    def fetch_files(self, files_to_fetch):
+        """"""
+        result = []
+        for file_parameter in files_to_fetch:
+            try:
+                file_parameter_value = getattr(
+                    self.input_properties, file_parameter.lower()
+                )
+            except AttributeError:
+                raise MetaWorkflowRunCreationError(
+                    "Could not find input parameter: %s" % file_parameter
+                )
+            formatted_file_value = self.format_file_input_value(file_parameter_value)
+            file_parameter_result = {
+                self.ARGUMENT_NAME: file_parameter,
+                self.ARGUMENT_TYPE: self.FILE,
+                self.FILES: formatted_file_value,
+            }
+            result.append(file_parameter_result)
+        return result
+
+    def format_file_input_value(self, file_value):
+        """"""
+        result = []
+        proband_only = self.input_properties.is_proband_only()
+        sorted_key_indices_by_sample = sorted(file_value.keys())
+        for sample_idx in sorted_key_indices_by_sample:
+            sample_file_uuids = file_value[sample_idx]
+            for file_uuid_idx, file_uuid in enumerate(sample_file_uuids):
+                if proband_only:
+                    dimension = str(file_uuid_idx)
+                else:
+                    dimension = "%s,%s" % (sample_idx, file_uuid_idx)
+                formatted_file_result = {
+                    self.FILE: file_uuid,
+                    self.DIMENSION: dimension,
+                }
+                result.append(formatted_file_result)
+        return result
+
+    def fetch_parameters(self, parameters_to_fetch):
+        """"""
+        result = []
+        for parameter, value_type in parameters_to_fetch:
+            try:
+                parameter_value = getattr(self.input_properties, parameter.lower())
+            except AttributeError:
+                raise MetaWorkflowRunCreationError(
+                    "Could not find input parameter: %s" % parameter
+                )
+            parameter_value = self.cast_parameter_value(parameter_value)
+            parameter_result = {
+                self.ARGUMENT_NAME: parameter,
+                self.ARGUMENT_TYPE: self.PARAMETER,
+                self.VALUE: parameter_value,
+                self.VALUE_TYPE: value_type,
+            }
+            result.append(parameter_result)
+        return result
+
+    def cast_parameter_value(self, parameter_value):
+        """"""
+        if isinstance(parameter_value, list) or isinstance(parameter_value, dict):
+            result = json.dumps(parameter_value)
+        else:
+            result = str(parameter_value)
+        return result
+
+
+EMBED_ENDPOINT = "/embed"
+EMBED_IDS = "ids"
+EMBED_FIELDS = "fields"
+
+
+def make_embed_request(ids, fields, auth_key):
+    """"""
+    result = None
+    if isinstance(ids, str):
+        ids = [ids]
+    if isinstance(fields, str):
+        fields = [fields]
+    post_body = {EMBED_IDS: ids, EMBED_FIELDS: fields}
+    embed_request = ff_utils.authorized_request(
+        EMBED_ENDPOINT, verb="POST", auth=auth_key, data=json.dumps(post_body)
     )
+    if embed_request:
+        result = embed_request[0]
     return result
 
 
-def create_meta_workflow_run_from_case_v2(
-    case_uuid, key, post=False, patch_case=False, verbose=False,
-    structural_variant=False, high_coverage=False,
-):
+class MetaWorkflowRunFromCohort(MetaWorkflowRunFromItem):
+    """TODO once Cohort data model eestablished."""
+    pass
+
+
+class MetaWorkflowRunFromCase(MetaWorkflowRunFromItem):
     """"""
-    case_fields_to_get = [
+    # Embedding API fields
+    CASE_FIELDS_TO_GET = [
         "accession",
         "project",
         "institution",
+        "sample_processing.uuid",
+        "sample_processing.meta_workflow_runs.uuid",
         "sample_processing.samples_pedigree",
-        "sample_processing.samples.workup_type",
         "sample_processing.samples.bam_sample_id",
         "sample_processing.samples.files.uuid",
-        "sample_processing.samples.files.paired_end",
         "sample_processing.samples.files.related_files",
+        "sample_processing.samples.files.paired_end",
         "sample_processing.samples.files.file_format.file_format",
-        "sample_processing.samples.cram_files",
+        "sample_processing.samples.cram_files.uuid",
+        "sample_processing.samples.processed_files.uuid",
+        "sample_processing.samples.processed_files.file_format.file_format",
     ]
-    case = make_embed_request(ids=[case_uuid], fields=case_fields_to_get, key=key)
-    sample_processing = case.get("sample_processing")
-    if not sample_processing:
-        raise Exception("No sample processing on Case")
-    pedigree = sample_processing.get("samples_predigree")
-    if not pedigree:
-        raise Exception("No pedigree on SampleProcessing")
-    pedigree = remove_parents_without_sample(pedigree)  # Merge and clean this w/ below
-    pedigree = sort_pedigree(pedigree)
-    samples = sample_processing.get("samples")
-    if not samples:
-        raise Exception("No samples on SampleProcessing")
-    if structural_variant:
-        meta_workflow_uuid, meta_workflow_run_input = parse_structural_variant_samples(
-            pedigree, samples, key=key
+
+    # Schema constants
+    CASE_ACCESSION = "case_accession"
+    SAMPLE_PROCESSING = "sample_processing"
+    META_WORKFLOW_RUNS = "meta_workflow_runs"
+    ACCESSION = "accession"
+
+    # Class constants
+    ITEM_TYPE = "Case"
+
+    def __init__(self, case_uuid, meta_workflow_uuid, auth_key):
+        """"""
+        self.auth_key = auth_key
+        case_properties = make_embed_request(
+            case_uuid, self.CASE_FIELDS_TO_GET, self.auth_key
         )
-    else:
-        meta_workflow_uuid, meta_workflow_run_input = parse_samples(
-            pedigree, samples, key=key
+        if not case_properties:
+            raise MetaWorkflowRunCreationError(
+                "No Case item found for given uuid: %s" % case_uuid
+            )
+        sample_processing = case_properties.get(self.SAMPLE_PROCESSING)
+        self.project = case_properties.get(self.PROJECT)
+        self.institution = case_properties.get(self.INSTITUTION)
+        self.accession = case_properties.get(self.ACCESSION)
+        self.common_fields = {
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.CASE_ACCESSION: self.accession,
+        }
+        self.existing_meta_workflow_runs = sample_processing.get(
+            self.META_WORKFLOW_RUNS, []
         )
-    meta_workflow_run = create_metawfr_from_input(
-        meta_workflow_run_input, meta_workflow_uuid, case, key
-    )
-    if post:
-        pass
-    if patch_case:
-        if structural_variant:
-            pass
-        else:
-            pass
-    return meta_workflow_run
+        self.sample_processing_uuid = sample_processing.get(self.UUID)
+        self.item_type = self.ITEM_TYPE
+        self.input_properties = InputPropertiesFromSampleProcessing(sample_processing)
+        super().__init__(meta_workflow_uuid)
+
+    def post_meta_workflow_run_and_patch_case(self):
+        """"""
+        self.post_meta_workflow_run()
+        existing_meta_workflow_run_uuids = [
+            item.get(self.UUID) for item in self.existing_meta_workflow_runs
+        ]
+        if self.meta_workflow_run_uuid not in existing_meta_workflow_run_uuids:
+            meta_workflow_run_uuids = existing_meta_workflow_run_uuids + [self.meta_workflow_run_uuid]
+            patch_body = {self.META_WORKFLOW_RUNS: meta_workflow_run_uuids}
+            ff_utils.patch_metadata(
+                patch_body, obj_id=self.sample_processing_uuid, key=self.auth_key
+            )
 
 
-def order_samples_for_pedigree(pedigree, samples):
+class InputPropertiesFromSampleProcessing:
     """"""
-    pedigree_samples = []
-    for individual in pedigree:
-        sample_name = individual.get("sample_name")
-        if not sample_name:
-            raise Exception("Missing \"sample_name\" field in pedigree")
-        for sample in samples:
-            bam_sample_id = sample.get("bam_sample_id")
-            if bam_sample_id == sample_name:
-                pedigree_samples.append(sample)
-                break
-    if len(pedigree_samples) != len(pedigree):
-        raise Exception("Could not find Sample for member in pedigree")
-    return pedigree_samples
+    # Schema constants
+    UUID = "uuid"
+    SAMPLES_PEDIGREE = "samples_pedigree"
+    SAMPLES = "samples"
+    BAM_SAMPLE_ID = "bam_sample_id"
+    PROCESSED_FILES = "processed_files"
+    FILES = "files"
+    RELATED_FILES = "related_files"
+    FILE_FORMAT = "file_format"
+    PAIRED_END = "paired_end"
 
+    # File formats
+    FASTQ_FORMAT = "fastq"
+    RCKTAR_FORMAT = "rck_tar"
+    CRAM_FORMAT = "cram"
+    BAM_FORMAT = "bam"
+    GVCF_FORMAT = "gvcf_gz"
 
-def parse_samples(pedigree, samples, key=key):
-    """"""
-    case_workup_type = None
-    file_type = None
-    crams = []
-    fastqs_r1 = []
-    fastqs_r2 = []
-    pedigree_samples = order_samples_for_pedigree(pedigree, samples)
-    for sample_idx, sample in enumerate(pedigree_samples):
-        sample_workup_type = sample.get("workup_type")
-        if sample_workup_type is None:
-            raise Exception("No work up type on sample")
-        elif case_workup_type is None:
-            case_workup_type = sample_workup_type
-        elif sample_workup_type != case_workup_type:
-            raise Exception("Multiple work up types on case")
-        cram_files = sample.get("cram_files")
-        fastq_files = sample.get("files")
-        if cram_files:
-            if file_type is None:
-                file_type = "cram"
-            elif file_type != "cram":
-                raise Exception("Multiple file types on case")
-            for file_idx, cram_file in enumerate(cram_files):
-                crams.append({"file": cram_file, "dimension": (sample_idx, file_idx)})
-        elif fastq_files:
-            if file_type is None:
-                file_type = "fastq"
-            elif file_type != "fastq":
-                raise Exception("Multiple file types on case")
-            for file_idx, file_item in enumerate(fastq_files):
+    # Pedigree constants
+    RELATIONSHIP = "relationship"
+    PROBAND = "proband"
+    MOTHER = "mother"
+    FATHER = "father"
+    INDIVIDUAL = "individual"
+    PARENTS = "parents"
+    SAMPLE_NAME = "sample_name"
+    GENDER = "gender"
+    SEX = "sex"
 
+    def __init__(self, sample_processing):
+        """"""
+        self.sample_processing = sample_processing
+        self.sorted_samples, self.sorted_samples_pedigree = self.clean_and_sort_samples_and_pedigree()
 
-        
-    family_type = infer_family_from_pedigree(pedigree)
+    def clean_and_sort_samples_and_pedigree(self):
+        """"""
+        proband_name = None
+        mother_name = None
+        father_name = None
+        samples_pedigree = self.sample_processing.get(self.SAMPLES_PEDIGREE, [])
+        if not samples_pedigree:
+            raise MetaWorkflowRunCreationError(
+                "No samples_pedigree found on SampleProcessing: %s"
+                % self.sample_processing
+            )
+        samples = self.sample_processing.get(self.SAMPLES, [])
+        if not samples:
+            raise MetaWorkflowRunCreationError(
+                "No Samples found on SampleProcessing: %s" % self.sample_processing
+            )
+        if len(samples) != len(samples_pedigree):
+            raise MetaWorkflowRunCreationError(
+                "Number of Samples did not match number of entries in samples_pedigree"
+                " on SampleProcessing: %s"
+                % self.sample_processing
+            )
+        all_individuals = [
+            sample.get(self.INDIVIDUAL) for sample in samples_pedigree
+            if sample.get(self.INDIVIDUAL)
+        ]
+        bam_sample_ids = [
+            sample.get(self.BAM_SAMPLE_ID) for sample in samples
+            if sample.get(self.BAM_SAMPLE_ID)
+        ]
+        for pedigree_sample in samples_pedigree:
+            parents = pedigree_sample.get(self.PARENTS, [])
+            if parents:  # Remove parents that aren't in samples_pedigree
+                missing_parents = [parent for parent in parents if parent not in
+                        all_individuals]
+                for missing_parent in missing_parents:
+                    parents.remove(missing_parent)
+            sample_name = pedigree_sample.get(self.SAMPLE_NAME)
+            if sample_name is None:
+                raise MetaWorkflowRunCreationError(
+                    "No sample name given for sample in pedigree: %s" % pedigree_sample
+                )
+            elif sample_name not in bam_sample_ids:
+                raise MetaWorkflowRunCreationError(
+                    "Sample in pedigree not found on SampleProcessing: %s" % sample_name
+                )
+            sex = pedigree_sample.get(self.SEX)
+            if sex is None:
+                raise MetaWorkflowRunCreationError(
+                    "No sex given for sample in pedigree: %s" % pedigree_sample
+                )
+            relationship = pedigree_sample.get(self.RELATIONSHIP)
+            if relationship == self.PROBAND:
+                proband_name = sample_name
+            elif relationship == self.MOTHER:
+                mother_name = sample_name
+            elif relationship == self.FATHER:
+                father_name = sample_name
+        if proband_name is None:
+            raise MetaWorkflowRunCreationError(
+                "No proband found within the pedigree: %s" % samples_pedigree
+            )
+        sorted_samples_pedigree = self.sort_by_sample_name(
+            samples_pedigree, self.SAMPLE_NAME, proband_name, mother=mother_name, father=father_name
+        )
+        sorted_samples = self.sort_by_sample_name(
+            samples, self.BAM_SAMPLE_ID, proband_name, mother=mother_name, father=father_name
+        )
+        return sorted_samples, sorted_samples_pedigree
 
+    def sort_by_sample_name(self, items_to_sort, sample_name_key, proband, mother=None, father=None):
+        """"""
+        result = []
+        other_idx = []
+        proband_idx = None
+        mother_idx = None
+        father_idx = None
+        for idx, item in enumerate(items_to_sort):
+            sample_name = item.get(sample_name_key)
+            if sample_name == proband:
+                proband_idx = idx
+            elif mother and sample_name == mother:
+                mother_idx = idx
+            elif father and sample_name == father:
+                father_idx = idx
+            else:
+                other_idx.append(idx)
+        if proband_idx is not None:
+            result.append(items_to_sort[proband_idx])
+        if mother_idx is not None:
+            result.append(items_to_sort[mother_idx])
+        if father_idx is not None:
+            result.append(items_to_sort[father_idx])
+        for idx in other_idx:
+            result.append(items_to_sort[idx])
+        return result
 
+    def get_samples_processed_file_for_format(self, file_format):
+        """"""
+        result = {}
+        for idx, sample in enumerate(self.sorted_samples):
+            matching_files = self.get_processed_file_for_format(sample, file_format)
+            result[idx] = matching_files
+        return result
+
+    def get_processed_file_for_format(self, sample, file_format, key=None, value=None):
+        """"""
+        result = []
+        processed_files = sample.get(self.PROCESSED_FILES, [])
+        for processed_file in processed_files:
+            if key is not None and value is not None:
+                key_value = processed_file.get(key)
+                if key_value != value:
+                    continue
+            processed_file_format = processed_file.get(self.FILE_FORMAT,
+                    {}).get(self.FILE_FORMAT)
+            if processed_file_format == file_format:
+                file_uuid = processed_file.get(self.UUID)
+                result.append(file_uuid)
+        if not result:
+            raise MetaWorkflowRunCreationError(
+                "No file with format %s found on Sample: %s"
+                % (file_format, sample)
+            )
+        return result
+
+    def get_fastqs_for_paired_end(self, paired_end):
+        """"""
+        result = {}
+        for idx, sample in enumerate(self.sorted_samples):
+            paired_end_fastqs = []
+            fastq_files = sample.get(self.FILES, [])
+            for fastq_file in fastq_files:  # Expecting only FASTQs, but check
+                file_format = fastq_file.get(self.FILE_FORMAT, {}).get(self.FILE_FORMAT)
+                if file_format != self.FASTQ_FORMAT:
+                    continue
+                related_files = fastq_file.get(self.RELATED_FILES)
+                if related_files is None:
+                    raise MetaWorkflowRunCreationError(
+                        "Sample contains a FASTQ file without a related file: %s"
+                        % sample
+                    )
+                file_paired_end = fastq_file.get(self.PAIRED_END)
+                if file_paired_end == paired_end:
+                    file_uuid = fastq_file.get(self.UUID)
+                    paired_end_fastqs.append(file_uuid)
+            if not paired_end_fastqs:  # May have come from CRAM conversion
+                paired_end_fastqs = self.get_processed_file_for_format(
+                    sample, self.FASTQ_FORMAT, key=self.PAIRED_END, value=paired_end
+                )
+            result[idx] = paired_end_fastqs
+        return result
+
+    def is_proband_only(self):
+        """"""
+        result = False
+        if len(self.sample_names) == 1:
+            result = True
+        return result
+
+    @property
+    def sample_names(self):
+        """"""
+        return [
+            pedigree_sample[self.SAMPLE_NAME]
+            for pedigree_sample in self.sorted_samples_pedigree
+        ]
+
+    @property
+    def pedigree(self):
+        """"""
+        result = []
+        for pedigree_sample in self.sorted_samples_pedigree:
+            result.append(
+                {
+                    self.PARENTS: pedigree_sample.get(self.PARENTS, []),
+                    self.INDIVIDUAL: pedigree_sample.get(self.INDIVIDUAL, ""),
+                    self.SAMPLE_NAME: pedigree_sample.get(self.SAMPLE_NAME),
+                    # May want to switch gender key to sex below
+                    self.GENDER: pedigree_sample.get(self.SEX),
+                }
+            )
+        return result
+
+    @property
+    def input_crams(self):
+        """"""
+        result = {}
+        for idx, sample in self.sorted_samples:
+            cram_uuids = []
+            cram_files = sample.get(self.CRAM_FILES)
+            if cram_files is None:
+                raise MetaWorkflowRunCreationError(
+                    "Tried to grab CRAM files from a Sample lacking them: %s"
+                    % sample
+                )
+            for cram_file in cram_files:
+                cram_uuid = cram_file.get(self.UUID)
+                cram_uuids.append(cram_uuid)
+            result[idx] = cram_uuids
+        return result
+
+    @property
+    def input_gvcfs(self):
+        """"""
+        return self.get_samples_processed_file_for_format(self.GVCF_FORMAT)
+
+    @property
+    def fastqs_r1(self):
+        """"""
+        return self.get_fastqs_for_paired_end(self.PAIRED_END_1)
+
+    @property
+    def fastqs_r2(self):
+        """"""
+        return self.get_fastqs_for_paired_end(self.PAIRED_END_2)
+
+    @property
+    def rcktar_file_names(self):
+        """"""
+        return self.get_samples_processed_file_for_format(self.RCKTAR_FORMAT)
+
+    @property
+    def input_bams(self):
+        """"""
+        return self.get_samples_processed_file_for_format(self.BAM_FORMAT)
+
+    @property
+    def sample_name_proband(self):
+        """"""
+        return self.sample_names[0]  # Already sorted to proband-first
+
+    @property
+    def bamsnap_titles(self):
+        """"""
+        result = []
+        for sample_pedigree in self.sorted_samples_pedigree:
+            sample_name = sample_pedigree.get(self.SAMPLE_NAME)
+            sample_relationship = sample_pedigree.get(self.RELATIONSHIP, "")
+            result.append("%s (%s)" % (sample_name, sample_relationship))
+        return result
+
+    @property
+    def family_size(self):
+        """"""
+        return len(self.sample_names)
