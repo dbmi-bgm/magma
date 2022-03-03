@@ -5,6 +5,8 @@ from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
 from dcicutils import ff_utils
 
+from .utils import make_embed_request
+
 ################################################
 #   Main functions
 ################################################
@@ -485,7 +487,7 @@ class MetaWorkflowRunCreationError(Exception):
     pass
 
 
-class MetaWorkflowRunFromItem:
+class MetaWorkflowRunInput:
 
     # Schema constants
     TITLE = "title"
@@ -506,87 +508,37 @@ class MetaWorkflowRunFromItem:
     PENDING = "pending"
     WORKFLOW_RUNS = "workflow_runs"
     DIMENSION = "dimension"
+    DIMENSIONALITY = "dimensionality"
+    INPUT_SAMPLES = "input_samples"
+    ASSOCIATED_SAMPLE_PROCESSING = "associated_sample_processing"
 
-    def __init__(self, meta_workflow_uuid):
+    # Class constants
+    META_WORKFLOW_RUN_ENDPOINT = "/meta-workflow-runs"
+    STATUS = "status"
+    SUCCESS_STATUS = "success"
+    CHECK_ONLY_ADD_ON = "check_only=true"
+
+    def __init__(self, meta_workflow, input_properties):
         """"""
-        self.meta_workflow_run_uuid = str(uuid.uuid4())
-        self.meta_workflow_properties = self.get_item_properties(meta_workflow_uuid)
-        self.meta_workflow_run_input = self.create_meta_workflow_run_input()
-        self.meta_workflow_run = self.create_meta_workflow_run()
+        self.meta_workflow = meta_workflow
+        self.input_properties = input_properties
 
-    def post_meta_workflow_run(self):
-        """"""
-        try:
-            ff_utils.post_metadata(
-                self.meta_workflow_run, self.META_WORKFLOW_RUN, key=self.auth_key
-            )
-        except: # Catch and try patch
-            pass
-
-    def create_meta_workflow_run(self):
-        """"""
-        meta_workflow_title = self.meta_workflow_properties.get(self.TITLE)
-        title = (
-            "MetaWorkflowRun %s on %s %s"
-            % (meta_workflow_title, self.item_type, self.accession)
-        )
-        meta_workflow_run = {
-            self.META_WORKFLOW: self.meta_workflow_properties,
-            self.INPUT: self.meta_workflow_run_input,
-            self.TITLE: title,
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
-            self.COMMON_FIELDS: self.common_fields,
-            self.FINAL_STATUS: self.PENDING,
-            self.WORKFLOW_RUNS: [],
-            self.UUID: self.meta_workflow_run_uuid,
-        }
-        self.create_workflow_runs(meta_workflow_run)
-        return meta_workflow_run
-
-    def create_workflow_runs(self, meta_workflow_run):
-        """"""
-        reformatted_file_input = None
-        reformatted_meta_workflow_run = MetaWorkflowRun(meta_workflow_run).to_json()
-        reformatted_input = reformatted_meta_workflow_run[self.INPUT]
-        for input_item in reformatted_input:
-            input_files = input_item.get(self.FILES)
-            if input_files is None:
-                continue
-            reformatted_file_input = input_files
-            break
-        if reformatted_file_input is None:
-            raise MetaWorkflowRunCreationError(
-                "No input files were provided for the MetaWorkflowRun: %s"
-                % meta_workflow_run
-            )
-        run_with_workflows = MetaWorkflow(self.meta_workflow_properties).write_run(
-            reformatted_file_input
-        )
-        meta_workflow_run[self.WORKFLOW_RUNS] = run_with_workflows[self.WORKFLOW_RUNS]
-
-    def get_item_properties(self, item_uuid):
-        """"""
-        result = ff_utils.get_metadata(
-            item_uuid, key=self.auth_key, add_on="frame=raw"
-        )
-        return result
-
-    def create_meta_workflow_run_input(self):
+    def create_input(self):
         """"""
         result = []
         input_files_to_fetch = []
         input_parameters_to_fetch = []
         input_files = []
         input_parameters = []
-        meta_workflow_input = self.meta_workflow_properties.get(self.INPUT, [])
+        meta_workflow_input = self.meta_workflow.get(self.INPUT, [])
         for input_arg in meta_workflow_input:
             if self.FILES in input_arg or self.VALUE in input_arg:
                 continue
             input_arg_name = input_arg.get(self.ARGUMENT_NAME)
             input_arg_type = input_arg.get(self.ARGUMENT_TYPE)
             if input_arg_type == self.FILE:
-                input_files_to_fetch.append(input_arg_name)
+                input_arg_dimensions = input_arg.get(self.DIMENSIONALITY)
+                input_files_to_fetch.append((input_arg_name, input_arg_dimensions))
             elif input_arg_type == self.PARAMETER:
                 parameter_value_type = input_arg.get(self.VALUE_TYPE)
                 input_parameters_to_fetch.append((input_arg_name, parameter_value_type))
@@ -594,7 +546,7 @@ class MetaWorkflowRunFromItem:
                 raise MetaWorkflowRunCreationError(
                     "Found an unexpected MetaWorkflow input argument type (%s) for"
                     " MetaWorkflow with uuid: %s"
-                    % (input_arg_type, self.meta_workflow_properties.get(self.UUID))
+                    % (input_arg_type, self.meta_workflow.get(self.UUID))
                 )
         if input_parameters_to_fetch:
             input_parameters = self.fetch_parameters(input_parameters_to_fetch)
@@ -607,7 +559,7 @@ class MetaWorkflowRunFromItem:
     def fetch_files(self, files_to_fetch):
         """"""
         result = []
-        for file_parameter in files_to_fetch:
+        for file_parameter, input_dimensions in files_to_fetch:
             try:
                 file_parameter_value = getattr(
                     self.input_properties, file_parameter.lower()
@@ -616,7 +568,9 @@ class MetaWorkflowRunFromItem:
                 raise MetaWorkflowRunCreationError(
                     "Could not find input parameter: %s" % file_parameter
                 )
-            formatted_file_value = self.format_file_input_value(file_parameter_value)
+            formatted_file_value = self.format_file_input_value(
+                file_parameter, file_parameter_value, input_dimensions
+            )
             file_parameter_result = {
                 self.ARGUMENT_NAME: file_parameter,
                 self.ARGUMENT_TYPE: self.FILE,
@@ -625,23 +579,39 @@ class MetaWorkflowRunFromItem:
             result.append(file_parameter_result)
         return result
 
-    def format_file_input_value(self, file_value):
+    def format_file_input_value(self, file_parameter, file_value, input_dimensions):
         """"""
         result = []
-        proband_only = self.input_properties.is_proband_only()
         sorted_key_indices_by_sample = sorted(file_value.keys())
         for sample_idx in sorted_key_indices_by_sample:
             sample_file_uuids = file_value[sample_idx]
-            for file_uuid_idx, file_uuid in enumerate(sample_file_uuids):
-                if proband_only:
-                    dimension = str(file_uuid_idx)
-                else:
+            if input_dimensions == 1:
+                if len(sample_file_uuids) > 1:
+                    raise MetaWorkflowRunCreationError(
+                        "Found multiple input files when only 1 was expected for"
+                        " parameter %s: %s"
+                        % (file_parameter, sample_file_uuids)
+                    )
+                for file_uuid in sample_file_uuids:
+                    dimension = str(sample_idx)
+                    formatted_file_result = {
+                        self.FILE: file_uuid,
+                        self.DIMENSION: dimension,
+                    }
+                    result.append(formatted_file_result)
+            elif input_dimensions == 2:
+                for file_uuid_idx, file_uuid in enumerate(sample_file_uuids):
                     dimension = "%s,%s" % (sample_idx, file_uuid_idx)
-                formatted_file_result = {
-                    self.FILE: file_uuid,
-                    self.DIMENSION: dimension,
-                }
-                result.append(formatted_file_result)
+                    formatted_file_result = {
+                        self.FILE: file_uuid,
+                        self.DIMENSION: dimension,
+                    }
+                    result.append(formatted_file_result)
+            else:
+                raise MetaWorkflowRunCreationError(
+                    "Received an unexpected dimension number for parameter %s: %s"
+                    % (file_parameter, input_dimensions)
+                )
         return result
 
     def fetch_parameters(self, parameters_to_fetch):
@@ -673,106 +643,201 @@ class MetaWorkflowRunFromItem:
         return result
 
 
-EMBED_ENDPOINT = "/embed"
-EMBED_IDS = "ids"
-EMBED_FIELDS = "fields"
-
-
-def make_embed_request(ids, fields, auth_key):
-    """"""
-    result = None
-    if isinstance(ids, str):
-        ids = [ids]
-    if isinstance(fields, str):
-        fields = [fields]
-    post_body = {EMBED_IDS: ids, EMBED_FIELDS: fields}
-    embed_request = ff_utils.authorized_request(
-        EMBED_ENDPOINT, verb="POST", auth=auth_key, data=json.dumps(post_body)
-    )
-    if embed_request:
-        result = embed_request[0]
-    return result
-
-
-class MetaWorkflowRunFromCohort(MetaWorkflowRunFromItem):
-    """TODO once Cohort data model eestablished."""
-    pass
-
-
-class MetaWorkflowRunFromCase(MetaWorkflowRunFromItem):
+class MetaWorkflowRunFromSampleProcessing():
     """"""
     # Embedding API fields
-    CASE_FIELDS_TO_GET = [
-        "accession",
+    FIELDS_TO_GET = [
         "project",
         "institution",
-        "sample_processing.uuid",
-        "sample_processing.meta_workflow_runs.uuid",
-        "sample_processing.samples_pedigree",
-        "sample_processing.samples.bam_sample_id",
-        "sample_processing.samples.files.uuid",
-        "sample_processing.samples.files.related_files",
-        "sample_processing.samples.files.paired_end",
-        "sample_processing.samples.files.file_format.file_format",
-        "sample_processing.samples.cram_files.uuid",
-        "sample_processing.samples.processed_files.uuid",
-        "sample_processing.samples.processed_files.file_format.file_format",
+        "uuid",
+        "meta_workflow_runs.uuid",
+        "samples_pedigree",
+        "samples.bam_sample_id",
+        "samples.uuid",
+        "samples.files.uuid",
+        "samples.files.related_files",
+        "samples.files.paired_end",
+        "samples.files.file_format.file_format",
+        "samples.cram_files.uuid",
+        "samples.processed_files.uuid",
+        "samples.processed_files.file_format.file_format",
     ]
 
     # Schema constants
-    CASE_ACCESSION = "case_accession"
     SAMPLE_PROCESSING = "sample_processing"
     META_WORKFLOW_RUNS = "meta_workflow_runs"
-    ACCESSION = "accession"
+    ASSOCIATED_META_WORKFLOW_RUN = "associated_meta_workflow_run"
+    PROJECT = "project"
+    INSTITUTION = "institution"
+    UUID = "uuid"
+    META_WORKFLOW = "meta_workflow"
+    FINAL_STATUS = "final_status"
+    PENDING = "pending"
+    WORKFLOW_RUNS = "workflow_runs"
+    TITLE = "title"
+    INPUT = "input"
+    COMMON_FIELDS = "common_fields"
+    INPUT_SAMPLES = "input_samples"
+    ASSOCIATED_SAMPLE_PROCESSING = "associated_sample_processing"
+    FILES = "files"
 
     # Class constants
-    ITEM_TYPE = "Case"
+    META_WORKFLOW_RUN_ENDPOINT = "/meta-workflow-runs"
+    STATUS = "status"
+    SUCCESS_STATUS = "success"
+    CHECK_ONLY_ADD_ON = "check_only=true"
 
-    def __init__(self, case_uuid, meta_workflow_uuid, auth_key):
+    def __init__(self, sample_processing_identifier, meta_workflow_identifier, auth_key):
         """"""
         self.auth_key = auth_key
-        case_properties = make_embed_request(
-            case_uuid, self.CASE_FIELDS_TO_GET, self.auth_key
+        sample_processing = make_embed_request(
+            sample_processing_identifier, self.FIELDS_TO_GET, self.auth_key
         )
-        if not case_properties:
+        if not sample_processing:
             raise MetaWorkflowRunCreationError(
-                "No Case item found for given uuid: %s" % case_uuid
+                "No SampleProcessing found for given identifier: %s"
+                % sample_processing_identifier
             )
-        sample_processing = case_properties.get(self.SAMPLE_PROCESSING)
-        self.project = case_properties.get(self.PROJECT)
-        self.institution = case_properties.get(self.INSTITUTION)
-        self.accession = case_properties.get(self.ACCESSION)
-        self.common_fields = {
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
-            self.CASE_ACCESSION: self.accession,
-        }
+        self.meta_workflow = self.get_item_properties(meta_workflow_identifier)
+        if not self.meta_workflow:
+            raise MetaWorkflowRunCreationError(
+                "No MetaWorkflow found for given identifier: %s"
+                % meta_workflow_identifier
+            )
+        self.project = sample_processing.get(self.PROJECT)
+        self.institution = sample_processing.get(self.INSTITUTION)
+        self.sample_processing_uuid = sample_processing.get(self.UUID)
         self.existing_meta_workflow_runs = sample_processing.get(
             self.META_WORKFLOW_RUNS, []
         )
-        self.sample_processing_uuid = sample_processing.get(self.UUID)
-        self.item_type = self.ITEM_TYPE
         self.input_properties = InputPropertiesFromSampleProcessing(sample_processing)
-        super().__init__(meta_workflow_uuid)
+        self.meta_workflow_run_input = MetaWorkflowRunInput(
+            self.meta_workflow, self.input_properties
+        ).create_input()
+        self.meta_workflow_run_uuid = str(uuid.uuid4())
+        self.meta_workflow_run = self.create_meta_workflow_run()
 
-    def post_meta_workflow_run_and_patch_case(self):
+    def create_meta_workflow_run(self):
+        """"""
+        meta_workflow_title = self.meta_workflow.get(self.TITLE)
+        title = (
+            "MetaWorkflowRun %s on SampleProcessing %s"
+            % (meta_workflow_title, self.sample_processing_uuid)
+        )
+        meta_workflow_run = {
+            self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
+            self.INPUT: self.meta_workflow_run_input,
+            self.TITLE: title,
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
+            self.ASSOCIATED_SAMPLE_PROCESSING: self.sample_processing_uuid,
+            self.COMMON_FIELDS: {
+                self.PROJECT: self.project,
+                self.INSTITUTION: self.institution,
+                self.ASSOCIATED_META_WORKFLOW_RUN: self.meta_workflow_run_uuid,
+            },
+            self.FINAL_STATUS: self.PENDING,
+            self.WORKFLOW_RUNS: [],
+            self.UUID: self.meta_workflow_run_uuid,
+        }
+        self.create_workflow_runs(meta_workflow_run)
+        return meta_workflow_run
+
+    def create_workflow_runs(self, meta_workflow_run):
+        """"""
+        reformatted_file_input = None
+        reformatted_meta_workflow_run = MetaWorkflowRun(meta_workflow_run).to_json()
+        reformatted_input = reformatted_meta_workflow_run[self.INPUT]
+        for input_item in reformatted_input:
+            input_files = input_item.get(self.FILES)
+            if input_files is None:
+                continue
+            reformatted_file_input = input_files
+            break
+        if reformatted_file_input is None:
+            raise MetaWorkflowRunCreationError(
+                "No input files were provided for the MetaWorkflowRun: %s"
+                % meta_workflow_run
+            )
+        run_with_workflows = MetaWorkflow(self.meta_workflow).write_run(
+            reformatted_file_input
+        )
+        meta_workflow_run[self.WORKFLOW_RUNS] = run_with_workflows[self.WORKFLOW_RUNS]
+
+    def get_item_properties(self, item_uuid):
+        """"""
+        try:
+            result = ff_utils.get_metadata(
+                item_uuid, key=self.auth_key, add_on="frame=raw"
+            )
+        except Exception:
+            result = None
+        return result
+
+    def post_and_patch(self):
         """"""
         self.post_meta_workflow_run()
-        existing_meta_workflow_run_uuids = [
+        meta_workflow_run_uuids = [
             item.get(self.UUID) for item in self.existing_meta_workflow_runs
         ]
-        if self.meta_workflow_run_uuid not in existing_meta_workflow_run_uuids:
-            meta_workflow_run_uuids = existing_meta_workflow_run_uuids + [self.meta_workflow_run_uuid]
-            patch_body = {self.META_WORKFLOW_RUNS: meta_workflow_run_uuids}
-            ff_utils.patch_metadata(
-                patch_body, obj_id=self.sample_processing_uuid, key=self.auth_key
+        meta_workflow_run_uuids.append(self.meta_workflow_run_uuid)
+        patch_body = {self.META_WORKFLOW_RUNS: meta_workflow_run_uuids}
+        self.validate_patch_item(self.sample_processing_uuid, patch_body)
+        self.patch_item(self.sample_processing_uuid, patch_body)
+
+    def post_meta_workflow_run(self):
+        """"""
+        self.validate_post_item(
+            self.meta_workflow_run, self.META_WORKFLOW_RUN_ENDPOINT,
+        )
+        self.post_item(self.meta_workflow_run, self.META_WORKFLOW_RUN_ENDPOINT)
+
+    def validate_post_item(self, item_to_post, item_endpoint):
+        """"""
+        validation = ff_utils.post_metadata(
+            item_to_post,
+            item_endpoint,
+            key=self.auth_key,
+            add_on=self.CHECK_ONLY_ADD_ON,
+        )
+        validation_status = validation.get(self.STATUS)
+        if validation_status != self.SUCCESS_STATUS:
+            raise MetaWorkflowRunCreationError(
+                "POST of item to %s did not validate. Error message: %s"
+                % (item_endpoint, validation)
             )
+
+    def post_item(self, item_to_post, item_endpoint):
+        """"""
+        ff_utils.post_metadata(item_to_post, item_endpoint, key=self.auth_key)
+
+    def validate_patch_item(self, item_to_patch, patch_body):
+        """"""
+        validation = ff_utils.patch_metadata(
+            patch_body,
+            obj_id=item_to_patch,
+            key=self.auth_key,
+            add_on=self.CHECK_ONLY_ADD_ON,
+        )
+        validation_status = validation.get(self.STATUS)
+        if validation_status != self.SUCCESS_STATUS:
+            raise MetaWorkflowRunCreationError(
+                "PATCH of item %s did not validate. Error message: %s"
+                % (item_to_patch, validation)
+            )
+
+    def patch_item(self, item_to_patch, patch_body):
+        """"""
+        ff_utils.patch_metadata(patch_body, obj_id=item_to_patch, key=self.auth_key)
+
 
 
 class InputPropertiesFromSampleProcessing:
     """"""
     # Schema constants
     UUID = "uuid"
+    ACCESSION = "accession"
     SAMPLES_PEDIGREE = "samples_pedigree"
     SAMPLES = "samples"
     BAM_SAMPLE_ID = "bam_sample_id"
@@ -781,10 +846,11 @@ class InputPropertiesFromSampleProcessing:
     RELATED_FILES = "related_files"
     FILE_FORMAT = "file_format"
     PAIRED_END = "paired_end"
+    PAIRED_END_1 = "1"
+    PAIRED_END_2 = "2"
 
     # File formats
     FASTQ_FORMAT = "fastq"
-    RCKTAR_FORMAT = "rck_tar"
     CRAM_FORMAT = "cram"
     BAM_FORMAT = "bam"
     GVCF_FORMAT = "gvcf_gz"
@@ -799,6 +865,9 @@ class InputPropertiesFromSampleProcessing:
     SAMPLE_NAME = "sample_name"
     GENDER = "gender"
     SEX = "sex"
+
+    # MetaWorkflow constants
+    RCKTAR_FILE_ENDING = ".rck.gz"
 
     def __init__(self, sample_processing):
         """"""
@@ -958,13 +1027,6 @@ class InputPropertiesFromSampleProcessing:
             result[idx] = paired_end_fastqs
         return result
 
-    def is_proband_only(self):
-        """"""
-        result = False
-        if len(self.sample_names) == 1:
-            result = True
-        return result
-
     @property
     def sample_names(self):
         """"""
@@ -972,6 +1034,11 @@ class InputPropertiesFromSampleProcessing:
             pedigree_sample[self.SAMPLE_NAME]
             for pedigree_sample in self.sorted_samples_pedigree
         ]
+
+    @property
+    def input_sample_uuids(self):
+        """"""
+        return [sample[self.UUID] for sample in self.sorted_samples]
 
     @property
     def pedigree(self):
@@ -1023,14 +1090,16 @@ class InputPropertiesFromSampleProcessing:
         return self.get_fastqs_for_paired_end(self.PAIRED_END_2)
 
     @property
-    def rcktar_file_names(self):
-        """"""
-        return self.get_samples_processed_file_for_format(self.RCKTAR_FORMAT)
-
-    @property
     def input_bams(self):
         """"""
         return self.get_samples_processed_file_for_format(self.BAM_FORMAT)
+
+    @property
+    def rcktar_file_names(self):
+        """"""
+        return [
+            sample_name + self.RCKTAR_FILE_ENDING for sample_name in self.sample_names
+        ]
 
     @property
     def sample_name_proband(self):
