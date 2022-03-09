@@ -73,7 +73,7 @@ def make_meta_workflow_run(workflow_runs):
             False,
             [],
         ),
-    ]
+    ],
 )
 def test_get_recently_completed_workflow_runs(
     meta_workflow_run, updated_properties, error, expected
@@ -98,7 +98,7 @@ def test_get_recently_completed_workflow_runs(
         ([WORKFLOW_RUN_PASSING], False),
         ([WORKFLOW_RUN_PASSING, WORKFLOW_RUN_WARNING], False),
         ([WORKFLOW_RUN_PASSING, WORKFLOW_RUN_FAILING], True),
-    ]
+    ],
 )
 def test_evaluate_quality_metrics(embed_response, expected):
     """Test evaluating whether all WorkflowRuns' output QualityMetrics
@@ -120,7 +120,7 @@ def test_evaluate_quality_metrics(embed_response, expected):
         (WORKFLOW_RUN_PASSING, False),
         (WORKFLOW_RUN_WARNING, False),
         (WORKFLOW_RUN_FAILING, True),
-    ]
+    ],
 )
 def test_evaluate_workflow_run_quality_metrics(workflow_run, expected):
     """Test evaluating whether a given WorkflowRun's output

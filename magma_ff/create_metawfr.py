@@ -84,8 +84,10 @@ class MetaWorkflowRunFromSampleProcessing:
         """
         self.auth_key = auth_key
         sample_processing = make_embed_request(
-            sample_processing_identifier, self.FIELDS_TO_GET, self.auth_key,
-            single_item=True
+            sample_processing_identifier,
+            self.FIELDS_TO_GET,
+            self.auth_key,
+            single_item=True,
         )
         if not sample_processing:
             raise MetaWorkflowRunCreationError(
