@@ -3,18 +3,29 @@ import json
 from dcicutils import ff_utils
 
 
-def make_embed_request(ids, fields, auth_key):
-    """"""
+def make_embed_request(ids, fields, auth_key, single_item=False):
+    """POST to embed API for retrieval of specified fields for given
+    identifiers (from Postgres, not ES).
+
+    :param ids: Item identifier(s)
+    :type ids: str or list(str)
+    :param fields: Fields to retrieve for identifiers
+    :type fields: str or list(str)
+    :param auth_key: CGAP authorization key
+    :type auth_key: dict
+    :param single_item: Whether to return non-list result because only
+         maximum one response is expected
+    :type single_item: bool
+    :returns: Embed API response
+    :rtype: list or dict or None
+    """
     result = []
-    single_item = False
     if isinstance(ids, str):
         ids = [ids]
     if isinstance(fields, str):
         fields = [fields]
-    if len(ids) == 1:
-        single_item = True
     id_chunks = chunk_ids(ids)
-    server = auth_key["server"]
+    server = auth_key.get("server")
     for id_chunk in id_chunks:
         post_body = {"ids": id_chunk, "fields": fields}
         embed_request = ff_utils.authorized_request(
@@ -22,17 +33,48 @@ def make_embed_request(ids, fields, auth_key):
         ).json()
         result += embed_request
     if single_item:
-        if embed_request:
-            result = embed_request[0]
-        else:
+        if not result:
             result = None
+        elif len(result) == 1:
+            result = result[0]
+        else:
+            raise ValueError(
+                "Expected at most a single response but received multiple: %s"
+                % result
+            )
     return result
 
 
 def chunk_ids(ids):
-    """"""
+    """Split list into list of lists of maximum chunk size length.
+
+    Embed API currently accepts max 5 identifiers, so chunk size is 5.
+
+    :param ids: Identifiers to chunk
+    :type ids: list
+    :returns: Chunked identifiers
+    :rtype: list
+    """
     result = []
     chunk_size = 5
     for idx in range(0, len(ids), chunk_size):
         result.append(ids[idx: idx + chunk_size])
+    return result
+
+
+def check_final_status(meta_workflow_run, valid_status):
+    """Check if MetaWorkflowRun.final_status is valid.
+
+    :param meta_workflow_run: MetaWorkflowRun properties
+    :type meta_workflow_run: dict
+    :param valid_status: Status considered valid
+    :type valid_status: list
+    :returns: Whether MetaWorkflowRun's final_status is valid
+    :rtype: bool
+    """
+    final_status = meta_workflow_run.get("final_status")
+    if final_status in valid_status:
+        result = True
+    else:
+        result = False
     return result
