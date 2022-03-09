@@ -154,7 +154,7 @@ class MetaWorkflowRunFromSampleProcessing:
         :param meta_workflow_run: MetaWorkflowRun properties
         :type meta_workflow_run: dict
         :raises MetaWorkflowRunCreationError: If input files to
-            MetaWorkflowRun cannot be identifier
+            MetaWorkflowRun cannot be identified
         """
         reformatted_file_input = None
         reformatted_meta_workflow_run = MetaWorkflowRun(meta_workflow_run).to_json()
