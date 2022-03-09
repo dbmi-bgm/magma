@@ -101,8 +101,8 @@ def test_get_recently_completed_workflow_runs(
     ],
 )
 def test_evaluate_quality_metrics(embed_response, expected):
-    """Test evaluating whether all WorkflowRuns' output QualityMetrics
-    have all not failed.
+    """Test evaluating whether any WorkflowRuns' output QualityMetrics
+    have failed.
     """
     with mock.patch(
         "magma_ff.status_metawfr.make_embed_request", return_value=embed_response
@@ -123,8 +123,8 @@ def test_evaluate_quality_metrics(embed_response, expected):
     ],
 )
 def test_evaluate_workflow_run_quality_metrics(workflow_run, expected):
-    """Test evaluating whether a given WorkflowRun's output
-    QualityMetrics have not failed.
+    """Test evaluating whether any of a given WorkflowRun's output
+    QualityMetrics have failed.
     """
     result = evaluate_workflow_run_quality_metrics(workflow_run)
     assert result == expected
