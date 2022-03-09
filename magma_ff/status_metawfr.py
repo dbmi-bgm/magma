@@ -4,11 +4,11 @@
 #       workflow-runs in meta-workflow-run
 #
 ################################################
-from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff import checkstatus
 from dcicutils import ff_utils
 
-from .utils import make_embed_request, check_final_status
+from . import checkstatus
+from .metawflrun import MetaWorkflowRun
+from .utils import check_final_status, make_embed_request
 
 
 ################################################

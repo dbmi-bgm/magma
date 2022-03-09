@@ -2,11 +2,10 @@ import mock
 import pytest
 
 from ..status_metawfr import (
-    get_recently_completed_workflow_runs,
     evaluate_quality_metrics,
     evaluate_workflow_run_quality_metrics,
+    get_recently_completed_workflow_runs,
 )
-
 
 WORKFLOW_RUN_UUID = "some_uuid"
 WORKFLOW_RUN_COMPLETED = {"run_status": "complete", "workflow_run": WORKFLOW_RUN_UUID}

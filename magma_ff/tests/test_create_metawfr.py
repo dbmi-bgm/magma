@@ -1,15 +1,15 @@
 import datetime
 import json
+
 import mock
 import pytest
 
 from ..create_metawfr import (
+    InputPropertiesFromSampleProcessing,
     MetaWorkflowRunCreationError,
     MetaWorkflowRunFromSampleProcessing,
     MetaWorkflowRunInput,
-    InputPropertiesFromSampleProcessing,
 )
-
 
 BAM_UUID_1 = "bam_sample_1"
 BAM_UUID_2 = "bam_sample_2"

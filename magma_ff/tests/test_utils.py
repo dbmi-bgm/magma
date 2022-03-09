@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from ..utils import make_embed_request, chunk_ids, check_final_status
+from ..utils import check_final_status, chunk_ids, make_embed_request
 
 
 class ReturnValue:
