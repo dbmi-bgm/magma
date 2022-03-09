@@ -229,7 +229,7 @@ class MetaWorkflowRunFromSampleProcessing:
             )
         except Exception as error_msg:
             raise MetaWorkflowRunCreationError(
-                "SampleProcessing could not be PATCHED: \n%s" % str(error_msg)
+                "SampleProcessing could not be PATCHed: \n%s" % str(error_msg)
             )
 
 
