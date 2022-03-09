@@ -6,9 +6,9 @@
 ################################################
 from dcicutils import ff_utils
 
-from . import checkstatus
-from .metawflrun import MetaWorkflowRun
-from .utils import check_final_status, make_embed_request
+from magma_ff import checkstatus
+from magma_ff.metawflrun import MetaWorkflowRun
+from magma_ff.utils import check_final_status, make_embed_request
 
 
 ################################################

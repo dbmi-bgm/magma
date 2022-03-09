@@ -6,9 +6,9 @@
 ################################################
 from dcicutils import ff_utils
 
-from .metawflrun import MetaWorkflowRun
-from .runupdate import RunUpdate
-from .utils import check_final_status
+from magma_ff.metawflrun import MetaWorkflowRun
+from magma_ff.runupdate import RunUpdate
+from magma_ff.utils import check_final_status
 
 
 ################################################

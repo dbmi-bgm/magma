@@ -4,7 +4,7 @@ import json
 import mock
 import pytest
 
-from ..create_metawfr import (
+from magma_ff.create_metawfr import (
     InputPropertiesFromSampleProcessing,
     MetaWorkflowRunCreationError,
     MetaWorkflowRunFromSampleProcessing,

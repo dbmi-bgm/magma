@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from ..status_metawfr import (
+from magma_ff.status_metawfr import (
     evaluate_quality_metrics,
     evaluate_workflow_run_quality_metrics,
     get_recently_completed_workflow_runs,

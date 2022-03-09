@@ -7,10 +7,10 @@
 from dcicutils import ff_utils
 from tibanna_ffcommon.core import API
 
-from . import inputgenerator as ingen
-from .metawfl import MetaWorkflow
-from .metawflrun import MetaWorkflowRun
-from .utils import check_final_status, make_embed_request
+from magma_ff import inputgenerator as ingen
+from magma_ff.metawfl import MetaWorkflow
+from magma_ff.metawflrun import MetaWorkflowRun
+from magma_ff.utils import check_final_status, make_embed_request
 
 
 ################################################

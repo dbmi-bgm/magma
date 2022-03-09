@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from ..utils import check_final_status, chunk_ids, make_embed_request
+from magma_ff.utils import check_final_status, chunk_ids, make_embed_request
 
 
 class ReturnValue:
