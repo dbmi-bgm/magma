@@ -196,63 +196,40 @@ class MetaWorkflowRunFromSampleProcessing:
         """POST MetaWorkflowRun and PATCH SampleProcessing to update
         list of its MetaWorkflowRuns.
         """
-        self.validate_post_item(self.meta_workflow_run, self.META_WORKFLOW_RUN_ENDPOINT)
-        ff_utils.post_metadata(
-            self.meta_workflow_run, self.META_WORKFLOW_RUN_ENDPOINT, key=self.auth_key
-        )
+        self.post_meta_workflow_run()
+        self.patch_sample_processing()
+
+    def post_meta_workflow_run(self):
+        """POST MetaWorkflowRun to portal."""
+        try:
+            ff_utils.post_metadata(
+                self.meta_workflow_run,
+                self.META_WORKFLOW_RUN_ENDPOINT,
+                key=self.auth_key,
+            )
+        except Exception as error_msg:
+            raise MetaWorkflowRunCreationError(
+                "MetaWorkflowRun not POSTed: \n%s" % str(error_msg)
+            )
+
+    def patch_sample_processing(self):
+        """PATCH SampleProcessing to include new MetaWorkflowRun.
+
+        Note: Method will fail unless MetaWorkflowRun previously
+        POSTed.
+        """
         meta_workflow_runs = [
             identifier for identifier in self.existing_meta_workflow_runs
         ]
         meta_workflow_runs.append(self.meta_workflow_run_uuid)
         patch_body = {self.META_WORKFLOW_RUNS: meta_workflow_runs}
-        self.validate_patch_item(self.sample_processing_uuid, patch_body)
-        ff_utils.patch_metadata(
-            patch_body, obj_id=self.sample_processing_uuid, key=self.auth_key
-        )
-        self.patch_item(self.sample_processing_uuid, patch_body)
-
-    def validate_post_item(self, item_to_post, item_endpoint):
-        """Validate POST of item to CGAP.
-
-        :param item_to_post: Item properties
-        :type item_to_post: dict
-        :param item_endpoint: Endpoint on CGAP to which to POST item
-        :type item_endpoint: str
-        :raises MetaWorkflowRunCreationError: If POST validation fails
-        """
-        validation = ff_utils.post_metadata(
-            item_to_post,
-            item_endpoint,
-            key=self.auth_key,
-            add_on=self.CHECK_ONLY_ADD_ON,
-        )
-        validation_status = validation.get(self.STATUS)
-        if validation_status != self.SUCCESS_STATUS:
-            raise MetaWorkflowRunCreationError(
-                "POST of item to %s did not validate. Error message: %s"
-                % (item_endpoint, validation)
+        try:
+            ff_utils.patch_metadata(
+                patch_body, obj_id=self.sample_processing_uuid, key=self.auth_key
             )
-
-    def validate_patch_item(self, item_to_patch, patch_body):
-        """Validate PATCH of item on CGAP.
-
-        :param item_to_patch: Item identfier
-        :type item_to_patch: str
-        :param patch_body: Item properties to update
-        :type patch_body: dict
-        :raises MetaWorkflowRunCreationError: If PATCH validation fails
-        """
-        validation = ff_utils.patch_metadata(
-            patch_body,
-            obj_id=item_to_patch,
-            key=self.auth_key,
-            add_on=self.CHECK_ONLY_ADD_ON,
-        )
-        validation_status = validation.get(self.STATUS)
-        if validation_status != self.SUCCESS_STATUS:
+        except Exception as error_msg:
             raise MetaWorkflowRunCreationError(
-                "PATCH of item %s did not validate. Error message: %s"
-                % (item_to_patch, validation)
+                "SampleProcessing could not be PATCHED: \n%s" % str(error_msg)
             )
 
 
