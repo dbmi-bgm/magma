@@ -54,10 +54,7 @@ class MetaWorkflowRunFromSampleProcessing:
     FILES = "files"
 
     # Class constants
-    META_WORKFLOW_RUN_ENDPOINT = "/meta-workflow-runs"
-    STATUS = "status"
-    SUCCESS_STATUS = "success"
-    CHECK_ONLY_ADD_ON = "check_only=true"
+    META_WORKFLOW_RUN_ENDPOINT = "meta-workflow-runs"
 
     def __init__(
         self,
