@@ -58,7 +58,7 @@ def status_metawfr(
                     updated_workflow_runs, ff_key
                 )
                 if quality_metrics_failing:
-                    patch_body["final_status"] = "quality metric failure"
+                    patch_body["final_status"] = "quality metric failed"
             patch_response = ff_utils.patch_metadata(
                 patch_body, metawfr_uuid, key=ff_key
             )
@@ -91,9 +91,9 @@ def get_recently_completed_workflow_runs(meta_workflow_run, updated_properties):
     for idx in range(len(original_workflow_runs)):
         original_workflow_run = original_workflow_runs[idx]
         updated_workflow_run = updated_workflow_runs[idx]
-        original_status = original_workflow_run.get("run_status")
-        updated_status = updated_workflow_run.get("run_status")
-        if updated_status != original_status and updated_status == "complete":
+        original_status = original_workflow_run.get("status")
+        updated_status = updated_workflow_run.get("status")
+        if updated_status != original_status and updated_status == "completed":
             workflow_run_item = updated_workflow_run.get("workflow_run")
             if workflow_run_item:
                 result.append(workflow_run_item)

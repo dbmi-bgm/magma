@@ -8,9 +8,9 @@ from magma_ff.status_metawfr import (
 )
 
 WORKFLOW_RUN_UUID = "some_uuid"
-WORKFLOW_RUN_COMPLETED = {"run_status": "complete", "workflow_run": WORKFLOW_RUN_UUID}
-WORKFLOW_RUN_RUNNING = {"run_status": "running", "workflow_run": WORKFLOW_RUN_UUID}
-WORKFLOW_RUN_ERROR = {"run_status": "error", "workflow_run": WORKFLOW_RUN_UUID}
+WORKFLOW_RUN_COMPLETED = {"status": "completed", "workflow_run": WORKFLOW_RUN_UUID}
+WORKFLOW_RUN_RUNNING = {"status": "running", "workflow_run": WORKFLOW_RUN_UUID}
+WORKFLOW_RUN_ERROR = {"status": "failed", "workflow_run": WORKFLOW_RUN_UUID}
 WORKFLOW_RUN_PASSING = {
     "output_files": [
         {"no_qc_here": "foo"},

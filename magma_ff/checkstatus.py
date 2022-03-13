@@ -50,7 +50,7 @@ class CheckStatusFF(AbstractCheckStatus):
 
     def check_running(self):
         for patch_dict in super().check_running():
-            if patch_dict: 
+            if patch_dict:
                 failed_jobs = self.wflrun_obj.update_failed_jobs()
                 if len(failed_jobs) > 0:
                     patch_dict['failed_jobs'] = failed_jobs
@@ -61,8 +61,6 @@ class CheckStatusFF(AbstractCheckStatus):
                     if cost is not None and cost > 0:
                         patch_dict['cost'] = cost
                 yield patch_dict
-            else:
-                yield None
 
     # The following three functions are for portal (cgap / 4dn)
     def get_uuid(self, jobid):
