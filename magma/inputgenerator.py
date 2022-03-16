@@ -3,8 +3,8 @@
 ################################################
 #
 #   Object to combine and integrate
-#       meta-workflow and meta-workflow-run objects
-#       to generate input for workflow-runs
+#       MetaWorkflow[obj] and MetaWorkflowRun[obj]
+#       to generate input for WorfklowRun[obj]
 #
 #   Michele Berselli
 #   berselli.michele@gmail.com
@@ -24,15 +24,16 @@ from tibanna.utils import create_jobid
 #   Argument
 ################################################
 class Argument(object):
-    """
-        object to model an argument
+    """Class to model an argument.
     """
 
     def __init__(self, input_json):
-        """
-            initialize Argument object from input_json
+        """Constructor method.
+        Initialize object and attributes.
 
-                input_json is an argument in json format
+        :param input_json: Argument in json format
+            (e.g. from StepWorkflow[json])
+        :type input_json: dict
         """
         # Basic attributes
         for key in input_json:
@@ -64,16 +65,19 @@ class Argument(object):
 #   InputGenerator
 ################################################
 class InputGenerator(object):
-    """
-        object to combine MetaWorkflow and MetaWorkflowRun objects
+    """Class to combine MetaWorkflow[obj] and MetaWorkflowRun[obj].
+    Has methods to generate specific input for WorkflowRun[obj] and
+    information for patching MetaWorkflowRun[obj].
     """
 
     def __init__(self, wfl_obj, wflrun_obj):
-        """
-            initialize InputGenerator object
+        """Constructor method.
+        Initialize object and attributes.
 
-                wfl_obj, MetaWorkflow object representing a meta-workflow
-                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+        :parm wfl_obj: MetaWorkflow[obj] representing a MetaWorkflow[json]
+        :type wfl_obj: object
+        :parm wflrun_obj: MetaWorkflowRun[obj] representing a MetaWorkflowRun[json]
+        :type wflrun_obj: object
         """
         # Basic attributes
         self.wfl_obj = wfl_obj
@@ -84,18 +88,18 @@ class InputGenerator(object):
     #end def
 
     def input_generator(self):
-        """
-            template function, can be customized to any specific format
+        """Template function, can be customized to any specific format.
 
-            return a generator to input for workflow-run in json format
-            and updated workflow-runs and final_status information in json format for patching
+        For each WorkflowRun[obj] ready to run in MetaWorkflowRun[obj]:
+            - Update status to 'running'
+            - Add a jobid
+            - Create specific input as dict
+            - Create updated workflow_runs and final_status properties
+            - Yield input, {workflow_runs, final_status}
 
-            for each workflow-run ready to run:
-                update workflow-run status to running
-                create and add a jobid
-                format input json
-                create an updated workflow_runs json for patching
-                yield input json and workflow_runs
+        :return: Generator to input for WorkflowRun[obj] and updated
+            workflow_runs and final_status information for patching
+        :rtype: generator(dict, dict)
         """
         for run_obj, run_args in self._input():
             jobid = create_jobid()
@@ -147,11 +151,11 @@ class InputGenerator(object):
     #end def
 
     def _eval_formula(self, dit):
-        """
-            replace formulas in dit with corresponding calculated values
-            detect formula as "formula:<formula>"
+        """Replace formulas in dit with corresponding calculated values.
+        Detect formula as "formula:<formula>".
 
-                dit, dictionary to evaluate for formulas
+        :param dit: Dictionary to evaluate for formulas
+        :type dit: dict
         """
         d_ = {}
         for k, v in dit.items():
@@ -194,7 +198,8 @@ class InputGenerator(object):
 
     def _run_arguments(self, run_obj):
         """
-                run_obj, is a WorkflowRun object for a workflow-run
+        :param run_obj: WorkflowRun[obj] representing a WorkflowRun[json]
+        :type run_obj: object
         """
         run_args = []
         for arg in self.wfl_obj.steps[run_obj.name].input:
@@ -206,8 +211,10 @@ class InputGenerator(object):
 
     def _match_arguments(self, run_args, run_obj):
         """
-                run_args, is a list of Argument objects for a workflow-run
-                run_obj, is a WorkflowRun object for a workflow-run
+        :param run_args: List of Argument objects
+        :type run_args: list(object)
+        :param run_obj: WorkflowRun[obj] representing a WorkflowRun[json]
+        :type run_obj: object
         """
         for arg_obj in run_args:
             is_file = False
@@ -246,8 +253,10 @@ class InputGenerator(object):
 
     def _match_argument_file(self, arg_obj, run_obj):
         """
-                arg_obj, is Argument object for a workflow-run
-                run_obj, is a WorkflowRun object for a workflow-run
+        :param arg_obj: Argument object
+        :type arg_obj: object
+        :param run_obj: WorkflowRun[obj] representing a WorkflowRun[json]
+        :type run_obj: object
         """
         if getattr(arg_obj, 'source', None):
         # Is workflow-run dependency, match to workflow-run output
@@ -284,7 +293,8 @@ class InputGenerator(object):
 
     def _match_argument_parameter(self, arg_obj):
         """
-                arg_obj, is Argument object for a workflow-run
+        :param arg_obj: Argument object
+        :type arg_obj: object
         """
         if getattr(arg_obj, 'value', None) != None:
             # Is value
@@ -297,7 +307,8 @@ class InputGenerator(object):
 
     def _match_general_argument(self, arg_obj):
         """
-                arg_obj, is Argument object for a workflow-run
+        :param arg_obj: Argument object
+        :type arg_obj: object
         """
         # Try and match with meta-worfklow-run input
         if self._value(arg_obj, self.wflrun_obj.input):
@@ -312,8 +323,10 @@ class InputGenerator(object):
 
     def _value(self, arg_obj, arg_list):
         """
-                arg_obj, is Argument object for a workflow-run
-                arg_list, is a list of arguments as dictionaries
+        :param arg_obj: Argument object
+        :type arg_obj: object
+        :param arg_list: List of arguments as dictionaries
+        :type arg_list: list(dict)
         """
         for arg in arg_list:
             if arg_obj.source_argument_name == arg['argument_name'] and \
@@ -331,8 +344,10 @@ class InputGenerator(object):
 
     def _value_parameter(self, arg_name, arg_list):
         """
-                arg_name, is the name of the argument
-                arg_list, is a list of arguments as dictionaries to match
+        :param arg_name: Name of the argument
+        :type arg_name: str
+        :param arg_list: List of arguments as dictionaries to match
+        :type arg_list: list(dict)
         """
         for arg in arg_list:
             if arg_name == arg['argument_name'] and \

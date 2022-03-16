@@ -3,7 +3,7 @@
 ################################################
 #
 #   Function to compute and patch the cost
-#         of a meta-workflow-run
+#         of a MetaWorkflowRun[portal]
 #
 ################################################
 
@@ -21,16 +21,17 @@ from dcicutils import ff_utils
 ################################################
 #   Functions
 ################################################
-################################################
-#   update_cost_metawfr
-################################################
 def update_cost_metawfr(metawfr_uuid, ff_key, verbose=False):
+    """Updates cost for MetaWorkflowRun[portal].
+
+    :parm metawfr_uuid: MetaWorkflowRun[portal] UUIDs
+    :type metawfr_uuid: str
+    :param ff_key: Portal authorization key
+    :type ff_key: dict
     """
-            metawfr_uuid, uuid for meta-workflow-run to update costs
-    """
-    # Get meta-workflow-run json from the portal
+    # Get MetaWorkflowRun[json] from the portal
     run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
-    # Create MetaWorkflowRun object for meta-workflow-run
+    # Create MetaWorkflowRun[obj]
     run_obj = MetaWorkflowRun(run_json)
 
     cost = run_obj.update_cost()

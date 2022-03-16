@@ -1,21 +1,38 @@
+#!/usr/bin/env python3
+
+################################################
+#
+#   create_metawfr
+#
+################################################
+
+################################################
+#   Libraries
+################################################
 import datetime
 import json
 import uuid
 
 from dcicutils import ff_utils
 
+# magma
 from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
 from magma_ff.utils import make_embed_request
 
-
+################################################
+#   MetaWorkflowRunCreationError
+################################################
 class MetaWorkflowRunCreationError(Exception):
-    """Custom exception for error tracking."""
+    """Custom exception for error tracking.
+    """
 
-
+################################################
+#   MetaWorkflowRunFromSampleProcessing
+################################################
 class MetaWorkflowRunFromSampleProcessing:
-    """Create a MetaWorkflowRun from a SampleProcessing and a
-    MetaWorkflow.
+    """Class to create and POST|PATCH to portal a MetaWorkflowRun[json]
+    from a SampleProcessing[portal] and a MetaWorkflow[portal].
     """
 
     # Embedding API fields
@@ -63,18 +80,18 @@ class MetaWorkflowRunFromSampleProcessing:
         auth_key,
         expect_family_structure=True,
     ):
-        """Create the class and set all attributes.
+        """Initialize the object and set all attributes.
 
-        :param sample_processing_identifier: SampleProcessing UUID or
-            @id
+        :param sample_processing_identifier: SampleProcessing[portal] UUID
+            or @id
         :type sample_processing_identifier: str
-        :param meta_workflow_identifier: MetaWorkflow UUID, @id, or
-            accession
+        :param meta_workflow_identifier: MetaWorkflow[portal] UUID,
+            @id, or accession
         :type meta_workflow_identifier: str
-        :param auth_key: Authorization key for CGAP
+        :param auth_key: Portal authorization key
         :type auth_key: dict
         :param expect_family_structure: Whether a family structure is
-            expected on the SampleProcessing
+            expected on the SampleProcessing[portal]
         :type expect_family_structure: bool
         :raises MetaWorkflowRunCreationError: If required item cannot
             be found on environment of authorization key
@@ -113,9 +130,9 @@ class MetaWorkflowRunFromSampleProcessing:
         self.meta_workflow_run = self.create_meta_workflow_run()
 
     def create_meta_workflow_run(self):
-        """Create MetaWorkflowRun properties to later POST to CGAP.
+        """Create MetaWorkflowRun[json] to later POST to portal.
 
-        :returns: MetaWorkflowRun properties
+        :return: MetaWorkflowRun[json]
         :rtype: dict
         """
         meta_workflow_title = self.meta_workflow.get(self.TITLE)
@@ -145,10 +162,9 @@ class MetaWorkflowRunFromSampleProcessing:
         return meta_workflow_run
 
     def create_workflow_runs(self, meta_workflow_run):
-        """Create MetaWorkflowRun's workflow runs and update the
-        property on the object.
+        """Create shards and update MetaWorkflowRun[json].
 
-        :param meta_workflow_run: MetaWorkflowRun properties
+        :param meta_workflow_run: MetaWorkflowRun[json]
         :type meta_workflow_run: dict
         :raises MetaWorkflowRunCreationError: If input files to
             MetaWorkflowRun cannot be identified
@@ -176,9 +192,9 @@ class MetaWorkflowRunFromSampleProcessing:
         """Retrieve item from given environment without raising
         exception if not found.
 
-        :param item_uuid: Item identifier on CGAP
-        :type item_uuid: str
-        :returns: Raw view of item if found
+        :param item_identifier: Item identifier on the portal
+        :type item_identifier: str
+        :return: Raw view of item if found
         :rtype: dict or None
         """
         try:
@@ -190,14 +206,14 @@ class MetaWorkflowRunFromSampleProcessing:
         return result
 
     def post_and_patch(self):
-        """POST MetaWorkflowRun and PATCH SampleProcessing to update
-        list of its MetaWorkflowRuns.
+        """POST MetaWorkflowRun[json] and PATCH SampleProcessing[portal]
+        to update list of its linked MetaWorkflowRun[portal].
         """
         self.post_meta_workflow_run()
         self.patch_sample_processing()
 
     def post_meta_workflow_run(self):
-        """POST MetaWorkflowRun to portal."""
+        """POST MetaWorkflowRun[json] to portal."""
         try:
             ff_utils.post_metadata(
                 self.meta_workflow_run,
@@ -210,9 +226,10 @@ class MetaWorkflowRunFromSampleProcessing:
             )
 
     def patch_sample_processing(self):
-        """PATCH SampleProcessing to include new MetaWorkflowRun.
+        """PATCH SampleProcessing[portal]
+        to link the new MetaWorkflowRun[portal].
 
-        Note: Method will fail unless MetaWorkflowRun previously
+        Note: Method will fail unless MetaWorkflowRun[json] previously
         POSTed.
         """
         meta_workflow_runs = [
@@ -229,10 +246,12 @@ class MetaWorkflowRunFromSampleProcessing:
                 "SampleProcessing could not be PATCHed: \n%s" % str(error_msg)
             )
 
-
+################################################
+#   MetaWorkflowRunInput
+################################################
 class MetaWorkflowRunInput:
-    """Generate MetaWorkflowRun input given MetaWorkflow properties and
-    input properties class with required input fields.
+    """Generate MetaWorkflowRun[json] input given MetaWorkflow[json] and
+    input properties object with required input fields.
     """
 
     # Schema constants
@@ -249,22 +268,22 @@ class MetaWorkflowRunInput:
     UUID = "uuid"
 
     def __init__(self, meta_workflow, input_properties):
-        """Create class and set all attributes.
+        """Initialize the object and set all attributes.
 
-        :param meta_workflow: MetaWorkflow properties
+        :param meta_workflow: MetaWorkflow[json]
         :type meta_workflow: dict
-        :param input_properties: Class containing expected input
-            parameters for MetaWorkflow
+        :param input_properties: Object containing expected input
+            parameters for MetaWorkflow[json]
         :type input_properties: object
         """
         self.meta_workflow = meta_workflow
         self.input_properties = input_properties
 
     def create_input(self):
-        """Create MetaWorkflowRun input according to needs of given
-        MetaWorkflow.
+        """Create MetaWorkflowRun[json] input based on arguments specified in
+        MetaWorkflow[json].
 
-        :returns: MetaWorkflowRun input properties
+        :return: MetaWorkflowRun[json] input
         :rtype: dict
         :raises MetaWorkflowRunCreationError: If input argument provided
             from MetaWorkflow could not be handled
@@ -301,13 +320,13 @@ class MetaWorkflowRunInput:
         return result
 
     def fetch_files(self, files_to_fetch):
-        """Create file inputs for MetaWorkflowRun.
+        """Create file inputs for MetaWorkflowRun[json].
 
-        :param files_to_fetch: File input args from MetaWorkflow
+        :param files_to_fetch: File input arguments from MetaWorkflow[json]
         :type files_to_fetch: list((str, int))
-        :returns: Structured file input for MetaWorkflowRun
+        :return: Structured file input for MetaWorkflowRun[json]
         :rtype: list(dict)
-        :raises MetaWorkflowRunCreationError: If file input arg name
+        :raises MetaWorkflowRunCreationError: If file input argument name
             from MetaWorkflow could not be found on the input properties
             class
         """
@@ -333,9 +352,9 @@ class MetaWorkflowRunInput:
         return result
 
     def format_file_input_value(self, file_parameter, file_value, input_dimensions):
-        """Create one structured file input for MetaWorkflowRun.
+        """Create one structured file input for MetaWorkflowRun[json].
 
-        :param file_parameter: Name of file input arg
+        :param file_parameter: Name of file input argument
         :type file_parameter: str
         :param file_value: File input values by associated sample
             index, e.g. {1: ["foo"], 0: ["bar"]} has ["foo"] files for
@@ -344,7 +363,7 @@ class MetaWorkflowRunInput:
         :param input_dimensions: The number of dimensions to use for
             the given file parameter
         :type input_dimensions: int
-        :returns: Structured file arg input
+        :return: Structured file argument input
         :rtype: dict
         :raises MetaWorkflowRunCreationError: If expected dimensions
             could not be handled or an input of dimension 1 has more
@@ -383,12 +402,12 @@ class MetaWorkflowRunInput:
         return result
 
     def fetch_parameters(self, parameters_to_fetch):
-        """Create non-file parameters for MetaWorkflowRun.
+        """Create non-file parameters for MetaWorkflowRun[json].
 
         :param parameters_to_fetch: Non-file input parameters from
-            MetaWorkflow
+            MetaWorkflow[json]
         :type parameters_to_fetch: list((str, str))
-        :returns: Structured non-file input
+        :return: Structured non-file input
         :rtype: list(dict)
         :raises MetaWorkflowRunCreationError: If given parameter could
             not be found on the input properties class
@@ -412,12 +431,12 @@ class MetaWorkflowRunInput:
         return result
 
     def cast_parameter_value(self, parameter_value):
-        """Put parameter values in expected form based on the value
+        """Cast parameter value in expected format based on value
         type.
 
         :param parameter_value: Value for a given input parameter
         :type parameter_value: object
-        :returns: Possibly JSON-formatted string representation of the
+        :return: Possibly JSON-formatted string representation of the
             value
         :rtype: str
         """
@@ -427,10 +446,12 @@ class MetaWorkflowRunInput:
             result = str(parameter_value)
         return result
 
-
+################################################
+#   InputPropertiesFromSampleProcessing
+################################################
 class InputPropertiesFromSampleProcessing:
-    """Class for accessing MetaWorkflowRun input args from a
-    SampleProcesssing.
+    """Class for accessing MetaWorkflowRun[json] input arguments from a
+    SampleProcessing[json].
     """
 
     # Schema constants
@@ -466,9 +487,9 @@ class InputPropertiesFromSampleProcessing:
     RCKTAR_FILE_ENDING = ".rck.gz"
 
     def __init__(self, sample_processing, expect_family_structure=True):
-        """Create class and set attributes.
+        """Initialize the object and set attributes.
 
-        :param sample_processing: SampleProcessing properties
+        :param sample_processing: SampleProcessing[json]
         :type sample_processing: dict
         :param expect_family_structure: Whether a family structure is
             expected on the SampleProcessing, which influences whether
@@ -491,7 +512,7 @@ class InputPropertiesFromSampleProcessing:
         Sorting order will be proband, then mother, then father, as
         applicable.
 
-        :returns: Sorted Samples and sorted/cleaned pedigree
+        :return: Sorted Samples and sorted/cleaned pedigree
         :rtype: (list(dict), list(dict))
         :raises MetaWorkflowRunCreationError: If Samples or pedigree
             not found, of different lengths, or lack required properties
@@ -597,7 +618,7 @@ class InputPropertiesFromSampleProcessing:
         :type mother: str or None
         :param father: Father sample name
         :type father: str or None
-        :returns: Sorted items
+        :return: Sorted items
         :rtype: list(dict)
         """
         result = []
@@ -627,7 +648,7 @@ class InputPropertiesFromSampleProcessing:
 
     def get_samples_processed_file_for_format(self, file_format):
         """Grab files of given format from processed_files property for
-        each Sample on the SampleProcessing.
+        each Sample on the SampleProcessing[portal].
 
         Result is formatted to match expectations of
         MetaWorkflowRunFromInput class.
@@ -635,7 +656,7 @@ class InputPropertiesFromSampleProcessing:
         :param file_format: File format of files to grab from each
             Sample.processed_files
         :type file_format: str
-        :returns: Files matching the given format for each Sample
+        :return: Files matching the given format for each Sample
         :rtype: dict
         """
         result = {}
@@ -656,7 +677,7 @@ class InputPropertiesFromSampleProcessing:
             be acceptable, as key, value pairs of property names, lists
             of acceptable property values
         :type requirements: dict
-        :returns: Processed file UUIDs of files meeting file format and
+        :return: Processed file UUIDs of files meeting file format and
             requirements
         :rtype: list(str)
         :raises MetaWorkflowRunCreationError: If no files found to meet
@@ -694,7 +715,7 @@ class InputPropertiesFromSampleProcessing:
 
         :param paired_end: Desired paired end for FASTQs
         :type paired_end: str
-        :returns: FASTQ file UUIDs of matching paired end
+        :return: FASTQ file UUIDs of matching paired end
         :rtype: list(str)
         :raises MetaWorkflowRunCreationError: If FASTQ file without
             related_files property found or no FASTQ files of matching
@@ -728,17 +749,20 @@ class InputPropertiesFromSampleProcessing:
 
     @property
     def sample_names(self):
-        """Sorted Sample name input."""
+        """Sorted Sample name input.
+        """
         return [sample[self.BAM_SAMPLE_ID] for sample in self.sorted_samples]
 
     @property
     def input_sample_uuids(self):
-        """Sorted Sample UUID input."""
+        """Sorted Sample UUID input.
+        """
         return [sample[self.UUID] for sample in self.sorted_samples]
 
     @property
     def pedigree(self):
-        """Sorted pedigree input."""
+        """Sorted pedigree input.
+        """
         result = []
         for pedigree_sample in self.sorted_samples_pedigree:
             result.append(
@@ -756,7 +780,7 @@ class InputPropertiesFromSampleProcessing:
     def input_crams(self):
         """Get CRAM files for each Sample.
 
-        :returns: CRAM UUIDs for all CRAM files found on all Samples
+        :return: CRAM UUIDs for all CRAM files found on all Samples
         :rtype: dict
         :raises MetaWorkflowRunCreationError: If no CRAM files could be
             found on a Sample
@@ -777,39 +801,46 @@ class InputPropertiesFromSampleProcessing:
 
     @property
     def input_gvcfs(self):
-        """gVCF file input."""
+        """gVCF file input.
+        """
         return self.get_samples_processed_file_for_format(self.GVCF_FORMAT)
 
     @property
     def fastqs_r1(self):
-        """FASTQ paired-end 1 file input."""
+        """FASTQ paired-end 1 file input.
+        """
         return self.get_fastqs_for_paired_end(self.PAIRED_END_1)
 
     @property
     def fastqs_r2(self):
-        """FASTQ paired-end 2 file input."""
+        """FASTQ paired-end 2 file input.
+        """
         return self.get_fastqs_for_paired_end(self.PAIRED_END_2)
 
     @property
     def input_bams(self):
-        """BAM file input."""
+        """BAM file input.
+        """
         return self.get_samples_processed_file_for_format(self.BAM_FORMAT)
 
     @property
     def rcktar_file_names(self):
-        """Sorted names for created RckTar files input."""
+        """Sorted names for created RckTar files input.
+        """
         return [
             sample_name + self.RCKTAR_FILE_ENDING for sample_name in self.sample_names
         ]
 
     @property
     def sample_name_proband(self):
-        """Proband Sample name input."""
+        """Proband Sample name input.
+        """
         return self.sample_names[0]  # Already sorted to proband-first
 
     @property
     def bamsnap_titles(self):
-        """Sorted BAMSnap name input."""
+        """Sorted BAMSnap name input.
+        """
         result = []
         for sample_pedigree in self.sorted_samples_pedigree:
             sample_name = sample_pedigree.get(self.SAMPLE_NAME)
@@ -819,5 +850,6 @@ class InputPropertiesFromSampleProcessing:
 
     @property
     def family_size(self):
-        """Family size input."""
+        """Family size input.
+        """
         return len(self.sample_names)

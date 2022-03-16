@@ -1,6 +1,6 @@
 ################################################
 #
-#   Function to run meta-workflow-run
+#   Function to run MetaWorkflowRun[portal]
 #       with tibanna and patch metadata
 #
 ################################################
@@ -25,26 +25,24 @@ def run_metawfr(
     maxcount=None,
     valid_status=None,
 ):
-    """Launch pending WorkflowRuns on MetaWorkflowRun via tibanna and
-    patch MetaWorkflowRun with updated info.
+    """Launch pending runs on MetaWorkflowRun[portal] via tibanna.
+    PATCH MetaWorkflowRun[portal] with updates.
 
     Can double-check MetaWorkflowRun.final_status is valid since
     grabbing item from Postgres here.
 
-    :param metawfr_uuid: MetaWorkflowRun UUID
+    :param metawfr_uuid: MetaWorkflowRun[portal] UUID
     :type metawfr_uuid: str
-    :param ff_key: Fourfront authorization
+    :param ff_key: Portal authorization key
     :type ff_key: dict
-    :param verbose: Whether to print patch results
-    :type verbose: bool
     :param sfn: Step function name
     :type sfn: str
-    :param env: Fourfront environment name
+    :param env: Environment name
     :type env: str
     :param maxcount: Maximum number of WorkflowRuns to create for the
         MetaWorkflowRun
     :type maxcount: int
-    :param valid_status: Status considered valid for MetaWorkflowRun's
+    :param valid_status: Status considered valid for MetaWorkflowRun
         final_status property
     :type valid_status: list(str) or None
     """

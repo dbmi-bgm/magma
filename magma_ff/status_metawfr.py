@@ -1,7 +1,7 @@
 ################################################
 #
-#   Function to check and patch status for running
-#       workflow-runs in meta-workflow-run
+#   Function to check and patch status
+#       runs in MetaWorkflowRun[portal]
 #
 ################################################
 from dcicutils import ff_utils
@@ -17,21 +17,19 @@ from magma_ff.utils import check_final_status, make_embed_request
 def status_metawfr(
     metawfr_uuid, ff_key, verbose=False, env="fourfront-cgap", valid_status=None
 ):
-    """Perform status check on MetaWorkflowRun.
+    """Perform status check on MetaWorkflowRun[portal].
 
-        Retrieve the MetaWorkflowRun, check all of its WorkflowRuns for
-    updates, check updated WorkflowRuns for QC failures (if applicable),
-    and then PATCH MetaWorkflowRun with updates (if found).
+    Retrieve the MetaWorkflowRun[portal], check all of its runs for
+    updates, check for QC failures (if applicable),
+    and then PATCH MetaWorkflowRun[portal] with updates (if found).
 
-    :param metawfr_uuid: MetaWorkflowRun UUID
+    :param metawfr_uuid: MetaWorkflowRun[portal] UUID
     :type metawfr_uuid: str
-    :param ff_key: Fourfront authorization
+    :param ff_key: Portal authorization key
     :type ff_key: dict
-    :param verbose: Whether to print patch results
-    :type verbose: bool
-    :param env: Fourfront environment name
+    :param env: Environment name
     :type env: str
-    :param valid_status: Status considered valid for MetaWorkflowRun's
+    :param valid_status: Status considered valid for MetaWorkflowRun
         final_status property
     :type valid_status: list(str) or None
     """
@@ -67,14 +65,14 @@ def status_metawfr(
 
 
 def get_recently_completed_workflow_runs(meta_workflow_run, updated_properties):
-    """Compare original MetaWorkflowRun to updated properties to find
-    all newly finished WorkflowRun UUIDs.
+    """Compare between original and updated MetaWorkflowRun[json] to find
+    UUIDs for all newly finished runs.
 
-    :param meta_workflow_run: Existing MetaWorkflowRun from CGAP
+    :param meta_workflow_run: Original MetaWorkflowRun[json]
     :type meta_workflow_run: dict
-    :param updated_properties: Updated MetaWorkflowRun properties
+    :param updated_properties: Updated MetaWorkflowRun[json]
     :type updated_properties: dict
-    :returns: UUIDs of newly completed WorkflowRuns
+    :return: UUIDs of newly completed runs
     :rtype: list(str)
     :raises ValueError: If number of workflow runs on MetaWorkflowRun
         differs from that on the updated properties
@@ -101,14 +99,14 @@ def get_recently_completed_workflow_runs(meta_workflow_run, updated_properties):
 
 
 def evaluate_quality_metrics(workflow_runs_to_check, ff_key):
-    """Retrieve WorkflowRuns and evaluate their output QualityMetrics
+    """Retrieve runs and evaluate their output QualityMetrics
     for any failures.
 
-    :param workflow_runs_to_check: WorkflowRun UUIDs to evaluate
+    :param workflow_runs_to_check: WorkflowRun[portal] UUIDs to evaluate
     :type workflow_runs_to_check: list(str)
-    :param ff_key: Authorization key
+    :param ff_key: Portal authorization key
     :type ff_key: dict
-    :returns: Whether any of given WorkflowRuns have failing QCs
+    :return: Whether any of given WorkflowRuns have failing QCs
     :rtype: bool
     """
     result = False
@@ -123,14 +121,14 @@ def evaluate_quality_metrics(workflow_runs_to_check, ff_key):
 
 
 def evaluate_workflow_run_quality_metrics(workflow_run):
-    """Evaluate WorkflowRun's output QualityMetrics for failure.
+    """Evaluate WorkflowRun[json] output QualityMetrics for failure.
 
     NOTE: All status other than FAIL (such as WARN) are considered
     equivalent to PASS here.
 
-    :param workflow_run: WorkflowRun to evaluate
+    :param workflow_run: WorkflowRun[json] to evaluate
     :type workflow_run: dict
-    :returns: Whether any ouput QualityMetric has failed
+    :return: Whether any ouput QualityMetric has failed
     :rtype: bool
     """
     result = False

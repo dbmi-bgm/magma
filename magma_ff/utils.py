@@ -1,8 +1,21 @@
+#!/usr/bin/env python3
+
+################################################
+#
+#
+#
+################################################
+
+################################################
+#   Libraries
+################################################
 import json
 
 from dcicutils import ff_utils
 
-
+################################################
+#   Functions
+################################################
 def make_embed_request(ids, fields, auth_key, single_item=False):
     """POST to embed API for retrieval of specified fields for given
     identifiers (from Postgres, not ES).
@@ -11,12 +24,12 @@ def make_embed_request(ids, fields, auth_key, single_item=False):
     :type ids: str or list(str)
     :param fields: Fields to retrieve for identifiers
     :type fields: str or list(str)
-    :param auth_key: CGAP authorization key
+    :param auth_key: Portal authorization key
     :type auth_key: dict
     :param single_item: Whether to return non-list result because only
          maximum one response is expected
     :type single_item: bool
-    :returns: Embed API response
+    :return: Embed API response
     :rtype: list or dict or None
     """
     result = []
@@ -44,7 +57,6 @@ def make_embed_request(ids, fields, auth_key, single_item=False):
             )
     return result
 
-
 def chunk_ids(ids):
     """Split list into list of lists of maximum chunk size length.
 
@@ -52,7 +64,7 @@ def chunk_ids(ids):
 
     :param ids: Identifiers to chunk
     :type ids: list
-    :returns: Chunked identifiers
+    :return: Chunked identifiers
     :rtype: list
     """
     result = []
@@ -61,15 +73,14 @@ def chunk_ids(ids):
         result.append(ids[idx: idx + chunk_size])
     return result
 
-
 def check_final_status(meta_workflow_run, valid_status):
     """Check if MetaWorkflowRun.final_status is valid.
 
-    :param meta_workflow_run: MetaWorkflowRun properties
+    :param meta_workflow_run: MetaWorkflowRun[json]
     :type meta_workflow_run: dict
     :param valid_status: Status considered valid
     :type valid_status: list
-    :returns: Whether MetaWorkflowRun's final_status is valid
+    :return: Whether MetaWorkflowRun final_status is valid
     :rtype: bool
     """
     final_status = meta_workflow_run.get("final_status")

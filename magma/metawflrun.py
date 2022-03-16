@@ -2,7 +2,7 @@
 
 ################################################
 #
-#   Library to work with meta-workflow-run objects
+#   Library to work with MetaWorkflowRun[json]
 #
 #   Michele Berselli
 #   berselli.michele@gmail.com
@@ -19,15 +19,15 @@ import copy
 #   MetaWorkflowRun
 ################################################
 class MetaWorkflowRun(object):
-    """
-        object to represent a meta-workflow-run
+    """Class to represent a MetaWorkflowRun[json].
     """
 
     def __init__(self, input_json):
-        """
-            initialize MetaWorkflowRun object from input_json
+        """Constructor method.
+        Initialize object and attributes.
 
-                input_json is a meta-workflow-run in json format
+        :param input_json: MetaWorkflowRun[json]
+        :type input_json: dict
         """
         # Copy it so that the original does not get changed unexpectedly
         input_json_ = copy.deepcopy(input_json)
@@ -45,15 +45,15 @@ class MetaWorkflowRun(object):
     #end def
 
     class WorkflowRun(object):
-        """
-            object to represent a workflow-run
+        """Class to represent a WorkflowRun[json].
         """
 
         def __init__(self, input_json):
-            """
-                initialize WorkflowRun object from input_json
+            """Constructor method.
+            Initialize object and attributes.
 
-                    input_json is a workflow-run in json format
+            :param input_json: WorkflowRun[json]
+            :type input_json: dict
             """
             # Basic attributes
             for key in input_json:
@@ -102,8 +102,6 @@ class MetaWorkflowRun(object):
 
     def _read_runs(self):
         """
-            read workflow-runs
-            initialize WorkflowRun objects
         """
         for run in self.workflow_runs:
             run_obj = self.WorkflowRun(run)
@@ -117,11 +115,12 @@ class MetaWorkflowRun(object):
     #end def
 
     def to_run(self):
-        """
-            check pending workflow-runs
-            check if dependencies are completed
-            return a list of WorkflowRun objects
-            for workflow-runs that are ready to run
+        """Find all pending WorkflowRun[obj] that completed
+        dependencies and are ready to run.
+
+        :return: List of WorkflowRun[obj] that completed
+            dependencies and are ready to run
+        :rtype: list(object)
         """
         runs_ = []
         for _, run_obj in self.runs.items():
@@ -142,10 +141,11 @@ class MetaWorkflowRun(object):
     #end def
 
     def running(self):
-        """
-            check running workflow-runs
-            return a list of WorkflowRun objects
-            for workflow-runs that have status set to running
+        """Find all WorkflowRun[obj] that have status set to running.
+
+        :return: List of WorkflowRun[obj] that have
+            status set to running
+        :rtype: list(object)
         """
         runs_ = []
         for _, run_obj in self.runs.items():
@@ -157,20 +157,21 @@ class MetaWorkflowRun(object):
     #end def
 
     def update_attribute(self, shard_name, attribute, value):
-        """
-            update attribute value for WorkflowRun object in runs
+        """Update attribute value for WorkflowRun[obj] in runs.
 
-                shard_name, WorkflowRun object shard_name ('name:shard')
-                attribute, attribute to update
-                value, new value for attribute
+        :param shard_name: WorkflowRun[obj] shard_name ('name:shard')
+        :type shard_name: str
+        :param attribute: attribute to update
+        :type attribute: str
+        :param value: new value for attribute
         """
         setattr(self.runs[shard_name], attribute, value)
     #end def
 
     def runs_to_json(self):
         """
-            return workflow_runs as json (list of dictionaries)
-            build workflow_runs from WorkflowRun objects
+        :return: List of dictionaries for workflow_runs
+        :rtype: list(dict)
         """
         runs_ = []
         for run in self.workflow_runs: #used to get the right order
@@ -188,8 +189,8 @@ class MetaWorkflowRun(object):
 
     def to_json(self):
         """
-            return meta-workflow-run json
-            build workflow_runs from WorkflowRun objects
+        :return: MetaWorkflowRun[json]
+        :rtype: dict
         """
         run_json = {}
         # Get attributes
@@ -204,10 +205,10 @@ class MetaWorkflowRun(object):
     #end def
 
     def _reset_run(self, shard_name):
-        """
-            reset attributes value for WorkflowRun object in runs
+        """Reset attributes value for WorkflowRun[obj] in runs.
 
-                shard_name, is the name of the workflow-run to reset
+        :param shard_name: WorkflowRun[obj] shard_name ('name:shard')
+        :type shard_name: str
         """
         run_obj = self.runs[shard_name]
         # Reset run_obj
@@ -219,11 +220,11 @@ class MetaWorkflowRun(object):
     #end def
 
     def reset_step(self, step_name):
-        """
-            reset attributes value for WorkflowRun objects in runs
-            reset all workflow-runs corresponding to step-workflow specified by step_name
+        """Reset attributes value for WorkflowRun[obj] in runs.
+        Reset all WorkflowRun[obj] corresponding to step specified by step_name.
 
-                step_name, is the name of the step-workflow to reset
+        :param step_name: Name of the step to reset
+        :type step_name: str
         """
         for shard_name_ in self.runs:
             if step_name == shard_name_.split(':')[0]:
@@ -234,11 +235,11 @@ class MetaWorkflowRun(object):
     #end def
 
     def reset_shard(self, shard_name):
-        """
-            reset attributes value for WorkflowRun object in runs
-            reset only workflow-run specified by shard_name
+        """Reset attributes value for WorkflowRun[obj] in runs.
+        Reset only WorkflowRun[obj] specified by shard_name.
 
-                shard_name, is the name of the workflow-run to reset
+        :param shard_name: WorkflowRun[obj] shard_name ('name:shard')
+        :type shard_name: str
         """
         for shard_name_ in self.runs:
             if shard_name == shard_name_:
@@ -249,12 +250,13 @@ class MetaWorkflowRun(object):
     #end def
 
     def update_status(self): # failed -> running -> completed
-        """
-            check status for all WorkflowRun objects
-            if at least one is failed, set final_status as failed
-            if no failed and at least one is running, set final_status as running
-            if all are completed set final_status as completed
-            return final_status
+        """Check status for all WorkflowRun[obj].
+        If at least one is failed, set final_status as failed.
+        If no failed and at least one is running, set final_status as running.
+        If all are completed set final_status as completed.
+
+        :return: final_status
+        :rtype: str
         """
         self.final_status = 'pending' # initial set to pending
         all_completed = True

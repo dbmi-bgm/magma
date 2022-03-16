@@ -1,11 +1,11 @@
 .. _meta-workflow-run-label:
 
-=================
-meta-workflow-run
-=================
+=====================
+MetaWorkflowRun[json]
+=====================
 
-A meta-workflow-run is a json object that describes the structure of a multi-step workflow given the corresponding meta-workflow, specific input and defined end points.
-Scatter, gather and dependencies information are used to create and link all the *shards* for individual step-workflows (workflow-runs) that are necessary to reach end points based on the input.
+*MetaWorkflowRun[json]* is a json data format that describes the structure of a multi-step workflow given the corresponding *MetaWorkflow[json]*, specific input and defined end points.
+Scatter, gather and dependencies information are used to create and link all the *shards* for individual steps (*WorkflowRun[json]*) that are necessary to reach end points based on the input.
 
 Structure
 +++++++++
@@ -13,14 +13,14 @@ Structure
 .. code-block:: python
 
     {
-      ## General meta-workflow-run information
+      ## General MetaWorkflowRun[json] information
       "meta_workflow": "", # universally unique identifier
-                           #   for the corresponding meta-workflow
+                           #   for the corresponding MetaWorkflow[json]
 
-      ## Workflow-runs for meta-workflow-run
+      ## Shards for MetaWorkflowRun[json]
       "workflow_runs" : [
 
-            # Workflow-run structure
+            # WorkflowRun[json] structure
             {
               # These are necessary fields
               "name": "",
@@ -31,7 +31,7 @@ Structure
               "dependencies": [],
               "output": [
                 # Structure for a file argument,
-                #   only type of argument that can be output of a workflow-run
+                #   only type of argument that can be output of a WorkflowRun[json]
                 {
                   # These are necessary fields
                   "argument_name": "",
@@ -85,7 +85,7 @@ Structure
             }
       ],
 
-      ## Specific input for meta-workflow-run
+      ## Specific input for MetaWorkflowRun[json]
       "input": [
         # Structure for a file argument
         {
@@ -107,6 +107,6 @@ Structure
       ## Final status
       "final_status": "", # pending | running | completed | failed
 
-      ## Optional general fields for meta-workflow-run
+      ## Optional general fields for MetaWorkflowRun[json]
       "common_fields": {}
     }

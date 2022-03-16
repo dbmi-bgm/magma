@@ -3,7 +3,8 @@
 ################################################
 #
 #   Object to update
-#       meta-workflow-run and workflow-run objects
+#       MetaWorkflowRun[json]
+#        and WorkflowRun[json]
 #
 #   Michele Berselli
 #   berselli.michele@gmail.com
@@ -19,26 +20,27 @@ import sys, os
 #   RunUpdate
 ################################################
 class RunUpdate(object):
-    """
-        object to handle MetaWorkflowRun and WorkflowRun update
+    """Class to handle MetaWorkflowRun[obj] and WorkflowRun[obj] updates.
     """
 
     def __init__(self, wflrun_obj):
-        """
-            initialize RunUpdate object
+        """Constructor method.
+        Initialize object and attributes.
 
-                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+        :param wflrun_obj: MetaWorkflowRun[obj] representing a MetaWorkflowRun[json]
+        :type wflrun_obj: object
         """
         # Basic attributes
         self.wflrun_obj = wflrun_obj
     #end def
 
     def reset_steps(self, steps_name):
-        """
-            reset WorkflowRun objects with name in steps_name
-            return updated workflow-runs and final_status information as json
+        """Reset WorkflowRun[obj] corresponding to step in steps_name.
 
-                steps_name, list of names for step-workflows that need to be reset
+        :param steps_name: List of names for steps that need to be reset
+        :type steps_name: list(str)
+        :return: Updated workflow_runs and final_status information
+        :rtype: dict
         """
         for name in steps_name:
             self.wflrun_obj.reset_step(name)
@@ -48,11 +50,12 @@ class RunUpdate(object):
     #end def
 
     def reset_shards(self, shards_name):
-        """
-            reset WorkflowRun objects with shard_name in shards_name
-            return updated workflow-runs and final_status information as json
+        """Reset WorkflowRun[obj] with shard_name in shards_name.
 
-                shards_name, list of names for workflow-runs that need to be reset
+        :param shards_name: List of shard_names for WorkflowRun[obj] that need to be reset
+        :type shards_name: list(str)
+        :return: Updated workflow_runs and final_status information
+        :rtype: dict
         """
         for name in shards_name:
             self.wflrun_obj.reset_shard(name)
@@ -62,14 +65,16 @@ class RunUpdate(object):
     #end def
 
     def import_steps(self, wflrun_obj, steps_name, import_input=True):
-        """
-            update current MetaWorkflowRun object information
-            import and use information from specified wflrun_obj
-            update WorkflowRun objects up to steps specified by steps_name
-            return updated meta-workflow-run as json
+        """Update current MetaWorkflowRun[obj] information.
+        Import and use information from specified wflrun_obj.
+        Update WorkflowRun[obj] up to steps specified by steps_name
 
-                wflrun_obj, MetaWorkflowRun object to get information from
-                steps_name, list of names for step-workflows to fill in information from wflrun_obj
+        :param wflrun_obj: MetaWorkflowRun[obj] to import information from
+        :type wflrun_obj: object
+        :param steps_name: List of names for steps to import
+        :type steps_name: list(str)
+        :return: MetaWorkflowRun[json]
+        :rtype: dict
         """
         ## Import input
         if import_input:
