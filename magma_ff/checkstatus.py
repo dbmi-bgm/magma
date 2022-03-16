@@ -63,8 +63,6 @@ class CheckStatusFF(AbstractCheckStatus):
                     if cost is not None and cost > 0:
                         patch_dict['cost'] = cost
                 yield patch_dict
-            else:
-                yield None
 
     # The following three functions are for portal (cgap / 4dn)
     def get_uuid(self, jobid):

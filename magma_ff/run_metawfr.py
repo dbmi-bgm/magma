@@ -42,6 +42,8 @@ def run_metawfr(
     :param maxcount: Maximum number of WorkflowRuns to create for the
         MetaWorkflowRun
     :type maxcount: int
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     :param valid_status: Status considered valid for MetaWorkflowRun
         final_status property
     :type valid_status: list(str) or None

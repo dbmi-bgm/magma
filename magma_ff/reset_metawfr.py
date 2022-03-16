@@ -25,6 +25,8 @@ def reset_steps(metawfr_uuid, steps_name, ff_key, verbose=False, valid_status=No
     :type steps_name: list(str)
     :param ff_key: Portal authorization key
     :type ff_key: dict
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     :param valid_status: Status considered valid for MetaWorkflowRun[portal]
         final_status property
     :type valid_status: list(str) or None
@@ -55,6 +57,8 @@ def reset_shards(metawfr_uuid, shards_name, ff_key, verbose=False, valid_status=
     :type shards_name: list(str)
     :param ff_key: Portal authorization key
     :type ff_key: dict
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     :param valid_status: Status considered valid for MetaWorkflowRun
         final_status property
     :type valid_status: list(str) or None
@@ -89,6 +93,8 @@ def reset_status(
     :type steps_name: str or list(str)
     :param ff_key: Portal authorization key
     :type ff_key: dict
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     :param valid_status: Status considered valid for MetaWorkflowRun
         final_status property
     :type valid_status: list(str) or None
@@ -124,6 +130,8 @@ def reset_all(metawfr_uuid, ff_key, verbose=False, valid_status=None):
     :type metawfr_uuid: str
     :param ff_key: Portal authorization key
     :type ff_key: dict
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     :param valid_status: Status considered valid for MetaWorkflowRun
         final_status property
     :type valid_status: list(str) or None
@@ -154,6 +162,8 @@ def reset_failed(metawfr_uuid, ff_key, verbose=False, valid_status=None):
     :type metawfr_uuid: str
     :param ff_key: Portal authorization key
     :type ff_key: dict
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     :param valid_status: Status considered valid for MetaWorkflowRun[portal]
         final_status property
     :type valid_status: list(str) or None

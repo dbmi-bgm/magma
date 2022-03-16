@@ -28,6 +28,8 @@ def update_cost_metawfr(metawfr_uuid, ff_key, verbose=False):
     :type metawfr_uuid: str
     :param ff_key: Portal authorization key
     :type ff_key: dict
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
     """
     # Get MetaWorkflowRun[json] from the portal
     run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
