@@ -62,19 +62,26 @@ def chunk_ids(ids):
     return result
 
 
-def check_final_status(meta_workflow_run, valid_status):
-    """Check if MetaWorkflowRun.final_status is valid.
+def check_status(meta_workflow_run, valid_final_status=None):
+    """Check if MetaWorkflowRun.status is valid.
+
+    If given valid final status, check MetaWorkflowRun.final_status
+    as well.
 
     :param meta_workflow_run: MetaWorkflowRun properties
     :type meta_workflow_run: dict
-    :param valid_status: Status considered valid
+    :param valid_status: Final status considered valid
     :type valid_status: list
     :returns: Whether MetaWorkflowRun's final_status is valid
     :rtype: bool
     """
-    final_status = meta_workflow_run.get("final_status")
-    if final_status in valid_status:
+    item_status = meta_workflow_run.get("status", "deleted")
+    if item_status not in ["obsolete", "deleted"]:
         result = True
+        if valid_final_status:
+            final_status = meta_workflow_run.get("final_status")
+            if final_status not in valid_final_status:
+                result = False
     else:
         result = False
     return result

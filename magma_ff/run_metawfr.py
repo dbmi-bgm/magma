@@ -10,7 +10,7 @@ from tibanna_ffcommon.core import API
 from magma_ff import inputgenerator as ingen
 from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import check_final_status, make_embed_request
+from magma_ff.utils import check_status, make_embed_request
 
 
 ################################################
@@ -54,8 +54,7 @@ def run_metawfr(
         metawfr_uuid, embed_fields, ff_key, single_item=True
     )
     meta_workflow = meta_workflow_run.get("meta_workflow")
-    if valid_status:
-        perform_action = check_final_status(meta_workflow_run, valid_status)
+    perform_action = check_status(meta_workflow_run, valid_status)
     if perform_action:
         run_obj = MetaWorkflowRun(meta_workflow_run)
         wfl_obj = MetaWorkflow(meta_workflow)

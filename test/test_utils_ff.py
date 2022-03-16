@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from magma_ff.utils import check_final_status, chunk_ids, make_embed_request
+from magma_ff.utils import check_status, chunk_ids, make_embed_request
 
 
 class ReturnValue:
@@ -71,14 +71,20 @@ def test_chunk_ids(ids, expected):
     "meta_workflow_run,valid_status,expected",
     [
         ({}, [], False),
-        ({"foo": "bar"}, ["running"], False),
-        ({"final_status": "running"}, ["running"], True),
-        ({"final_status": "running"}, ["completed"], False),
-        ({"final_status": "running"}, ["completed", "running"], True),
-        ({"final_status": "foo"}, ["completed", "running"], False),
+        ({"status": "passing"}, [], True),
+        ({"status": "passing", "foo": "bar"}, ["running"], False),
+        ({"status": "passing", "final_status": "foo"}, ["completed", "running"], False),
+        ({"status": "passing", "final_status": "running"}, ["running"], True),
+        ({"final_status": "running"}, ["running"], False),
+        ({"status": "passing", "final_status": "running"}, ["completed"], False),
+        (
+            {"status": "passing", "final_status": "running"},
+            ["completed", "running"],
+            True,
+        ),
     ],
 )
-def test_check_final_status(meta_workflow_run, valid_status, expected):
-    """Test validating MetaWorkflowRun final status."""
-    result = check_final_status(meta_workflow_run, valid_status)
+def test_check_status(meta_workflow_run, valid_status, expected):
+    """Test validating MetaWorkflowRun status and final status."""
+    result = check_status(meta_workflow_run, valid_status)
     assert result == expected

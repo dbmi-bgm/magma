@@ -8,7 +8,7 @@ from dcicutils import ff_utils
 
 from magma_ff import checkstatus
 from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import check_final_status, make_embed_request
+from magma_ff.utils import check_status, make_embed_request
 
 
 ################################################
@@ -40,8 +40,7 @@ def status_metawfr(
     run_json = ff_utils.get_metadata(
         metawfr_uuid, add_on="frame=raw&datastore=database", key=ff_key
     )
-    if valid_status:
-        perform_action = check_final_status(run_json, valid_status)
+    perform_action = check_status(run_json, valid_status)
     if perform_action:
         ignore_quality_metrics = run_json.get("ignore_output_quality_metrics")
         run_obj = MetaWorkflowRun(run_json)

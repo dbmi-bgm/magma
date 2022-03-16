@@ -8,7 +8,7 @@ from dcicutils import ff_utils
 
 from magma_ff.metawflrun import MetaWorkflowRun
 from magma_ff.runupdate import RunUpdate
-from magma_ff.utils import check_final_status
+from magma_ff.utils import check_status
 
 
 ################################################
@@ -34,8 +34,7 @@ def reset_steps(metawfr_uuid, steps_name, ff_key, verbose=False, valid_status=No
     meta_workflow_run = ff_utils.get_metadata(
         metawfr_uuid, add_on="frame=raw&datastore=database", key=ff_key
     )
-    if valid_status:
-        perform_action = check_final_status(meta_workflow_run, valid_status)
+    perform_action = check_status(meta_workflow_run, valid_status)
     if perform_action:
         run_obj = MetaWorkflowRun(meta_workflow_run)
         runupd_obj = RunUpdate(run_obj)
@@ -65,8 +64,7 @@ def reset_shards(metawfr_uuid, shards_name, ff_key, verbose=False, valid_status=
     meta_workflow_run = ff_utils.get_metadata(
         metawfr_uuid, add_on="frame=raw&datastore=database", key=ff_key
     )
-    if valid_status:
-        perform_action = check_final_status(meta_workflow_run, valid_status)
+    perform_action = check_status(meta_workflow_run, valid_status)
     if perform_action:
         run_obj = MetaWorkflowRun(meta_workflow_run)
         runupd_obj = RunUpdate(run_obj)
@@ -107,8 +105,7 @@ def reset_status(
     meta_workflow_run = ff_utils.get_metadata(
         metawfr_uuid, add_on="frame=raw&datastore=database", key=ff_key
     )
-    if valid_status:
-        perform_action = check_final_status(meta_workflow_run, valid_status)
+    perform_action = check_status(meta_workflow_run, valid_status)
     if perform_action:
         run_obj = MetaWorkflowRun(meta_workflow_run)
         to_reset = []
@@ -140,8 +137,7 @@ def reset_all(metawfr_uuid, ff_key, verbose=False, valid_status=None):
     meta_workflow_run = ff_utils.get_metadata(
         metawfr_uuid, add_on="frame=raw&datastore=database", key=ff_key
     )
-    if valid_status:
-        perform_action = check_final_status(meta_workflow_run, valid_status)
+    perform_action = check_status(meta_workflow_run, valid_status)
     if perform_action:
         run_obj = MetaWorkflowRun(meta_workflow_run)
         to_reset = []
@@ -172,8 +168,7 @@ def reset_failed(metawfr_uuid, ff_key, verbose=False, valid_status=None):
     meta_workflow_run = ff_utils.get_metadata(
         metawfr_uuid, add_on="frame=raw&datastore=database", key=ff_key
     )
-    if valid_status:
-        perform_action = check_final_status(meta_workflow_run, valid_status)
+    perform_action = check_status(meta_workflow_run, valid_status)
     if perform_action:
         run_obj = MetaWorkflowRun(meta_workflow_run)
         to_reset = []
