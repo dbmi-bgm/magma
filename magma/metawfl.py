@@ -2,7 +2,7 @@
 
 ################################################
 #
-#   Library to work with meta-workflow objects
+#   Library to work with MetaWorkflow[json]
 #
 #   Michele Berselli
 #   berselli.michele@gmail.com
@@ -19,15 +19,15 @@ import copy
 #   MetaWorkflow
 ################################################
 class MetaWorkflow(object):
-    """
-        object to represent a meta-workflow
+    """Class to represent a MetaWorkflow[json].
     """
 
     def __init__(self, input_json):
-        """
-            initialize MetaWorkflow object from input_json
+        """Constructor method.
+        Initialize object and attributes.
 
-                input_json is a meta-workflow in json format
+        :param input_json: MetaWorkflow[json]
+        :type input_json: dict
         """
 
         # Copy it so that the original does not get changed unexpectedly
@@ -48,16 +48,16 @@ class MetaWorkflow(object):
     #end def
 
     class StepWorkflow(object):
-        """
-            object to represent a step-workflow
-            that is a step of the meta-workflow
+        """Class to represent a StepWorkflow[json]
+        that is step of a MetaWorkflow[json].
         """
 
         def __init__(self, input_json):
-            """
-                initialize StepWorkflow object
+            """Constructor method.
+            Initialize object and attributes.
 
-                    input_json is a step-workflow in json format
+            :param input_json: StepWorkflow[json]
+            :type input_json: dict
             """
             # Basic attributes
             for key in input_json:
@@ -98,9 +98,7 @@ class MetaWorkflow(object):
         #end def
 
         def _attributes(self):
-            """
-                read arguments
-                set calculated attributes for step-workflow
+            """Read arguments and set calculated attributes.
             """
             for arg in self.input:
                 scatter = arg.get('scatter') #scatter dimension
@@ -135,8 +133,6 @@ class MetaWorkflow(object):
 
     def _read_steps(self):
         """
-            read step-workflows
-            initialize StepWorkflow objects
         """
         for wfl in self.workflows:
             step_obj = self.StepWorkflow(wfl)
@@ -150,12 +146,15 @@ class MetaWorkflow(object):
     #end def
 
     def _build_run(self, end_steps):
-        """
-            build graph structure for meta-workflow given end_steps
-            backtrack from end_steps to link step-workflows that are dependencies
-            return a set containg step-workflows that are entry point
+        """Build graph structure for MetaWorkflow[json] given end_steps.
+        Backtrack from end_steps to link StepWorkflow[obj] that are dependencies.
+        Return a set containg StepWorkflow[obj] that are entry point.
 
-                end_steps, names list of end step-workflows to build graph structure for
+        :param end_steps: List of names for finals StepWorkflow[obj] to
+            use while building the graph structure
+        :type end_steps: list(str)
+        :return: Set of StepWorkflow[obj] that are starting points
+        :rtype: set(obj)
         """
         steps_ = set() #steps that are entry point to wfl_run
         for end_step in end_steps:
@@ -182,14 +181,19 @@ class MetaWorkflow(object):
     #end def
 
     def _order_run(self, end_steps):
-        """
-            sort and list all step-workflows for meta-workflow given end_steps
-            _build_run to build graph structure for meta-workflow
-            start from step-workflows that are entry points
-            navigate the graph structure
-            return a list with step-workflows in order
+        """Sort and list all StepWorkflow[obj]
+        necessary to run MetaWorkflow[json] given end_steps.
 
-                end_steps, names list of end step-workflows to build graph structure for
+        The function will:
+            - _build_run to build a graph structure for MetaWorkflow[json]
+            - navigate the graph structure starting from StepWorkflow[obj]
+                that are entry points
+
+        :param end_steps: List of names for finals StepWorkflow[obj] to
+            use while building the graph structure
+        :type end_steps: list(str)
+        :return: List with sorted StepWorkflow[obj]
+        :rtype: list(object)
         """
         steps_ = []
         queue = list(self._build_run(end_steps))
@@ -220,14 +224,12 @@ class MetaWorkflow(object):
     #end def
 
     def _input_dimensions(self, input_structure):
-        """
-            given input_structure as list
-            calculate dimensions
+        """Given input_structure as list calculate dimensions.
 
-                input_structure, structure for the input with maximum scatter as list
-
-            # TODO
-            rewrite the function and generalize using recursion
+        :param input_structure: Structure for the input with maximum scatter as list
+        :type input_structure: list
+        :return: Input dimensions
+        :rtype: dict
         """
         input_dimensions = {}
         input_dimensions.setdefault(1, [len(input_structure)])
@@ -249,15 +251,14 @@ class MetaWorkflow(object):
     #end def
 
     def _shards(self, input_dimensions, dimension):
-        """
-            given input_dimensions
-            calculate shards for specified dimension
+        """Given input_dimensions calculate shards for specified dimension.
 
-                input_dimensions, dimensions of input argument from _input_dimension
-                dimension, dimension to calculate shards for
-
-            # TODO
-            rewrite the function and generalize using recursion
+        :param input_dimensions: Input dimensions
+        :type input_dimensions: dict
+        :param dimension: Dimension to calculate shards for
+        :type dimension: int [1|2|3]
+        :return: List of shards
+        :rtype: list(str)
         """
         shards = []
         input_dimension = input_dimensions[dimension]
@@ -284,17 +285,24 @@ class MetaWorkflow(object):
     #end def
 
     def write_run(self, input_structure, end_steps=[]):
-        """
-            create json meta-workflow-run structure for meta-workflow given end_steps and input_structure
-            _order_run to sort and list all step-workflows
-            use scatter, gather_from and dependencies information
-            to create and collect shards for individual step-workflows (workflow-runs)
-            complete attributes and other metadata for meta-workflow
-            return a json that represents a meta-workflow-run
+        """Create MetaWorkflowRun[json] for MetaWorkflow[json]
+        given end_steps and input_structure.
 
-                end_steps, names list of end step-workflows to build meta-workflow-run for
-                           if no end_steps calculate using end_workflows
-                input_structure, structure for the input with maximum scatter as list (e.g. [[A, B], [C, D], [E]])
+        The function will:
+            - _order_run to sort and list all necessary StepWorkflow[json]
+            - use scatter, gather_from and dependencies information
+                to create and collect shards for individual StepWorkflow[json]
+            - complete attributes and other metadata for MetaWorkflow[json]
+
+        :param end_steps: List of names for finals StepWorkflow[obj] to
+            use while creating MetaWorkflowRun[json], if no end_steps
+            is specified calculate using end_workflows
+        :type end_steps: list(str)
+        :param input_structure: Structure for the input with
+            maximum scatter as list (e.g. [[A, B], [C, D], [E]])
+        :type input_structure: list [1|2|3 dimensions]
+        :return: MetaWorkflowRun[json]
+        :rtype: dict
         """
         # Get end_steps
         if not end_steps:

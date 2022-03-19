@@ -28,7 +28,7 @@ Usage
 InputGenerator object
 ^^^^^^^^^^^^^^^^^^^^^
 
-*InputGenerator* object allows to combine and use *MetaWorkflow* and *MetaWorkflowRun* objects to map arguments and create input and patching objects in json format for workflow-runs.
+*InputGenerator* object allows to combine and use *MetaWorkflow* and *MetaWorkflowRun* objects to map arguments and create input and patching objects in json format.
 
 Initialize InputGenerator object
 ********************************
@@ -37,11 +37,11 @@ Initialize InputGenerator object
 
     import json
 
-    # Read input json, meta-workflow
+    # Read input MetaWorkflow[json]
     with open('.json') as json_file:
         data_wfl = json.load(json_file)
 
-    # Read input json, meta-workflow-run
+    # Read input MetaWorkflowRun[json]
     with open('.run.json') as json_file:
         data_wflrun = json.load(json_file)
 
@@ -59,9 +59,9 @@ Create input json to run
 
 The method ``ingen_obj.input_generator()`` returns a generator of ``input_json, update_json`` in json format:
 
-  - ``input_json`` stores necessary information to run a workflow-run and can be used as input for *Tibanna*.
+  - ``input_json`` stores necessary information to run a shard and can be used as input for *Tibanna*.
 
-  - ``update_json`` stores updated information for workflow-runs and final_status.
+  - ``update_json`` stores updated information for ``workflow_runs`` and ``final_status``.
 
 .. code-block:: python
 
@@ -83,7 +83,7 @@ Initialize RunUpdate object
 
 .. code-block:: python
 
-    # Read input json, meta-workflow-run
+    # Read input MetaWorkflowRun[json]
     with open('.run.json') as json_file:
         data_wflrun = json.load(json_file)
 
@@ -96,14 +96,14 @@ Initialize RunUpdate object
 Methods
 *******
 
-The method ``runupd_obj.reset_steps(steps_name<str list>)`` resets *WorkflowRun* objects corresponding to step-workflows specified in *steps_name*.
-Resets all workflow-runs associated to specified step-workflows.
-Returns updated workflow-runs and final_status information as json.
+The method ``runupd_obj.reset_steps(steps_name<str list>)`` resets *WorkflowRun* objects corresponding to steps specified in *steps_name*.
+Resets all shards associated to specified steps.
+Returns updated ``workflow_runs`` and ``final_status`` information as json.
 
-The method ``runupd_obj.reset_shards(shards_name<str list>)`` resets *WorkflowRun* objects corresponding to workflow-runs specified in *shards_name*.
-Resets only workflow-runs specified by shards.
-Returns updated workflow-runs and final_status information as json.
+The method ``runupd_obj.reset_shards(shards_name<str list>)`` resets *WorkflowRun* objects corresponding to shards specified in *shards_name*.
+Resets only specified shards.
+Returns updated ``workflow_runs`` and ``final_status`` information as json.
 
 The method ``runupd_obj.import_steps(wflrun_obj<MetaWorkflowRun obj>, steps_name<str list>)`` updates current *MetaWorkflowRun* object information, imports and use information from specified *wflrun_obj*.
 Updates *WorkflowRun* objects up to all steps specified in *steps_name*.
-Returns updated meta-workflow-run as json.
+Returns updated MetaWorkflowRun[json].

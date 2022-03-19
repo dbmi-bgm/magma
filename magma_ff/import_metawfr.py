@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 ################################################
 #
 #   Function to import from old
-#       meta-workflow-run
+#       MetaWorkflowRun[portal]
 #
 ################################################
 import json
@@ -28,36 +30,32 @@ def import_metawfr(
     verbose=False,
     expect_family_structure=True,
 ):
-    """Create new MetaWorkflowRun from an existing one by utilizing the
-    designated existing, completed steps.
+    """Create new MetaWorkflowRun[json] from existing MetaWorkflowRun[portal].
+    Import specified steps. If post, POST the MetaWorkflowRun[json] to portal
+    and PATCH SampleProcessing[portal].
 
-    Note: We expect meta_workflow_run_creation_class to have attribute
-    meta_workflow_run and accept the given args/kwargs.
-
-    :param meta_workflow_uuid: UUID of MetaWorkflow for new
-        MetaWorkflowRun
+    :param meta_workflow_uuid: MetaWorkflow[portal] UUID
     :type meta_workflow_uuid: str
-    :param metawfr_uuid: UUID of existing MetaWorkflowRun
+    :param metawfr_uuid: Existing MetaWorkflowRun[portal] UUID
     :type metawfr_uuid: str
-    :param sample_processing_uuid: UUID of SampleProcessing for new
-        MetaWorkflowRun (& presumably existing one as well)
+    :param sample_processing_uuid: SampleProcessing[portal] UUID
     :type sample_processing_uuid: str
-    :param steps_name: The Workflow names to reuse from the existing
-        MetaWorkflowRun
+    :param steps_name: Names for the steps to import from existing
+        MetaWorkflowRun[portal]
     :type steps_name: list(str)
-    :param ff_key: Fourfront authorization key
+    :param ff_key: Portal authorization key
     :type ff_key: dict
-    :param post: Whether to POST new MetaWorkflowRun
+    :param post: Whether to POST the new MetaWorkflowRun[json]
     :type post: bool
-    :param patch: Whether to PATCH new MetaWorkflowRun to
-        SampleProcessing
+    :param patch: Whether to PATCH new MetaWorkflowRun[json] to
+        SampleProcessing[portal]
     :type patch: bool
     :param verbose: Whether to print the POST response
     :type verbose: bool
     :param expect_family_structure: Whether a family structure is
-        expected for the SampleProcessing's Samples
+        expected for the SampleProcessing
     :type expect_family_structure: bool
-    :returns: Updated MetaWorkflowRun properties
+    :return: New MetaWorkflowRun[json]
     :rtype: dict
     """
     run_json_to_import = ff_utils.get_metadata(

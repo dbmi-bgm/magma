@@ -2,9 +2,9 @@
 
 ################################################
 #
-#   Library to work with meta-workflow-run objects
+#   Library to work with MetaWorkflowRun[obj]
 #
-#   Implement the skeleton for a generic object
+#   Implement the template for a generic object
 #       and generic methods for status checking
 #
 ################################################
@@ -18,23 +18,23 @@ import sys, os
 #   AbstractCheckStatus
 ################################################
 class AbstractCheckStatus(object):
-    """
-        skeleton for CheckStatus object
+    """Template for CheckStatus class.
     """
 
     def __init__(self, wflrun_obj):
-        """
+        """Constructor method.
+        Initialize object and attributes.
 
-                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
+        :param wflrun_obj: MetaWorkflowRun[obj] representing a MetaWorkflowRun[json]
+        :type wflrun_obj: object
         """
         # Basic attributes
         self.wflrun_obj = wflrun_obj
 
     @property
     def status_map(self):
-        """
-            mapping from get_status output to Magma status
-            set to property so that inherited classes can overwrite it
+        """Mapping from get_status output to magma status.
+        Set to property so that inherited classes can overwrite it.
         """
         return {
             'pending': 'pending',

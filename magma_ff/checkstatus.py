@@ -19,15 +19,16 @@ from magma_ff.wfrutils import FFWfrUtils
 #   CheckStatusFF
 ################################################
 class CheckStatusFF(AbstractCheckStatus):
-    """
-        CheckStatus object for CGAP/4dn Portal (tibanna-ff-based)
+    """Customized CheckStatus class for the portal.
     """
 
     def __init__(self, wflrun_obj, env=None):
-        """
+        """Initialize the object and set all attributes.
 
-                wflrun_obj, MetaWorkflowRun object representing a meta-workflow-run
-                env, portal env name e.g. fourfront-cgap (required to actually check status)
+        :param wflrun_obj: MetaWorkflowRun[obj]
+        :type wflrun_obj: object
+        :param env: Name of the environment to use (e.g. fourfront-cgap)
+        :type env: str
         """
         super().__init__(wflrun_obj)
 
@@ -39,8 +40,7 @@ class CheckStatusFF(AbstractCheckStatus):
 
     @property
     def status_map(self):
-        """
-            mapping from get_status output (e.g. portal WFR run status) to Magma status
+        """Mapping from get_status output to magma status.
         """
         return {
             'started': 'running',
@@ -49,12 +49,14 @@ class CheckStatusFF(AbstractCheckStatus):
         }
 
     def check_running(self):
+        """
+        """
         for patch_dict in super().check_running():
             if patch_dict:
                 failed_jobs = self.wflrun_obj.update_failed_jobs()
                 if len(failed_jobs) > 0:
                     patch_dict['failed_jobs'] = failed_jobs
-                # Currently, we are only calculating the cost when the MetaWorkflow completed, 
+                # Currently, we are only calculating the cost when the MetaWorkflow completed,
                 # as computing the estimated cost for each workflow is rather expensive.
                 if patch_dict['final_status'] == 'completed':
                     cost = self.wflrun_obj.update_cost()
@@ -64,18 +66,23 @@ class CheckStatusFF(AbstractCheckStatus):
 
     # The following three functions are for portal (cgap / 4dn)
     def get_uuid(self, jobid):
+        """
+        """
         return self.ff.wfr_run_uuid(jobid)
 
     def get_status(self, jobid):
+        """
+        """
         return self.ff.wfr_run_status(jobid)
 
     def get_output(self, jobid):
+        """
+        """
         return self.ff.get_minimal_processed_output(jobid)
 
     @property
     def ff(self):
-        """
-            internal property used for get_status, get_output for portal
+        """Internal property used for get_status, get_output for portal.
         """
         if not self._ff:
             self._ff = FFWfrUtils(self._env)

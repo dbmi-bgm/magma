@@ -1,8 +1,22 @@
+#!/usr/bin/env python3
+
+################################################
+#
+#
+#
+################################################
+
+################################################
+#   Libraries
+################################################
 import json
 
 from dcicutils import ff_utils
 
 
+################################################
+#   Functions
+################################################
 def make_embed_request(ids, fields, auth_key, single_item=False):
     """POST to embed API for retrieval of specified fields for given
     identifiers (from Postgres, not ES).
@@ -11,12 +25,12 @@ def make_embed_request(ids, fields, auth_key, single_item=False):
     :type ids: str or list(str)
     :param fields: Fields to retrieve for identifiers
     :type fields: str or list(str)
-    :param auth_key: CGAP authorization key
+    :param auth_key: Portal authorization key
     :type auth_key: dict
     :param single_item: Whether to return non-list result because only
          maximum one response is expected
     :type single_item: bool
-    :returns: Embed API response
+    :return: Embed API response
     :rtype: list or dict or None
     """
     result = []
@@ -39,8 +53,7 @@ def make_embed_request(ids, fields, auth_key, single_item=False):
             result = result[0]
         else:
             raise ValueError(
-                "Expected at most a single response but received multiple: %s"
-                % result
+                "Expected at most a single response but received multiple: %s" % result
             )
     return result
 
@@ -52,7 +65,7 @@ def chunk_ids(ids):
 
     :param ids: Identifiers to chunk
     :type ids: list
-    :returns: Chunked identifiers
+    :return: Chunked identifiers
     :rtype: list
     """
     result = []
@@ -68,11 +81,11 @@ def check_status(meta_workflow_run, valid_final_status=None):
     If given valid final status, check MetaWorkflowRun.final_status
     as well.
 
-    :param meta_workflow_run: MetaWorkflowRun properties
+    :param meta_workflow_run: MetaWorkflowRun[json]
     :type meta_workflow_run: dict
     :param valid_status: Final status considered valid
     :type valid_status: list
-    :returns: Whether MetaWorkflowRun's final_status is valid
+    :return: Whether MetaWorkflowRun final_status is valid
     :rtype: bool
     """
     item_status = meta_workflow_run.get("status", "deleted")
