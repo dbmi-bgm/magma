@@ -1,7 +1,8 @@
+.PHONY: test
+
 configure:
 	pip install poetry
 
-.PHONY: build
 build:
 	poetry install
 
