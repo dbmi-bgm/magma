@@ -284,7 +284,7 @@ META_WORKFLOW_RUN_UUID = "another_uuid"
 COMMON_FIELDS = {
     "project": SAMPLE_PROCESSING_PROJECT,
     "institution": SAMPLE_PROCESSING_INSTITUTION,
-    "associated_meta_workflow_run": META_WORKFLOW_RUN_UUID,
+    "associated_meta_workflow_runs": [META_WORKFLOW_RUN_UUID],
 }
 META_WORKFLOW_RUN = {
     "meta_workflow": META_WORKFLOW_UUID,
