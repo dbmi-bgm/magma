@@ -38,7 +38,7 @@ class MetaWorkflowRunFromSampleProcessing:
 
     # Schema constants
     META_WORKFLOW_RUNS = "meta_workflow_runs"
-    ASSOCIATED_META_WORKFLOW_RUN = "associated_meta_workflow_run"
+    ASSOCIATED_META_WORKFLOW_RUN = "associated_meta_workflow_runs"
     PROJECT = "project"
     INSTITUTION = "institution"
     UUID = "uuid"
@@ -135,7 +135,7 @@ class MetaWorkflowRunFromSampleProcessing:
             self.COMMON_FIELDS: {
                 self.PROJECT: self.project,
                 self.INSTITUTION: self.institution,
-                self.ASSOCIATED_META_WORKFLOW_RUN: self.meta_workflow_run_uuid,
+                self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
             },
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
