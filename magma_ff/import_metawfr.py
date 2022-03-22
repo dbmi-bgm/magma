@@ -109,7 +109,7 @@ def add_new_meta_workflow_run_uuid_to_copied_items(meta_workflow_run, auth_key):
     :type meta_workflow_run: dict
     :param auth_key: Portal authorization key
     :type auth_key: dict
-    :returns: Successful PATCHes and items with errors on PATCH
+    :return: Successful PATCHes and items with errors on PATCH
     :rtype: tuple(list, dict)
     """
     success = []

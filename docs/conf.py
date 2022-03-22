@@ -22,7 +22,7 @@ copyright = '2021, CGAP team, HMS DBMI'
 author = 'Michele Berselli, Doug Rioux, Soo Lee and CGAP team'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.0'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
