@@ -1,5 +1,6 @@
 import datetime
 import json
+from copy import deepcopy
 
 import mock
 import pytest
@@ -664,7 +665,7 @@ class TestInputPropertiesFromSampleProcessing:
                 [2, 1, 3, 0],
             ),
             (
-                SAMPLES,
+                deepcopy(SAMPLES),
                 "bam_sample_id",
                 "SAMPLE3-DNA-WGS",
                 "SAMPLE4-DNA-WGS",
@@ -672,7 +673,7 @@ class TestInputPropertiesFromSampleProcessing:
                 [2, 3, 1, 0],
             ),
             (
-                SAMPLES_PEDIGREE,
+                deepcopy(SAMPLES_PEDIGREE),
                 "sample_name",
                 "SAMPLE3-DNA-WGS",
                 "SAMPLE4-DNA-WGS",
@@ -697,34 +698,49 @@ class TestInputPropertiesFromSampleProcessing:
         expected = []
         for idx in expected_order:
             expected.append(items_to_sort[idx])
-        result = inputs_from_sample_processing.sort_by_sample_name(
+        inputs_from_sample_processing.sort_by_sample_name(
             items_to_sort, sample_name_key, proband, mother=mother, father=father
         )
-        assert result == expected
+        assert items_to_sort == expected
 
     @pytest.mark.parametrize(
-        "expect_family_structure,samples,samples_pedigree,error,expected_samples,expected_samples_pedigree",
+        (
+            "expect_family_structure,proband_only,samples,samples_pedigree,error"
+            ",expected_samples,expected_samples_pedigree"
+        ),
         [
-            (True, [], [], True, [], []),
-            (True, SAMPLES, [], True, SORTED_SAMPLES, []),
-            (True, [], SAMPLES_PEDIGREE, True, [], SORTED_SAMPLES_PEDIGREE),
+            (True, False, [], [], True, [], []),
+            (True, True, [], [], True, [], []),
+            (True, False, SAMPLES, [], True, SORTED_SAMPLES, []),
+            (True, False, [], SAMPLES_PEDIGREE, True, [], SORTED_SAMPLES_PEDIGREE),
             (
                 True,
+                False,
                 SAMPLES,
                 SAMPLES_PEDIGREE,
                 False,
                 SORTED_SAMPLES,
                 SORTED_SAMPLES_PEDIGREE,
             ),
-            (False, [], [], True, [], []),
-            (False, SAMPLES, [], False, SAMPLES, []),
-            (False, [], SAMPLES_PEDIGREE, True, [], SAMPLES_PEDIGREE),
-            (False, SAMPLES, SAMPLES_PEDIGREE, False, SAMPLES, SAMPLES_PEDIGREE),
+            (
+                True,
+                True,
+                SAMPLES,
+                SAMPLES_PEDIGREE,
+                False,
+                [SORTED_SAMPLES[0]],
+                [SORTED_SAMPLES_PEDIGREE[0]],
+            ),
+            (False, False, [], [], True, [], []),
+            (False, False, SAMPLES, [], False, SAMPLES, []),
+            (False, False, [], SAMPLES_PEDIGREE, True, [], SAMPLES_PEDIGREE),
+            (False, False, SAMPLES, SAMPLES_PEDIGREE, False, SAMPLES, SAMPLES_PEDIGREE),
         ],
     )
     def test_clean_and_sort_samples_and_pedigree(
         self,
         expect_family_structure,
+        proband_only,
         samples,
         samples_pedigree,
         error,
@@ -734,18 +750,24 @@ class TestInputPropertiesFromSampleProcessing:
         """Test sorting of samples and pedigree or lack thereof if
         samples are not connected as family (i.e. a cohort).
         """
-        sample_processing = {"samples": samples, "samples_pedigree": samples_pedigree}
+        test_samples = deepcopy(samples)
+        test_pedigree = deepcopy(samples_pedigree)
+        sample_processing = {"samples": test_samples, "samples_pedigree": test_pedigree}
         if error:
             with pytest.raises(MetaWorkflowRunCreationError):
                 inputs_from_sample_processing = InputPropertiesFromSampleProcessing(
-                    sample_processing, expect_family_structure
+                    sample_processing,
+                    expect_family_structure=expect_family_structure,
+                    proband_only=proband_only,
                 )
         else:
             inputs_from_sample_processing = InputPropertiesFromSampleProcessing(
-                sample_processing, expect_family_structure
+                sample_processing,
+                expect_family_structure=expect_family_structure,
+                proband_only=proband_only,
             )
-            sorted_samples = inputs_from_sample_processing.sorted_samples
-            sorted_pedigree = inputs_from_sample_processing.sorted_samples_pedigree
+            sorted_samples = inputs_from_sample_processing.samples
+            sorted_pedigree = inputs_from_sample_processing.samples_pedigree
             assert sorted_samples == expected_samples
             assert sorted_pedigree == expected_samples_pedigree
 

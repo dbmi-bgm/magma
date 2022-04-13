@@ -70,6 +70,7 @@ class MetaWorkflowRunFromSampleProcessing:
     INPUT_SAMPLES = "input_samples"
     ASSOCIATED_SAMPLE_PROCESSING = "associated_sample_processing"
     FILES = "files"
+    PROBAND_ONLY = "proband_only"
 
     # Class constants
     META_WORKFLOW_RUN_ENDPOINT = "meta-workflow-runs"
@@ -115,6 +116,7 @@ class MetaWorkflowRunFromSampleProcessing:
                 "No MetaWorkflow found for given identifier: %s"
                 % meta_workflow_identifier
             )
+        proband_only = self.meta_workflow.get(self.PROBAND_ONLY, False)
         self.project = sample_processing.get(self.PROJECT)
         self.institution = sample_processing.get(self.INSTITUTION)
         self.sample_processing_uuid = sample_processing.get(self.UUID)
@@ -122,7 +124,9 @@ class MetaWorkflowRunFromSampleProcessing:
             self.META_WORKFLOW_RUNS, []
         )
         self.input_properties = InputPropertiesFromSampleProcessing(
-            sample_processing, expect_family_structure=expect_family_structure
+            sample_processing,
+            expect_family_structure=expect_family_structure,
+            proband_only=proband_only,
         )
         self.meta_workflow_run_input = MetaWorkflowRunInput(
             self.meta_workflow, self.input_properties
@@ -489,120 +493,126 @@ class InputPropertiesFromSampleProcessing:
     GENDER = "gender"
     RCKTAR_FILE_ENDING = ".rck.gz"
 
-    def __init__(self, sample_processing, expect_family_structure=True):
+    def __init__(
+        self,
+        sample_processing,
+        expect_family_structure=True,
+        proband_only=False,
+    ):
         """Initialize the object and set attributes.
 
         :param sample_processing: SampleProcessing[json]
         :type sample_processing: dict
         :param expect_family_structure: Whether a family structure is
-            expected on the SampleProcessing, which influences whether
-            the Samples are sorted and cleaning of sample pedigree
+            expected on the SampleProcessing, which influences sample
+            sorting and pedigree expectations
         :type expect_family_structure: bool
+        :param proband_only: Whether inputs should only use proband
+            samples. Only applicable within family structure.
+        :type proband_only: bool
         """
         self.sample_processing = sample_processing
-        (
-            self.sorted_samples,
-            self.sorted_samples_pedigree,
-        ) = self.clean_and_sort_samples_and_pedigree(expect_family_structure)
+        self.samples = sample_processing.get(self.SAMPLES)
+        if not self.samples:
+            raise MetaWorkflowRunCreationError(
+                "No Samples found on SampleProcessing: %s" % self.sample_processing
+            )
+        self.samples_pedigree = sample_processing.get(self.SAMPLES_PEDIGREE, [])
+        if expect_family_structure:
+            self.clean_and_sort_samples_and_pedigree()
+            if proband_only:
+                self.remove_non_proband_samples()
 
-    def clean_and_sort_samples_and_pedigree(self, expect_family_structure):
+    def clean_and_sort_samples_and_pedigree(self):
         """Sort Samples and pedigree and remove parents from pedigree
         if not included in Samples.
-
-        If not expecting a family structure (such as with a Cohort),
-        then Samples and pedigree returned unsorted.
 
         Sorting order will be proband, then mother, then father, as
         applicable.
 
-        :return: Sorted Samples and sorted/cleaned pedigree
-        :rtype: (list(dict), list(dict))
-        :raises MetaWorkflowRunCreationError: If Samples or pedigree
-            not found, of different lengths, or lack required properties
+        :raises MetaWorkflowRunCreationError: If pedigree not found,
+            samples and pegigree of different lengths, or required
+            properties not found
         """
         proband_name = None
         mother_name = None
         father_name = None
-        samples_pedigree = self.sample_processing.get(self.SAMPLES_PEDIGREE, [])
-        if not samples_pedigree and expect_family_structure:
+        if not self.samples_pedigree:
             raise MetaWorkflowRunCreationError(
                 "No samples_pedigree found on SampleProcessing: %s"
                 % self.sample_processing
             )
-        samples = self.sample_processing.get(self.SAMPLES, [])
-        if not samples:
-            raise MetaWorkflowRunCreationError(
-                "No Samples found on SampleProcessing: %s" % self.sample_processing
-            )
-        if expect_family_structure and len(samples) != len(samples_pedigree):
+        if len(self.samples) != len(self.samples_pedigree):
             raise MetaWorkflowRunCreationError(
                 "Number of Samples did not match number of entries in samples_pedigree"
                 " on SampleProcessing: %s" % self.sample_processing
             )
         all_individuals = [
             sample.get(self.INDIVIDUAL)
-            for sample in samples_pedigree
+            for sample in self.samples_pedigree
             if sample.get(self.INDIVIDUAL)
         ]
         bam_sample_ids = [
             sample.get(self.BAM_SAMPLE_ID)
-            for sample in samples
+            for sample in self.samples
             if sample.get(self.BAM_SAMPLE_ID)
         ]
-        if samples_pedigree and expect_family_structure:
-            for pedigree_sample in samples_pedigree:
-                parents = pedigree_sample.get(self.PARENTS, [])
-                if parents:  # Remove parents that aren't in samples_pedigree
-                    missing_parents = [
-                        parent for parent in parents if parent not in all_individuals
-                    ]
-                    for missing_parent in missing_parents:
-                        parents.remove(missing_parent)
-                sample_name = pedigree_sample.get(self.SAMPLE_NAME)
-                if sample_name is None:
-                    raise MetaWorkflowRunCreationError(
-                        "No sample name given for sample in pedigree: %s"
-                        % pedigree_sample
-                    )
-                elif sample_name not in bam_sample_ids:
-                    raise MetaWorkflowRunCreationError(
-                        "Sample in pedigree not found on SampleProcessing: %s"
-                        % sample_name
-                    )
-                sex = pedigree_sample.get(self.SEX)
-                if sex is None:
-                    raise MetaWorkflowRunCreationError(
-                        "No sex given for sample in pedigree: %s" % pedigree_sample
-                    )
-                relationship = pedigree_sample.get(self.RELATIONSHIP)
-                if relationship == self.PROBAND:
-                    proband_name = sample_name
-                elif relationship == self.MOTHER:
-                    mother_name = sample_name
-                elif relationship == self.FATHER:
-                    father_name = sample_name
-            if proband_name is None:
+        for pedigree_sample in self.samples_pedigree:
+            parents = pedigree_sample.get(self.PARENTS, [])
+            if parents:  # Remove parents that aren't in samples_pedigree
+                missing_parents = [
+                    parent for parent in parents if parent not in all_individuals
+                ]
+                for missing_parent in missing_parents:
+                    parents.remove(missing_parent)
+            sample_name = pedigree_sample.get(self.SAMPLE_NAME)
+            if sample_name is None:
                 raise MetaWorkflowRunCreationError(
-                    "No proband found within the pedigree: %s" % samples_pedigree
+                    "No sample name given for sample in pedigree: %s"
+                    % pedigree_sample
                 )
-            result_samples_pedigree = self.sort_by_sample_name(
-                samples_pedigree,
-                self.SAMPLE_NAME,
-                proband_name,
-                mother=mother_name,
-                father=father_name,
+            elif sample_name not in bam_sample_ids:
+                raise MetaWorkflowRunCreationError(
+                    "Sample in pedigree not found on SampleProcessing: %s"
+                    % sample_name
+                )
+            sex = pedigree_sample.get(self.SEX)
+            if sex is None:
+                raise MetaWorkflowRunCreationError(
+                    "No sex given for sample in pedigree: %s" % pedigree_sample
+                )
+            relationship = pedigree_sample.get(self.RELATIONSHIP)
+            if relationship == self.PROBAND:
+                proband_name = sample_name
+            elif relationship == self.MOTHER:
+                mother_name = sample_name
+            elif relationship == self.FATHER:
+                father_name = sample_name
+        if proband_name is None:
+            raise MetaWorkflowRunCreationError(
+                "No proband found within the pedigree: %s" % self.samples_pedigree
             )
-            result_samples = self.sort_by_sample_name(
-                samples,
-                self.BAM_SAMPLE_ID,
-                proband_name,
-                mother=mother_name,
-                father=father_name,
-            )
-        else:
-            result_samples = samples
-            result_samples_pedigree = samples_pedigree
-        return result_samples, result_samples_pedigree
+        self.sort_by_sample_name(
+            self.samples_pedigree,
+            self.SAMPLE_NAME,
+            proband_name,
+            mother=mother_name,
+            father=father_name,
+        )
+        self.sort_by_sample_name(
+            self.samples,
+            self.BAM_SAMPLE_ID,
+            proband_name,
+            mother=mother_name,
+            father=father_name,
+        )
+
+    def remove_non_proband_samples(self):
+        """Remove all non-proband members from sorted samples and
+        pedigree.
+        """
+        del self.samples_pedigree[1:]
+        del self.samples[1:]
 
     def sort_by_sample_name(
         self, items_to_sort, sample_name_key, proband, mother=None, father=None
@@ -621,10 +631,8 @@ class InputPropertiesFromSampleProcessing:
         :type mother: str or None
         :param father: Father sample name
         :type father: str or None
-        :return: Sorted items
-        :rtype: list(dict)
         """
-        result = []
+        sorted_items = []
         other_idx = []
         proband_idx = None
         mother_idx = None
@@ -640,14 +648,15 @@ class InputPropertiesFromSampleProcessing:
             else:
                 other_idx.append(idx)
         if proband_idx is not None:
-            result.append(items_to_sort[proband_idx])
+            sorted_items.append(items_to_sort[proband_idx])
         if mother_idx is not None:
-            result.append(items_to_sort[mother_idx])
+            sorted_items.append(items_to_sort[mother_idx])
         if father_idx is not None:
-            result.append(items_to_sort[father_idx])
+            sorted_items.append(items_to_sort[father_idx])
         for idx in other_idx:
-            result.append(items_to_sort[idx])
-        return result
+            sorted_items.append(items_to_sort[idx])
+        items_to_sort.clear()
+        items_to_sort.extend(sorted_items)
 
     def get_samples_processed_file_for_format(self, file_format):
         """Grab files of given format from processed_files property for
@@ -663,7 +672,7 @@ class InputPropertiesFromSampleProcessing:
         :rtype: dict
         """
         result = {}
-        for idx, sample in enumerate(self.sorted_samples):
+        for idx, sample in enumerate(self.samples):
             matching_files = self.get_processed_file_for_format(sample, file_format)
             result[idx] = matching_files
         return result
@@ -725,7 +734,7 @@ class InputPropertiesFromSampleProcessing:
             paired end found
         """
         result = {}
-        for idx, sample in enumerate(self.sorted_samples):
+        for idx, sample in enumerate(self.samples):
             paired_end_fastqs = []
             fastq_files = sample.get(self.FILES, [])
             for fastq_file in fastq_files:  # Expecting only FASTQs, but check
@@ -753,18 +762,18 @@ class InputPropertiesFromSampleProcessing:
     @property
     def sample_names(self):
         """Sorted Sample name input."""
-        return [sample[self.BAM_SAMPLE_ID] for sample in self.sorted_samples]
+        return [sample[self.BAM_SAMPLE_ID] for sample in self.samples]
 
     @property
     def input_sample_uuids(self):
         """Sorted Sample UUID input."""
-        return [sample[self.UUID] for sample in self.sorted_samples]
+        return [sample[self.UUID] for sample in self.samples]
 
     @property
     def pedigree(self):
         """Sorted pedigree input."""
         result = []
-        for pedigree_sample in self.sorted_samples_pedigree:
+        for pedigree_sample in self.samples_pedigree:
             result.append(
                 {
                     self.PARENTS: pedigree_sample.get(self.PARENTS, []),
@@ -786,7 +795,7 @@ class InputPropertiesFromSampleProcessing:
             found on a Sample
         """
         result = {}
-        for idx, sample in enumerate(self.sorted_samples):
+        for idx, sample in enumerate(self.samples):
             cram_uuids = []
             cram_files = sample.get(self.CRAM_FILES)
             if cram_files is None:
@@ -835,7 +844,7 @@ class InputPropertiesFromSampleProcessing:
     def bamsnap_titles(self):
         """Sorted BAMSnap name input."""
         result = []
-        for sample_pedigree in self.sorted_samples_pedigree:
+        for sample_pedigree in self.samples_pedigree:
             sample_name = sample_pedigree.get(self.SAMPLE_NAME)
             sample_relationship = sample_pedigree.get(self.RELATIONSHIP, "")
             result.append("%s (%s)" % (sample_name, sample_relationship))
