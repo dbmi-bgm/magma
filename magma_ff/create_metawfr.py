@@ -715,7 +715,8 @@ class InputPropertiesFromSampleProcessing:
                 result.append(file_uuid)
         if not result:
             raise MetaWorkflowRunCreationError(
-                "No file with format %s found on Sample: %s" % (file_format, sample)
+                "No file with format %s meeting requirements %s found on Sample: %s"
+                % (file_format, requirements, sample)
             )
         return result
 
