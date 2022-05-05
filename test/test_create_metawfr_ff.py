@@ -223,7 +223,7 @@ PEDIGREE = [
         "gender": "F",
     },
 ]
-SAMPLE_NAME_PROBAND = "SAMPLE3-DNA-WGS"
+SAMPLE_NAME_PROBAND = ["SAMPLE3-DNA-WGS"]
 BAMSNAP_TITLES = [
     "SAMPLE3-DNA-WGS (proband)",
     "SAMPLE4-DNA-WGS (mother)",

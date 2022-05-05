@@ -839,7 +839,7 @@ class InputPropertiesFromSampleProcessing:
     @property
     def sample_name_proband(self):
         """Proband Sample name input."""
-        return self.sample_names[0]  # Already sorted to proband-first
+        return [self.sample_names[0]]  # Already sorted to proband-first
 
     @property
     def bamsnap_titles(self):
