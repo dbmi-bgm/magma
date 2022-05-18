@@ -817,26 +817,23 @@ class InputPropertiesFromSampleProcessing:
     @property
     def probands(self):
         """Proband list for jointly calling multiple g.vcf files"""
+        probands = []
         if self.samples_pedigree:
-            probands = []
             for pedigree_sample in self.samples_pedigree:
                 relationship = pedigree_sample.get(self.RELATIONSHIP)
                 sample_name = pedigree_sample.get(self.SAMPLE_NAME)
-
                 if (relationship is None) or (sample_name is None):
                     raise MetaWorkflowRunCreationError(
-                        "Pedigree information incomplete. Relationship and sample name are required."
+                        "Pedigree information incomplete. Relationship and sample name"
+                        " are required."
                     )
-
                 if relationship == self.PROBAND:
                     probands.append(sample_name)
-            
-            return json.dumps(probands)                
-            
         else:
             raise MetaWorkflowRunCreationError(
                 "Cannot create probands list because there is no samples pedigree."
             )
+        return probands
 
     @property
     def fastqs_r1(self):
