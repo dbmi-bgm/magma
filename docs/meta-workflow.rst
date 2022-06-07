@@ -82,7 +82,9 @@ Structure
 
           # Example of additional Tibanna specific fields
           "custom_pf_fields": {
-            # example for CGAP data model
+            # Example for CGAP data model
+            # For an updated list of permissible properties, see schema at
+            # https://github.com/dbmi-bgm/cgap-portal/blob/master/src/encoded/schemas/meta_workflow.json 
             "<filename>": {
                  "file_type": <str>,
                  "variant_type": <str>,
