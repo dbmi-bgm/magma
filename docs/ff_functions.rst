@@ -9,6 +9,8 @@ The class ``MetaWorkflowRunFromSampleProcessing(sp_uuid<str>, metawf_uuid<str>, 
 Initializing the class will automatically create the correct MetaWorkflowRun[json] that will be stored as attribute.
 The method ``post_and_patch()`` can be used to post the MetaWorkflowRun[json] as *MetaWorkflowRun* object on the portal and patch it to the *SampleProcessing*.
 
+The class ``MetaWorkflowRunFromSample`` works similarly for *Sample* portal items.
+
 .. code-block:: python
 
     from magma_ff import create_metawfr
