@@ -209,6 +209,7 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         "samples.files.related_files.file.paired_end",
         "samples.cram_files.uuid",
         "samples.processed_files.uuid",
+        "samples.processed_files.paired_end",
         "samples.processed_files.file_format.file_format",
     ]
 
@@ -303,6 +304,7 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         "files.related_files.file.paired_end",
         "cram_files.uuid",
         "processed_files.uuid",
+        "processed_files.paired_end",
         "processed_files.file_format.file_format",
     ]
 
