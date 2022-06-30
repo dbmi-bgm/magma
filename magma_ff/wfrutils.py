@@ -23,7 +23,8 @@ from tibanna.job import Job
 class FFWfrUtils(object):
     def __init__(self, env):
         """
-                env : e.g. 'fourfront-cgap', 'fourfront-cgap-wolf'
+        :param env: e.g. 'fourfront-cgap', 'fourfront-cgap-wolf'
+        :type env: str
         """
         self.env = env
 
@@ -33,8 +34,7 @@ class FFWfrUtils(object):
         self._ff_key = None
 
     def wfr_run_uuid(self, job_id):
-        """
-            this is the function to be used by Magma.
+        """This is the function to be used by Magma.
         """
         wfr_meta = self.wfr_metadata(job_id)
         if not wfr_meta:
@@ -42,10 +42,9 @@ class FFWfrUtils(object):
         return wfr_meta['uuid']
 
     def wfr_run_status(self, job_id):
-        """
-            This is the function to be used by Magma.
-            Returns the run status of the wfr associated with the job id.
-            If wfr associated with job id is not found, we consider it failed.
+        """This is the function to be used by Magma.
+        Return the status of the run associated with specified job_id.
+        If run associated with job_id is not found, we consider it failed.
         """
         wfr_meta = self.wfr_metadata(job_id)
         if not wfr_meta:
@@ -54,20 +53,17 @@ class FFWfrUtils(object):
             return wfr_meta['run_status']
 
     def get_minimal_processed_output(self, job_id):
-        """
-            this is the function to be used by Magma.
-            returns a list of {'argument_name': <arg_name>, 'file': <uuid>}
-            for all processed file output.
-            If no output, returns None.
+        """This is the function to be used by Magma.
+        Return a list of {'argument_name': <arg_name>, 'file': <uuid>}
+        for all processed file output. If no output, return None.
         """
         wfr_output = self.wfr_output(job_id)
         return self.filter_wfr_output_minimal_processed(wfr_output)
 
     def wfr_output(self, job_id):
-        """
-            return the raw output from the wfr metadata.
-            returns None if wfr metadata associated with the job is not found or
-            does not have associated output files.
+        """Return the raw output from the run metadata.
+        Return None if run metadata associated with the job is not found or
+        does not have associated output files.
         """
         if self.wfr_metadata(job_id):
             return self.wfr_metadata(job_id).get('output_files', None)
@@ -75,9 +71,8 @@ class FFWfrUtils(object):
             return None
 
     def wfr_metadata(self, job_id):
-        """
-            get portal WorkflowRun metadata from job id
-            returns None if a workflow run associated with job id cannot be found.
+        """Get portal run metadata from job_id.
+        Return None if a run associated with job id cannot be found.
         """
         # Use cache
         if job_id in self._metadata:
@@ -104,8 +99,7 @@ class FFWfrUtils(object):
 
     @property
     def ff_key(self):
-        """
-            get access key for the portal
+        """Get access key for the portal.
         """
         # Use cache
         if not self._ff_key:
@@ -115,9 +109,8 @@ class FFWfrUtils(object):
 
     @staticmethod
     def filter_wfr_output_minimal_processed(wfr_output):
-        """
-            return a list of {'argument_name': <arg_name>, 'file': <uuid>}
-            for all processed file output
+        """Return a list of {'argument_name': <arg_name>, 'file': <uuid>}
+        for all processed file output.
         """
         if wfr_output:
             return [{'argument_name': opf['workflow_argument_name'],

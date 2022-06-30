@@ -2,7 +2,7 @@
 *metawfl* module (magma)
 ========================
 
-This is a module to work with :ref:`meta-workflows <meta-workflow-label>` in json format.
+This is a module to work with :ref:`MetaWorkflow[json] <meta-workflow-label>` format.
 
 Import the library
 ++++++++++++++++++
@@ -17,7 +17,7 @@ Usage
 MetaWorkflow object
 ^^^^^^^^^^^^^^^^^^^
 
-*MetaWorkflow* object stores meta-workflow general information, together with step-workflows information as *StepWorkflow* objects.
+*MetaWorkflow* object stores MetaWorkflow[json] general information, together with specific information for each of the steps as *StepWorkflow* objects.
 
 Initialize MetaWorkflow object
 ******************************
@@ -33,7 +33,7 @@ Initialize MetaWorkflow object
     # Create MetaWorkflow object
     wfl_obj = wfl.MetaWorkflow(data)
 
-This will read meta-workflow ``.json`` content into a *MetaWorkflow* object and create a *StepWorkflow* object for each of the step-workflows in ``workflows``.
+This will read MetaWorkflow[json] ``.json`` content into a *MetaWorkflow* object and create a *StepWorkflow* object for each of the steps in ``workflows``.
 
 Attributes
 **********
@@ -57,19 +57,19 @@ Attributes
 
   - ``wfl_obj.workflows``, stores ``workflows`` content as list.
 
-Write meta-workflow-run
-***********************
+Write MetaWorkflowRun[json]
+***************************
 
-The method ``wfl_obj.write_run(input_structure<str | str list>, [end_steps<str list>])`` returns a json structure for a :ref:`meta-workflow-run-label` given specific input_structure and end step-workflows.
-It is not necessary to specify end step-workflows names, if missing are automatically calculated to run everything in the meta-workflow.
+The method ``wfl_obj.write_run(input_structure<str | str list>, [end_steps<str list>])`` returns a :ref:`MetaWorkflowRun[json] <meta-workflow-run-label>` given specific input_structure and end steps.
+It is not necessary to specify names for end steps. If missing, shards are automatically calculated to run all the steps.
 
 .. code-block:: python
 
     # input is a string or list of strings, up to 3-dimensions
     input = [[['file_1', 'file_2'], ['file_3', 'file_4']]]
 
-    # end_steps, is a list of the final step-workflows for the meta-workflow-run
-    # optional, if missing the end step are automatically calculated to run everything
+    # end_steps, is a list of the final steps to run
+    # if missing, the end steps are automatically calculated to run everything
     end_steps = ['step_5', 'step_6']
 
     # run wfl_obj.write_run
@@ -91,7 +91,7 @@ Attributes
 
   - ``step_obj.is_scatter``, stores ``scatter`` dimension for step as int.
 
-  - ``step_obj.gather_from``, stores increment for input dimension for step-workflows to gather from as dict.
+  - ``step_obj.gather_from``, stores increment for input dimension for steps to gather from as dict.
 
       .. code-block:: python
 
@@ -102,4 +102,4 @@ Attributes
             ...
           }
 
-  - ``step_obj.dependencies``, stores names of step-workflows that are dependency as set, if any.
+  - ``step_obj.dependencies``, stores names of steps that are dependency as set, if any.

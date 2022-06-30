@@ -24,18 +24,18 @@ class ParserFF(object):
     """
 
     def __init__(self, input_json):
-        """
+        """Initialize the object and set all attributes.
 
-                input_json is a meta-workflow or meta-workflow-run in json format
+        :param input_json: MetaWorkflow[portal] or MetaWorkflowRun[portal]
+        :type input_json: dict
         """
         self.in_json = input_json
     #end def
 
     def arguments_to_json(self):
-        """
-            parse meta-workflow or meta-workflow-run json stored as self.in_json
-            if input, convert and replace arguments in input from string to json
-            if workflows, for each step-workflow convert and replace arguments in input from string to json
+        """Parse MetaWorkflow[portal] or MetaWorkflowRun[portal] stored as self.in_json.
+        If input, convert and replace arguments in input from string to json.
+        If workflows, for each step convert and replace arguments in input from string to json.
         """
         if self.in_json.get('input'):
             self._input_to_json(self.in_json['input'])
@@ -55,9 +55,8 @@ class ParserFF(object):
     #end def
 
     def _input_to_json(self, input):
-        """
-            loop through arguments in input
-            call appropriate conversion function for argument_type
+        """Loop through arguments in input and
+        calls appropriate conversion function for argument_type.
         """
         for arg in input:
             if arg['argument_type'] == 'file':
@@ -69,9 +68,8 @@ class ParserFF(object):
     #end def
 
     def _file_to_json(self, arg):
-        """
-            _files_to_json to convert file argument from string to json
-            replace the argument value (files)
+        """Convert file argument from string to json
+        and replace the argument value (files).
         """
         if arg.get('files'):
             arg['files'] = self._files_to_json(arg['files'])
@@ -79,23 +77,24 @@ class ParserFF(object):
     #end def
 
     def _files_to_json(self, files, sep=','):
-        """
-            convert file argument from string to json
-            return the argument value (files)
+        """Convert file argument from string to json.
 
-                files, is a list of dictionaries representing files
-                        and information on their dimensional structure
-                        e.g. "files": [
-                                        {
-                                            "file": "A",
-                                            "dimension": "0"
-                                            # 0D missing, 1D X, 2D X:X, 3D X:X:X, ...
-                                        },
-                                        {
-                                           "file": "B",
-                                           "dimension": "1"
-                                        }
-                                    ]
+        :param files: List of dictionaries representing files
+            and information on their dimensional structure
+            e.g. "files": [
+                            {
+                                "file": "A",
+                                "dimension": "0"
+                                # 0D missing, 1D X, 2D X:X, 3D X:X:X, ...
+                            },
+                            {
+                               "file": "B",
+                               "dimension": "1"
+                            }
+                        ]
+        :type files: list(dict)
+        :return: Converted argument value (files)
+        :rtype: list(str)
         """
         list_ = []
         # Get max dimensions needed
@@ -118,8 +117,7 @@ class ParserFF(object):
     #end def
 
     def _init_list(self, list_, dimension_):
-        """
-        """
+        """ """
         tmp_list = list_
         for i in dimension_[:-1]:
             try: # index esist
@@ -136,11 +134,11 @@ class ParserFF(object):
     #end def
 
     def _parameter_to_json(self, arg):
-        """
-            convert parameter argument from string to json
-            replace the argument value (value)
+        """Convert parameter argument from string to json
+        and replaces the argument value (value).
 
-                value_type, json | string | integer | boolean | float
+        possible values for value_type:
+            json | string | integer | boolean | float
         """
         if not arg.get('value'):
             return

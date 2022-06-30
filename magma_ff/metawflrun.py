@@ -32,10 +32,12 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
     #end def
 
     def _reset_run(self, shard_name):
-        """
-            reset attributes value for WorkflowRun object in runs
+        """Reset attributes value for WorkflowRun[obj]
+        specified by shard_name.
 
-                shard_name, is the name of the workflow-run to reset
+        :param shard_name: Name of the WorkflowRun[obj] to reset,
+            include shard ('name:shard')
+        :type shard_name: str
         """
         run_obj = self.runs[shard_name]
         # Reset run_obj
@@ -49,11 +51,12 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         #end if
     #end def
 
-    def update_failed_jobs(self): 
-        """
-            checks status for all WorkflowRun objects
-            and adds failed runs to the MetaWorflowRun object
-            return failed_jobs
+    def update_failed_jobs(self):
+        """Check status for all WorkflowRun[obj].
+        Add failed ones to MetaWorflowRun[obj] attribute failed_jobs.
+
+        :return: Failed jobs (failed_jobs)
+        :rtype: list(str)
         """
         if not hasattr(self, 'failed_jobs'):
             self.failed_jobs = []
@@ -67,10 +70,12 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         return self.failed_jobs
     #end def
 
-    def update_cost(self): 
-        """
-            computes an estimated cost of the MetaWorkflowRun. Includes failed and completed jobs.
-            return cost
+    def update_cost(self):
+        """Compute an estimated cost for MetaWorkflowRun[obj].
+        Include failed and completed runs.
+
+        :return: MetaWorkflowRun[obj] cost
+        :rtype: float
         """
         self.cost = 0.0
         #end if

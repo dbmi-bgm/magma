@@ -32,21 +32,21 @@ class InputGenerator(InputGeneratorFromMagma):
     #end def
 
     def input_generator(self, env='env'):
-        """
-            function customized for tibanna and ff portal
-            requires env as an additional input
+        """Function customized for tibanna and portal interaction.
+        Require env as an additional input.
 
-            env, environment to pass to tibanna (e.g. fourfront-cgap)
+        For each WorkflowRun[obj] ready to run:
+            - Update status to 'running'
+            - Add a jobid
+            - Create specific input as dict
+            - Create updated workflow_runs and final_status properties
+            - Yield input, {workflow_runs, final_status}
 
-            return a generator to input for workflow-run in json format
-            and updated workflow-runs and final_status information in json format for patching
-
-            for each workflow-run ready to run:
-                update workflow-run status to running
-                create and add a jobid
-                format input json for tibanna zebra
-                create an updated workflow_runs json for patching
-                yield input json and workflow_runs
+        :param env: Environment to pass to tibanna (e.g. fourfront-cgap)
+        :type env: str
+        :return: Generator to input for WorkflowRun[obj] and updated
+            workflow_runs and final_status information for patching
+        :rtype: generator(dict, dict)
         """
         for run_obj, run_args in self._input():
             jobid = create_jobid()

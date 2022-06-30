@@ -1,68 +1,71 @@
-#!/usr/bin/env python3
-
 ################################################
 #
-#   Function to run meta-workflow-run
+#   Function to run MetaWorkflowRun[portal]
 #       with tibanna and patch metadata
 #
 ################################################
-
-################################################
-#   Libraries
-################################################
-import sys, os
-
-# magma
-from magma_ff.metawfl import MetaWorkflow
-from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff import inputgenerator as ingen
-
-# dcicutils
 from dcicutils import ff_utils
 from tibanna_ffcommon.core import API
+
+from magma_ff import inputgenerator as ingen
+from magma_ff.metawfl import MetaWorkflow
+from magma_ff.metawflrun import MetaWorkflowRun
+from magma_ff.utils import check_status, make_embed_request
+
 
 ################################################
 #   Functions
 ################################################
-################################################
-#   run_metawfr
-################################################
-def run_metawfr(metawfr_uuid, ff_key, verbose=False, sfn='tibanna_zebra', env='fourfront-cgap', maxcount=None):
+def run_metawfr(
+    metawfr_uuid,
+    ff_key,
+    verbose=False,
+    sfn="tibanna_zebra",
+    env="fourfront-cgap",
+    maxcount=None,
+    valid_status=None,
+):
+    """Launch pending runs on MetaWorkflowRun[portal] via tibanna.
+    PATCH MetaWorkflowRun[portal] with updates.
+
+    Can double-check MetaWorkflowRun.final_status is valid since
+    grabbing item from Postgres here.
+
+    :param metawfr_uuid: MetaWorkflowRun[portal] UUID
+    :type metawfr_uuid: str
+    :param ff_key: Portal authorization key
+    :type ff_key: dict
+    :param sfn: Step function name
+    :type sfn: str
+    :param env: Environment name
+    :type env: str
+    :param maxcount: Maximum number of WorkflowRuns to create for the
+        MetaWorkflowRun
+    :type maxcount: int
+    :param verbose: Whether to print the POST response
+    :type verbose: bool
+    :param valid_status: Status considered valid for MetaWorkflowRun
+        final_status property
+    :type valid_status: list(str) or None
     """
-            metawfr_uuid, uuid for meta-workflow-run to run
-    """
-    # Get meta-workflow-run json from the portal
-    run_json = ff_utils.get_metadata(metawfr_uuid, add_on='frame=raw&datastore=database', key=ff_key)
-    # Create MetaWorkflowRun object for meta-workflow-run
-    run_obj = MetaWorkflowRun(run_json)
-
-    # Get meta-workflow json from the portal
-    metawf_uuid = run_json['meta_workflow']
-    wfl_json = ff_utils.get_metadata(metawf_uuid, add_on='frame=raw&datastore=database', key=ff_key)
-    # Create MetaWorkflow object for meta-workflow
-    wfl_obj = MetaWorkflow(wfl_json)
-
-    # Create InputGenerator object
-    ingen_obj = ingen.InputGenerator(wfl_obj, run_obj)
-
-    # Create generator to (input_json, patch_dict) for job that needs to run
-    #   patch_dict
-    #       {'final_status':  'status',
-    #        'workflow_runs': [{wflrun}, ...]}
-    in_gen = ingen_obj.input_generator(env)
-
-    # Start run and patch
-    count = 0
-    for input_json, patch_dict in in_gen:
-        # Start tibanna run
-        API().run_workflow(input_json=input_json, sfn=sfn)
-        # Patch
-        res_post = ff_utils.patch_metadata(patch_dict, metawfr_uuid, key=ff_key)
-        if verbose:
-            print(res_post)
-        #end if
-        count += 1
-        if maxcount and count >= maxcount:
-            break
-    #end for
-#end def
+    perform_action = True
+    embed_fields = ["*", "meta_workflow.*"]
+    meta_workflow_run = make_embed_request(
+        metawfr_uuid, embed_fields, ff_key, single_item=True
+    )
+    meta_workflow = meta_workflow_run.get("meta_workflow")
+    perform_action = check_status(meta_workflow_run, valid_status)
+    if perform_action:
+        run_obj = MetaWorkflowRun(meta_workflow_run)
+        wfl_obj = MetaWorkflow(meta_workflow)
+        ingen_obj = ingen.InputGenerator(wfl_obj, run_obj)
+        in_gen = ingen_obj.input_generator(env)
+        count = 0
+        for input_json, patch_dict in in_gen:
+            API().run_workflow(input_json=input_json, sfn=sfn)  # Start tibanna run
+            res_post = ff_utils.patch_metadata(patch_dict, metawfr_uuid, key=ff_key)
+            if verbose:
+                print(res_post)
+            count += 1
+            if maxcount and count >= maxcount:
+                break

@@ -19,10 +19,10 @@
 
 project = 'magma-suite'
 copyright = '2021, CGAP team, HMS DBMI'
-author = 'Michele Berselli, Soo Lee'
+author = 'Michele Berselli, Doug Rioux, Soo Lee and CGAP team'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.9'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
