@@ -35,10 +35,12 @@ jobs:
 
       - name: Test magma
         env:
-          AWS_ACCESS_KEY_ID: AWS_ACCESS_KEY_ID
-          AWS_SECRET_ACCESS_KEY: AWS_SECRET_ACCESS_KEY
-          AWS_DEFAULT_REGION: eu-west-1
+          AWS_ACCESS_KEY_ID: AWSACCESSKEYID
+          AWS_SECRET_ACCESS_KEY: AWSSECRETACCESSKEY
+          AWS_DEFAULT_REGION: eu-east-1
           AWS_DEFAULT_OUTPUT: json
+          AWS_ACCOUNT_NUMBER: 123456789011
+          TIBANNA_AWS_REGION: us-east-1
         run: |
           make configure
           make build
