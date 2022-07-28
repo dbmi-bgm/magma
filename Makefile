@@ -1,6 +1,7 @@
 .PHONY: build test
 
 configure:
+	pip install --upgrade pip
 	pip install poetry
 
 build:
@@ -10,7 +11,7 @@ update:
 	poetry update
 
 test:
-	pytest -vv
+	poetry run pytest -vv
 
 help:
 	@make info
