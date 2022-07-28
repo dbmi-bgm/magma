@@ -11,7 +11,7 @@ update:
 	poetry update
 
 test:
-	pytest -vv
+	poetry run pytest -vv
 
 help:
 	@make info
