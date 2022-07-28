@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "magma-suite"
-version = "1.0.0"
+version = "1.0.1"
 description = "Collection of tools to manage meta-workflows automation."
 authors = ["Michele Berselli <berselli.michele@gmail.com>", "Doug Rioux", "Soo Lee", "CGAP team"]
 license = "MIT"
@@ -21,8 +21,8 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.9"
-dcicutils = ">=3.5.0"
-tibanna-ff = ">=1.0.0"
+dcicutils = "^4.0.0"
+tibanna-ff = "^1.0.0"
 
 
 [tool.poetry.dev-dependencies]
