@@ -36,6 +36,5 @@ jobs:
       - name: Test magma
         run: |
           make configure
-          make update
           make build
           make test
