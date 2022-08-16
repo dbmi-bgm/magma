@@ -570,6 +570,8 @@ def get_files_for_file_formats(file_items, file_formats, requirements=None):
     """Gather file UUIDs for File items matching the file format
     and meeting the requirements.
 
+    :param file_items: The files to sort through
+    :type file_items: list(dict)
     :param file_formats: Accepted formats of files to get
     :type file_formats: list or set
     :param requirements: Requirements a file must meet in order to

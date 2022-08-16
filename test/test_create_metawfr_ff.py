@@ -503,7 +503,9 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
 }
 VCF_1_UUID = "some_vcf"
 VCF_1_FILE_METADATA = {
-    "uuid": VCF_1_UUID, "file_format": {"file_format": "vcf_gz"}, "foo": "bar"
+    "uuid": VCF_1_UUID,
+    "file_format": {"file_format": "vcf_gz"},
+    "foo": "bar",
 }
 VCF_2_UUID = "some_other_vcf"
 VCF_2_FILE_METADATA = {"uuid": VCF_2_UUID, "file_format": {"file_format": "vcf"}}
@@ -854,7 +856,7 @@ class TestMetaWorkflowRunInput:
         (FILES_MULTIPLE_VCFS, ["bar", "vcf"], None, [SOME_FILE_UUID, VCF_2_UUID]),
         (FILES_MULTIPLE_VCFS, ["vcf_gz"], {"foo": ["value"]}, []),
         (FILES_MULTIPLE_VCFS, ["vcf_gz"], {"foo": ["bar"]}, [VCF_1_UUID]),
-    ]
+    ],
 )
 def test_get_files_for_file_formats(file_items, file_formats, requirements, expected):
     """Test gather of file UUIDs based on file formats and property
@@ -1043,7 +1045,7 @@ class TestInputPropertiesFromSampleProcessing:
             (FILES_NO_VCF, []),
             (FILES_ONE_VCF, [VCF_1_UUID]),
             (FILES_MULTIPLE_VCFS, [VCF_1_UUID, VCF_2_UUID]),
-        ]
+        ],
     )
     def test_input_vcfs(self, files, expected):
         """Test collection of VCFs submitted to SampleProcessing."""
@@ -1171,7 +1173,7 @@ class TestInputPropertiesFromSample:
             ("rcktar_file_names", SAMPLE_3_RCKTARS),
             ("sample_names", SAMPLE_3_NAMES),
             ("input_sample_uuids", SAMPLE_3_UUIDS),
-        ]
+        ],
     )
     def test_attributes(self, attribute, expected, inputs_from_sample):
         """Test properties on class."""
