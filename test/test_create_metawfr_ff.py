@@ -5,6 +5,7 @@ from copy import deepcopy
 import mock
 import pytest
 
+import magma_ff.create_metawfr as create_mwfr_module
 from magma_ff.create_metawfr import (
     InputPropertiesFromSampleProcessing,
     InputPropertiesFromSample,
@@ -13,6 +14,7 @@ from magma_ff.create_metawfr import (
     MetaWorkflowRunFromSample,
     MetaWorkflowRunFromItem,
     MetaWorkflowRunInput,
+    get_files_for_file_formats,
 )
 
 BAM_UUID_1 = "bam_sample_1"
@@ -500,15 +502,16 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     "uuid": META_WORKFLOW_RUN_UUID,
 }
 VCF_1_UUID = "some_vcf"
-VCF_1_FILE_METADATA = {"uuid": VCF_1_UUID, "file_format": {"file_format": "vcf_gz"}}
+VCF_1_FILE_METADATA = {
+    "uuid": VCF_1_UUID, "file_format": {"file_format": "vcf_gz"}, "foo": "bar"
+}
 VCF_2_UUID = "some_other_vcf"
 VCF_2_FILE_METADATA = {"uuid": VCF_2_UUID, "file_format": {"file_format": "vcf"}}
-SOME_FILE_METADATA = {"uuid": "foo", "file_format": {"file_format": "bar"}}
+SOME_FILE_UUID = "some_file_uuid"
+SOME_FILE_METADATA = {"uuid": SOME_FILE_UUID, "file_format": {"file_format": "bar"}}
 FILES_NO_VCF = [SOME_FILE_METADATA]
 FILES_ONE_VCF = [SOME_FILE_METADATA, VCF_1_FILE_METADATA]
-FILES_MULTIPLE_VCFS = [
-    VCF_1_FILE_METADATA, SOME_FILE_METADATA, VCF_2_FILE_METADATA, SOME_FILE_METADATA
-]
+FILES_MULTIPLE_VCFS = [VCF_1_FILE_METADATA, SOME_FILE_METADATA, VCF_2_FILE_METADATA]
 
 
 @pytest.fixture
@@ -842,6 +845,27 @@ class TestMetaWorkflowRunInput:
             assert result == expected
 
 
+@pytest.mark.parametrize(
+    "file_items,file_formats,requirements,expected",
+    [
+        ([], [], None, []),
+        (FILES_MULTIPLE_VCFS, [], None, []),
+        (FILES_MULTIPLE_VCFS, ["vcf_gz"], None, [VCF_1_UUID]),
+        (FILES_MULTIPLE_VCFS, ["bar", "vcf"], None, [SOME_FILE_UUID, VCF_2_UUID]),
+        (FILES_MULTIPLE_VCFS, ["vcf_gz"], {"foo": ["value"]}, []),
+        (FILES_MULTIPLE_VCFS, ["vcf_gz"], {"foo": ["bar"]}, [VCF_1_UUID]),
+    ]
+)
+def test_get_files_for_file_formats(file_items, file_formats, requirements, expected):
+    """Test gather of file UUIDs based on file formats and property
+    requirements.
+    """
+    result = get_files_for_file_formats(
+        file_items, file_formats, requirements=requirements
+    )
+    assert result == expected
+
+
 class TestInputPropertiesFromSampleProcessing:
     @pytest.mark.parametrize(
         "items_to_sort,sample_name_key,proband,mother,father,expected_order",
@@ -1036,55 +1060,82 @@ class TestInputPropertiesFromSampleProcessing:
 
 class TestInputPropertiesFromSample:
     @pytest.mark.parametrize(
-        "sample,file_format,requirements,error,expected",
+        "file_format,requirements,get_files_result,error",
         [
-            ({}, "", None, True, None),
-            (SAMPLE_1, "foo", None, True, None),
-            (SAMPLE_1, "bam", None, False, [BAM_UUID_1]),
-            (SAMPLE_1, "bam", {"foo": ["bar"]}, True, None),
-            (
-                SAMPLE_1,
-                "fastq",
-                None,
-                False,
-                [FASTQ_R1_UUID_1, FASTQ_R1_UUID_1_2, FASTQ_R2_UUID_1],
-            ),
-            (
-                SAMPLE_1,
-                "fastq",
-                {"paired_end": ["1"]},
-                False,
-                [
-                    FASTQ_R1_UUID_1,
-                    FASTQ_R1_UUID_1_2,
-                ],
-            ),
-            (SAMPLE_1, "fastq", {"paired_end": ["2"]}, False, [FASTQ_R2_UUID_1]),
+            ("foo", None, [], True),
+            ("foo", {"fu": ["bur"]}, [], True),
+            ("foo", None, ["some_uuid"], False),
         ],
     )
-    def test_get_processed_files_for_format(
+    def test_get_processed_files_for_file_format(
         self,
-        sample,
         file_format,
         requirements,
+        get_files_result,
         error,
-        expected,
-        inputs_from_sample_processing,
     ):
         """Test retrieval of files of given file format meeting
         requirements from given Sample.processed_files.
         """
-        input_properties = InputPropertiesFromSample(sample)
-        if error:
-            with pytest.raises(MetaWorkflowRunCreationError):
-                input_properties.get_processed_files_for_file_format(
+        input_properties = InputPropertiesFromSample(SAMPLE_1)
+        processed_files = input_properties.sample.get("processed_files")
+        with mock.patch.object(
+            create_mwfr_module,
+            "get_files_for_file_formats",
+            return_value=get_files_result,
+        ) as mock_get_files_for_file_formats:
+            if error:
+                with pytest.raises(MetaWorkflowRunCreationError):
+                    input_properties.get_processed_files_for_file_format(
+                        file_format, requirements
+                    )
+            else:
+                result = input_properties.get_processed_files_for_file_format(
                     file_format, requirements
                 )
-        else:
-            result = input_properties.get_processed_files_for_file_format(
-                file_format, requirements
+                assert result == get_files_result
+            mock_get_files_for_file_formats.assert_called_once_with(
+                processed_files, [file_format], requirements=requirements
             )
-            assert result == expected
+
+    @pytest.mark.parametrize(
+        "file_format,requirements,get_files_result,error",
+        [
+            ("foo", None, [], True),
+            ("foo", {"fu": ["bur"]}, [], True),
+            ("foo", None, ["some_uuid"], False),
+        ],
+    )
+    def test_get_submitted_files_for_file_format(
+        self,
+        file_format,
+        requirements,
+        get_files_result,
+        error,
+    ):
+        """Test retrieval of files of given file format meeting
+        requirements from given Sample.files.
+        """
+        input_properties = InputPropertiesFromSample(SAMPLE_1)
+        submitted_files = input_properties.sample.get("files")
+        with mock.patch.object(
+            create_mwfr_module,
+            "get_files_for_file_formats",
+            return_value=get_files_result,
+        ) as mock_get_files_for_file_formats:
+            if error:
+                with pytest.raises(MetaWorkflowRunCreationError):
+                    input_properties.get_submitted_files_for_file_format(
+                        file_format, requirements
+                    )
+            else:
+                result = input_properties.get_submitted_files_for_file_format(
+                    file_format, requirements
+                )
+                assert result == get_files_result
+            mock_get_files_for_file_formats.assert_called_once_with(
+                submitted_files, [file_format], requirements=requirements
+            )
 
     @pytest.mark.parametrize(
         "sample,paired_end,error,expected",
