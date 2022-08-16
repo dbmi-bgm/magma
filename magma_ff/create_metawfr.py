@@ -211,8 +211,6 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         "samples.files.related_files.file.uuid",
         "samples.files.related_files.file.file_format.file_format",
         "samples.files.related_files.file.paired_end",
-        "samples.cram_files.uuid",
-        "samples.cram_files.file_format.file_format",
         "samples.processed_files.uuid",
         "samples.processed_files.paired_end",
         "samples.processed_files.file_format.file_format",
@@ -309,8 +307,6 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         "files.related_files.file.uuid",
         "files.related_files.file.file_format.file_format",
         "files.related_files.file.paired_end",
-        "cram_files.uuid",
-        "cram_files.file_format.file_format",
         "processed_files.uuid",
         "processed_files.paired_end",
         "processed_files.file_format.file_format",
@@ -952,7 +948,6 @@ class InputPropertiesFromSample:
     BAM_SAMPLE_ID = "bam_sample_id"
     PROCESSED_FILES = "processed_files"
     FILES = "files"
-    CRAM_FILES = "cram_files"
     RELATED_FILES = "related_files"
     FILE_FORMAT = "file_format"
     PAIRED_END = "paired_end"
