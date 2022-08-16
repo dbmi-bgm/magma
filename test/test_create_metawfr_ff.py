@@ -61,8 +61,7 @@ SORTED_SAMPLE_UUIDS = [SAMPLE_UUID_3, SAMPLE_UUID_4, SAMPLE_UUID_2, SAMPLE_UUID_
 SAMPLE_1 = {
     "uuid": SAMPLE_UUID_1,
     "bam_sample_id": SAMPLE_NAME_1,
-    "files": [],
-    "cram_files": [{"uuid": CRAM_UUID_1}],
+    "files": [{"uuid": CRAM_UUID_1, "file_format": {"file_format": "cram"}}],
     "processed_files": [
         {"uuid": BAM_UUID_1, "file_format": {"file_format": "bam"}},
         {"uuid": GVCF_UUID_1, "file_format": {"file_format": "gvcf_gz"}},
@@ -118,8 +117,8 @@ SAMPLE_2 = {
                 }
             ],
         },
+        {"uuid": CRAM_UUID_2, "file_format": {"file_format": "cram"}},
     ],
-    "cram_files": [{"uuid": CRAM_UUID_2}],
     "processed_files": [
         {"uuid": BAM_UUID_2, "file_format": {"file_format": "bam"}},
         {"uuid": GVCF_UUID_2, "file_format": {"file_format": "gvcf_gz"}},
@@ -161,8 +160,8 @@ SAMPLE_3 = {
                 }
             ],
         },
+        {"uuid": CRAM_UUID_3, "file_format": {"file_format": "cram"}},
     ],
-    "cram_files": [{"uuid": CRAM_UUID_3}],
     "processed_files": [
         {"uuid": BAM_UUID_3, "file_format": {"file_format": "bam"}},
         {"uuid": GVCF_UUID_3, "file_format": {"file_format": "gvcf_gz"}},
@@ -202,8 +201,8 @@ SAMPLE_4 = {
                 }
             ],
         },
+        {"uuid": CRAM_UUID_4, "file_format": {"file_format": "cram"}},
     ],
-    "cram_files": [{"uuid": CRAM_UUID_4}],
     "processed_files": [
         {"uuid": BAM_UUID_4, "file_format": {"file_format": "bam"}},
         {"uuid": GVCF_UUID_4, "file_format": {"file_format": "gvcf_gz"}},
@@ -500,6 +499,16 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     ],
     "uuid": META_WORKFLOW_RUN_UUID,
 }
+VCF_1_UUID = "some_vcf"
+VCF_1_FILE_METADATA = {"uuid": VCF_1_UUID, "file_format": {"file_format": "vcf_gz"}}
+VCF_2_UUID = "some_other_vcf"
+VCF_2_FILE_METADATA = {"uuid": VCF_2_UUID, "file_format": {"file_format": "vcf"}}
+SOME_FILE_METADATA = {"uuid": "foo", "file_format": {"file_format": "bar"}}
+FILES_NO_VCF = [SOME_FILE_METADATA]
+FILES_ONE_VCF = [SOME_FILE_METADATA, VCF_1_FILE_METADATA]
+FILES_MULTIPLE_VCFS = [
+    VCF_1_FILE_METADATA, SOME_FILE_METADATA, VCF_2_FILE_METADATA, SOME_FILE_METADATA
+]
 
 
 @pytest.fixture
@@ -1003,6 +1012,27 @@ class TestInputPropertiesFromSampleProcessing:
         result = getattr(inputs_from_sample_processing, attribute)
         assert result == expected
 
+    @pytest.mark.parametrize(
+        "files,expected",
+        [
+            ([], []),
+            (FILES_NO_VCF, []),
+            (FILES_ONE_VCF, [VCF_1_UUID]),
+            (FILES_MULTIPLE_VCFS, [VCF_1_UUID, VCF_2_UUID]),
+        ]
+    )
+    def test_input_vcfs(self, files, expected):
+        """Test collection of VCFs submitted to SampleProcessing."""
+        sample_processing = deepcopy(SAMPLE_PROCESSING)
+        sample_processing["files"] = files
+        input_properties = InputPropertiesFromSampleProcessing(sample_processing)
+        if not expected:
+            with pytest.raises(MetaWorkflowRunCreationError):
+                input_properties.input_vcfs
+        else:
+            result = input_properties.input_vcfs
+            assert result == expected
+
 
 class TestInputPropertiesFromSample:
     @pytest.mark.parametrize(
@@ -1032,7 +1062,7 @@ class TestInputPropertiesFromSample:
             (SAMPLE_1, "fastq", {"paired_end": ["2"]}, False, [FASTQ_R2_UUID_1]),
         ],
     )
-    def test_get_processed_file_for_format(
+    def test_get_processed_files_for_format(
         self,
         sample,
         file_format,
@@ -1047,11 +1077,11 @@ class TestInputPropertiesFromSample:
         input_properties = InputPropertiesFromSample(sample)
         if error:
             with pytest.raises(MetaWorkflowRunCreationError):
-                input_properties.get_processed_file_for_format(
+                input_properties.get_processed_files_for_file_format(
                     file_format, requirements
                 )
         else:
-            result = input_properties.get_processed_file_for_format(
+            result = input_properties.get_processed_files_for_file_format(
                 file_format, requirements
             )
             assert result == expected
