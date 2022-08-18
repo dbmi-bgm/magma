@@ -577,22 +577,17 @@ def get_files_for_file_formats(file_items, file_formats, requirements=None):
     :returns: File UUIDs of files meeting file format and
         requirements
     :rtype: list(str)
-    :raises MetaWorkflowRunCreationError: If no files found to meet
-        file format/other requirements
     """
     result = []
     for file_item in file_items:
-        requirements_met = True
-        if requirements:
-            for key, accepted_values in requirements.items():
-                key_value = file_item.get(key)
-                if key_value not in accepted_values:
-                    requirements_met = False
-                    break
-        if requirements_met is False:
-            continue
         file_item_format = file_item.get(FILE_FORMAT, {}).get(FILE_FORMAT)
         if file_item_format in file_formats:
+            if requirements:
+                if not all(
+                    file_item.get(key) in accepted_values
+                    for key, accepted_values in requirements.items()
+                ):
+                    continue
             file_uuid = file_item.get(UUID)
             result.append(file_uuid)
     return result
