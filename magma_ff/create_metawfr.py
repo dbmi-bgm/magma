@@ -831,7 +831,7 @@ class InputPropertiesFromSampleProcessing:
             meet
         :type requirements: dict
         :returns: UUIDs of found VCF files
-        :rtype: list(str)
+        :rtype: list
         :raises MetaWorkflowRunCreationError: If no VCF files meeting
             requirements found
         """
@@ -844,7 +844,7 @@ class InputPropertiesFromSampleProcessing:
                 f"No file with acceptable VCF file format meeting requirements found on"
                 f" SampleProcessing: {self.sample_processing}"
             )
-        return result
+        return [result]
 
     # SampleProcessing-specific properties
     @property

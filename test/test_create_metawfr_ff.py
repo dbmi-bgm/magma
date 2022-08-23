@@ -1047,9 +1047,9 @@ class TestInputPropertiesFromSampleProcessing:
             ("fastqs_r1", FASTQ_R1_UUIDS),
             ("input_bams", BAM_UUIDS),
             ("input_gvcfs", GVCF_UUIDS),
-            ("input_vcfs", VCF_UUIDS),
-            ("input_snv_vcfs", [SNV_VCF_UUID]),
-            ("input_sv_vcfs", [SV_VCF_UUID]),
+            ("input_vcfs", [VCF_UUIDS]),
+            ("input_snv_vcfs", [[SNV_VCF_UUID]]),
+            ("input_sv_vcfs", [[SV_VCF_UUID]]),
         ],
     )
     def test_attributes(self, attribute, expected, inputs_from_sample_processing):
@@ -1062,7 +1062,7 @@ class TestInputPropertiesFromSampleProcessing:
         [
             (None, []),
             ({"foo": ["bur"]}, []),
-            ({"foo": ["bur"]}, [VCF_UUIDS]),
+            ({"foo": ["bur"]}, VCF_UUIDS),
         ],
     )
     def test_get_submitted_vcf_files(
@@ -1081,7 +1081,7 @@ class TestInputPropertiesFromSampleProcessing:
                 result = inputs_from_sample_processing.get_submitted_vcf_files(
                     requirements
                 )
-                assert result == return_value
+                assert result == [return_value]
             mocked_get_files_for_file_formats.assert_called_once_with(
                 SAMPLE_PROCESSING_SUBMITTED_FILES,
                 InputPropertiesFromSampleProcessing.VCF_FORMATS,
