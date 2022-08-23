@@ -906,19 +906,19 @@ class InputPropertiesFromSampleProcessing:
     @property
     def input_vcfs(self):
         """VCFs submitted to the SampleProcessing."""
-        return self.get_submitted_vcfs()
+        return self.get_submitted_vcf_files()
 
     @property
     def input_snv_vcfs(self):
         """SNV VCFs submitted to the SampleProcessing."""
         requirements = {self.VARIANT_TYPE: [self.SNV_VARIANT_TYPE]}
-        return self.get_submitted_vcfs(requirements=requirements)
+        return self.get_submitted_vcf_files(requirements=requirements)
 
     @property
     def input_sv_vcfs(self):
         """SV VCFs submitted to the SampleProcessing."""
         requirements = {self.VARIANT_TYPE: [self.SV_VARIANT_TYPE]}
-        return self.get_submitted_vcfs(requirements=requirements)
+        return self.get_submitted_vcf_files(requirements=requirements)
 
     # Properties from Samples
     @property

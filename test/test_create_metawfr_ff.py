@@ -1047,6 +1047,9 @@ class TestInputPropertiesFromSampleProcessing:
             ("fastqs_r1", FASTQ_R1_UUIDS),
             ("input_bams", BAM_UUIDS),
             ("input_gvcfs", GVCF_UUIDS),
+            ("input_vcfs", VCF_UUIDS),
+            ("input_snv_vcfs", [SNV_VCF_UUID]),
+            ("input_sv_vcfs", [SV_VCF_UUID]),
         ],
     )
     def test_attributes(self, attribute, expected, inputs_from_sample_processing):
