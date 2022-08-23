@@ -216,6 +216,7 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         "samples.processed_files.file_format.file_format",
         "files.uuid",
         "files.file_format.file_format",
+        "files.variant_type",
     ]
 
     def __init__(
@@ -616,6 +617,9 @@ class InputPropertiesFromSampleProcessing:
     SEX = "sex"
     FILES = "files"
     FILE_FORMAT = "file_format"
+    VARIANT_TYPE = "variant_type"
+    SNV_VARIANT_TYPE = "SNV"
+    SV_VARIANT_TYPE = "SV"
 
     # Class constants
     GENDER = "gender"
@@ -820,6 +824,28 @@ class InputPropertiesFromSampleProcessing:
             result += getattr(sample_input, sample_property)
         return result
 
+    def get_submitted_vcf_files(self, requirements=None):
+        """Collect submitted VCFs meeting given requirements.
+
+        :param requirements: Property requirements for the VCF files to
+            meet
+        :type requirements: dict
+        :returns: UUIDs of found VCF files
+        :rtype: list(str)
+        :raises MetaWorkflowRunCreationError: If no VCF files meeting
+            requirements found
+        """
+        submitted_files = self.sample_processing.get(self.FILES, [])
+        result = get_files_for_file_formats(
+            submitted_files, self.VCF_FORMATS, requirements=requirements
+        )
+        if not result:
+            raise MetaWorkflowRunCreationError(
+                f"No file with acceptable VCF file format meeting requirements found on"
+                f" SampleProcessing: {self.sample_processing}"
+            )
+        return result
+
     # SampleProcessing-specific properties
     @property
     def pedigree(self):
@@ -877,6 +903,23 @@ class InputPropertiesFromSampleProcessing:
                 probands.append(sample_name)
         return probands
 
+    @property
+    def input_vcfs(self):
+        """VCFs submitted to the SampleProcessing."""
+        return self.get_submitted_vcfs()
+
+    @property
+    def input_snv_vcfs(self):
+        """SNV VCFs submitted to the SampleProcessing."""
+        requirements = {self.VARIANT_TYPE: [self.SNV_VARIANT_TYPE]}
+        return self.get_submitted_vcfs(requirements=requirements)
+
+    @property
+    def input_sv_vcfs(self):
+        """SV VCFs submitted to the SampleProcessing."""
+        requirements = {self.VARIANT_TYPE: [self.SV_VARIANT_TYPE]}
+        return self.get_submitted_vcfs(requirements=requirements)
+
     # Properties from Samples
     @property
     def sample_names(self):
@@ -917,18 +960,6 @@ class InputPropertiesFromSampleProcessing:
     def rcktar_file_names(self):
         """Sorted names for created RckTar files input."""
         return self.get_property_from_samples("rcktar_file_names")
-
-    @property
-    def input_vcfs(self):
-        """VCFs submitted to the SampleProcessing."""
-        submitted_files = self.sample_processing.get(self.FILES, [])
-        result = get_files_for_file_formats(submitted_files, self.VCF_FORMATS)
-        if not result:
-            raise MetaWorkflowRunCreationError(
-                f"No file with acceptable VCF file format found on SampleProcessing:"
-                f" {self.sample_processing}"
-            )
-        return result
 
 
 class InputPropertiesFromSample:

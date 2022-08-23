@@ -304,6 +304,24 @@ SORTED_INDICES = [2, 3, 1, 0]
 SORTED_SAMPLES_PEDIGREE = [PEDIGREE_3, CLEANED_PEDIGREE_4, PEDIGREE_2, PEDIGREE_1]
 SORTED_SAMPLES = [SAMPLE_3, SAMPLE_4, SAMPLE_2, SAMPLE_1]
 INPUT_SAMPLES = [sample["uuid"] for sample in SORTED_SAMPLES]
+SNV_VCF_UUID = "some_vcf"
+SNV_VCF_FILE_METADATA = {
+    "uuid": SNV_VCF_UUID,
+    "file_format": {"file_format": "vcf_gz"},
+    "foo": "bar",
+    "variant_type": "SNV",
+}
+SV_VCF_UUID = "some_other_vcf"
+SV_VCF_FILE_METADATA = {
+    "uuid": SV_VCF_UUID,
+    "file_format": {"file_format": "vcf"},
+    "variant_type": "SV",
+}
+VCF_FILES = [SNV_VCF_FILE_METADATA, SV_VCF_FILE_METADATA]
+VCF_UUIDS = [SNV_VCF_UUID, SV_VCF_UUID]
+SOME_FILE_UUID = "some_file_uuid"
+SOME_FILE_METADATA = {"uuid": SOME_FILE_UUID, "file_format": {"file_format": "bar"}}
+SAMPLE_PROCESSING_SUBMITTED_FILES = VCF_FILES + [SOME_FILE_METADATA]
 SAMPLE_PROCESSING_UUID = "some_uuid"
 SAMPLE_PROCESSING_META_WORKFLOW_RUNS = [{"uuid": "run_1"}, {"uuid": "run_2"}]
 SAMPLE_PROCESSING = {
@@ -313,6 +331,7 @@ SAMPLE_PROCESSING = {
     "samples_pedigree": SAMPLES_PEDIGREE,
     "samples": SAMPLES,
     "meta_workflow_runs": SAMPLE_PROCESSING_META_WORKFLOW_RUNS,
+    "files": SAMPLE_PROCESSING_SUBMITTED_FILES,
 }
 ITEM_UUID = "item_uuid"
 ARBITRARY_ITEM = {
@@ -501,19 +520,6 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     ],
     "uuid": META_WORKFLOW_RUN_UUID,
 }
-VCF_1_UUID = "some_vcf"
-VCF_1_FILE_METADATA = {
-    "uuid": VCF_1_UUID,
-    "file_format": {"file_format": "vcf_gz"},
-    "foo": "bar",
-}
-VCF_2_UUID = "some_other_vcf"
-VCF_2_FILE_METADATA = {"uuid": VCF_2_UUID, "file_format": {"file_format": "vcf"}}
-SOME_FILE_UUID = "some_file_uuid"
-SOME_FILE_METADATA = {"uuid": SOME_FILE_UUID, "file_format": {"file_format": "bar"}}
-FILES_NO_VCF = [SOME_FILE_METADATA]
-FILES_ONE_VCF = [SOME_FILE_METADATA, VCF_1_FILE_METADATA]
-FILES_MULTIPLE_VCFS = [VCF_1_FILE_METADATA, SOME_FILE_METADATA, VCF_2_FILE_METADATA]
 
 
 @pytest.fixture
@@ -851,11 +857,21 @@ class TestMetaWorkflowRunInput:
     "file_items,file_formats,requirements,expected",
     [
         ([], [], None, []),
-        (FILES_MULTIPLE_VCFS, [], None, []),
-        (FILES_MULTIPLE_VCFS, ["vcf_gz"], None, [VCF_1_UUID]),
-        (FILES_MULTIPLE_VCFS, ["bar", "vcf"], None, [SOME_FILE_UUID, VCF_2_UUID]),
-        (FILES_MULTIPLE_VCFS, ["vcf_gz"], {"foo": ["value"]}, []),
-        (FILES_MULTIPLE_VCFS, ["vcf_gz"], {"foo": ["bar"]}, [VCF_1_UUID]),
+        (SAMPLE_PROCESSING_SUBMITTED_FILES, [], None, []),
+        (SAMPLE_PROCESSING_SUBMITTED_FILES, ["vcf_gz"], None, [SNV_VCF_UUID]),
+        (
+            SAMPLE_PROCESSING_SUBMITTED_FILES,
+            ["bar", "vcf"],
+            None,
+            [SV_VCF_UUID, SOME_FILE_UUID],
+        ),
+        (SAMPLE_PROCESSING_SUBMITTED_FILES, ["vcf_gz"], {"foo": ["value"]}, []),
+        (
+            SAMPLE_PROCESSING_SUBMITTED_FILES,
+            ["vcf_gz"],
+            {"foo": ["bar"]},
+            [SNV_VCF_UUID],
+        ),
     ],
 )
 def test_get_files_for_file_formats(file_items, file_formats, requirements, expected):
@@ -1039,25 +1055,35 @@ class TestInputPropertiesFromSampleProcessing:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "files,expected",
+        "requirements,return_value",
         [
-            ([], []),
-            (FILES_NO_VCF, []),
-            (FILES_ONE_VCF, [VCF_1_UUID]),
-            (FILES_MULTIPLE_VCFS, [VCF_1_UUID, VCF_2_UUID]),
+            (None, []),
+            ({"foo": ["bur"]}, []),
+            ({"foo": ["bur"]}, [VCF_UUIDS]),
         ],
     )
-    def test_input_vcfs(self, files, expected):
+    def test_get_submitted_vcf_files(
+        self, requirements, return_value, inputs_from_sample_processing
+    ):
         """Test collection of VCFs submitted to SampleProcessing."""
-        sample_processing = deepcopy(SAMPLE_PROCESSING)
-        sample_processing["files"] = files
-        input_properties = InputPropertiesFromSampleProcessing(sample_processing)
-        if not expected:
-            with pytest.raises(MetaWorkflowRunCreationError):
-                input_properties.input_vcfs
-        else:
-            result = input_properties.input_vcfs
-            assert result == expected
+        with mock.patch.object(
+            create_mwfr_module,
+            "get_files_for_file_formats",
+            return_value=return_value,
+        ) as mocked_get_files_for_file_formats:
+            if not return_value:
+                with pytest.raises(MetaWorkflowRunCreationError):
+                    inputs_from_sample_processing.get_submitted_vcf_files(requirements)
+            else:
+                result = inputs_from_sample_processing.get_submitted_vcf_files(
+                    requirements
+                )
+                assert result == return_value
+            mocked_get_files_for_file_formats.assert_called_once_with(
+                SAMPLE_PROCESSING_SUBMITTED_FILES,
+                InputPropertiesFromSampleProcessing.VCF_FORMATS,
+                requirements=requirements,
+            )
 
 
 class TestInputPropertiesFromSample:
