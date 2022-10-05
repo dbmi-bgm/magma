@@ -21,6 +21,10 @@ from magma_ff.metawflrun import MetaWorkflowRun
 from magma_ff.utils import make_embed_request
 
 
+FILE_FORMAT = "file_format"
+UUID = "uuid"
+
+
 ################################################
 #   MetaWorkflowRunCreationError
 ################################################
@@ -207,10 +211,12 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         "samples.files.related_files.file.uuid",
         "samples.files.related_files.file.file_format.file_format",
         "samples.files.related_files.file.paired_end",
-        "samples.cram_files.uuid",
         "samples.processed_files.uuid",
         "samples.processed_files.paired_end",
         "samples.processed_files.file_format.file_format",
+        "files.uuid",
+        "files.file_format.file_format",
+        "files.variant_type",
     ]
 
     def __init__(
@@ -302,7 +308,6 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         "files.related_files.file.uuid",
         "files.related_files.file.file_format.file_format",
         "files.related_files.file.paired_end",
-        "cram_files.uuid",
         "processed_files.uuid",
         "processed_files.paired_end",
         "processed_files.file_format.file_format",
@@ -558,6 +563,37 @@ class MetaWorkflowRunInput:
         return result
 
 
+def get_files_for_file_formats(file_items, file_formats, requirements=None):
+    """Gather file UUIDs for File items matching the file format
+    and meeting the requirements.
+
+    :param file_items: The files to sort through
+    :type file_items: list(dict)
+    :param file_formats: Accepted formats of files to get
+    :type file_formats: list or set
+    :param requirements: Requirements a file must meet in order to
+        be acceptable, as key, value pairs of property names, lists
+        of acceptable property values
+    :type requirements: dict
+    :returns: File UUIDs of files meeting file format and
+        requirements
+    :rtype: list(str)
+    """
+    result = []
+    for file_item in file_items:
+        file_item_format = file_item.get(FILE_FORMAT, {}).get(FILE_FORMAT)
+        if file_item_format in file_formats:
+            if requirements:
+                if not all(
+                    file_item.get(key) in accepted_values
+                    for key, accepted_values in requirements.items()
+                ):
+                    continue
+            file_uuid = file_item.get(UUID)
+            result.append(file_uuid)
+    return result
+
+
 ################################################
 #   InputPropertiesFromSampleProcessing
 ################################################
@@ -579,9 +615,17 @@ class InputPropertiesFromSampleProcessing:
     PARENTS = "parents"
     SAMPLE_NAME = "sample_name"
     SEX = "sex"
+    FILES = "files"
+    FILE_FORMAT = "file_format"
+    VARIANT_TYPE = "variant_type"
+    SNV_VARIANT_TYPE = "SNV"
+    SV_VARIANT_TYPE = "SV"
 
     # Class constants
     GENDER = "gender"
+    VCF_GZ_FORMAT = "vcf_gz"
+    VCF_FORMAT = "vcf"
+    VCF_FORMATS = set([VCF_GZ_FORMAT, VCF_FORMAT])
 
     def __init__(
         self,
@@ -780,6 +824,28 @@ class InputPropertiesFromSampleProcessing:
             result += getattr(sample_input, sample_property)
         return result
 
+    def get_submitted_vcf_files(self, requirements=None):
+        """Collect submitted VCFs meeting given requirements.
+
+        :param requirements: Property requirements for the VCF files to
+            meet
+        :type requirements: dict
+        :returns: UUIDs of found VCF files
+        :rtype: list
+        :raises MetaWorkflowRunCreationError: If no VCF files meeting
+            requirements found
+        """
+        submitted_files = self.sample_processing.get(self.FILES, [])
+        result = get_files_for_file_formats(
+            submitted_files, self.VCF_FORMATS, requirements=requirements
+        )
+        if not result:
+            raise MetaWorkflowRunCreationError(
+                f"No file with acceptable VCF file format meeting requirements found on"
+                f" SampleProcessing: {self.sample_processing}"
+            )
+        return [result]
+
     # SampleProcessing-specific properties
     @property
     def pedigree(self):
@@ -837,6 +903,23 @@ class InputPropertiesFromSampleProcessing:
                 probands.append(sample_name)
         return probands
 
+    @property
+    def input_vcfs(self):
+        """VCFs submitted to the SampleProcessing."""
+        return self.get_submitted_vcf_files()
+
+    @property
+    def input_snv_vcfs(self):
+        """SNV VCFs submitted to the SampleProcessing."""
+        requirements = {self.VARIANT_TYPE: [self.SNV_VARIANT_TYPE]}
+        return self.get_submitted_vcf_files(requirements=requirements)
+
+    @property
+    def input_sv_vcfs(self):
+        """SV VCFs submitted to the SampleProcessing."""
+        requirements = {self.VARIANT_TYPE: [self.SV_VARIANT_TYPE]}
+        return self.get_submitted_vcf_files(requirements=requirements)
+
     # Properties from Samples
     @property
     def sample_names(self):
@@ -891,7 +974,6 @@ class InputPropertiesFromSample:
     BAM_SAMPLE_ID = "bam_sample_id"
     PROCESSED_FILES = "processed_files"
     FILES = "files"
-    CRAM_FILES = "cram_files"
     RELATED_FILES = "related_files"
     FILE_FORMAT = "file_format"
     PAIRED_END = "paired_end"
@@ -918,7 +1000,7 @@ class InputPropertiesFromSample:
         """
         self.sample = sample
 
-    def get_processed_file_for_format(self, file_format, requirements=None):
+    def get_processed_files_for_file_format(self, file_format, requirements=None):
         """Get all files matching given file format on given sample
         that meet the given requirements.
 
@@ -928,30 +1010,40 @@ class InputPropertiesFromSample:
             be acceptable, as key, value pairs of property names, lists
             of acceptable property values
         :type requirements: dict
-        :return: Processed file UUIDs of files meeting file format and
+        :returns: Processed file UUIDs of files meeting file format and
             requirements
         :rtype: list(str)
-        :raises MetaWorkflowRunCreationError: If no files found to meet
-            file format/other requirements
         """
         result = []
         processed_files = self.sample.get(self.PROCESSED_FILES, [])
-        for processed_file in processed_files:
-            requirements_met = True
-            if requirements:
-                for key, accepted_values in requirements.items():
-                    key_value = processed_file.get(key)
-                    if key_value not in accepted_values:
-                        requirements_met = False
-                        break
-            if requirements_met is False:
-                continue
-            processed_file_format = processed_file.get(self.FILE_FORMAT, {}).get(
-                self.FILE_FORMAT
+        result = get_files_for_file_formats(
+            processed_files, [file_format], requirements=requirements
+        )
+        if not result:
+            raise MetaWorkflowRunCreationError(
+                "No file with format %s meeting requirements %s found on Sample: %s"
+                % (file_format, requirements, self.sample)
             )
-            if processed_file_format == file_format:
-                file_uuid = processed_file.get(self.UUID)
-                result.append(file_uuid)
+        return result
+
+    def get_submitted_files_for_file_format(self, file_format, requirements=None):
+        """Get all submitted file UUIDs matching file format and meeting
+        requirements.
+
+        :param file_format: Format of files to get
+        :type file_format: str
+        :param requirements: Requirements a file must meet in order to
+            be acceptable, as key, value pairs of property names, lists
+            of acceptable property values
+        :type requirements: dict
+        :returns: Submitted file UUIDs of files meeting file format and
+            requirements
+        :rtype: list(str)
+        """
+        submitted_files = self.sample.get(self.FILES, [])
+        result = get_files_for_file_formats(
+            submitted_files, [file_format], requirements=requirements
+        )
         if not result:
             raise MetaWorkflowRunCreationError(
                 "No file with format %s meeting requirements %s found on Sample: %s"
@@ -1019,35 +1111,20 @@ class InputPropertiesFromSample:
 
         if not paired_end_fastqs:  # May have come from CRAM conversion
             requirements = {self.PAIRED_END: [paired_end]}
-            paired_end_fastqs = self.get_processed_file_for_format(
+            paired_end_fastqs = self.get_processed_files_for_file_format(
                 self.FASTQ_FORMAT, requirements=requirements
             )
         return paired_end_fastqs
 
     @property
     def input_crams(self):
-        """Get CRAM files for each Sample.
-
-        :return: CRAM UUIDs for all CRAM files found on all Samples
-        :rtype: dict
-        :raises MetaWorkflowRunCreationError: If no CRAM files could be
-            found on a Sample
-        """
-        cram_uuids = []
-        cram_files = self.sample.get(self.CRAM_FILES)
-        if cram_files is None:
-            raise MetaWorkflowRunCreationError(
-                "Tried to grab CRAM files from a Sample lacking them: %s" % self.sample
-            )
-        for cram_file in cram_files:
-            cram_uuid = cram_file.get(self.UUID)
-            cram_uuids.append(cram_uuid)
-        return [cram_uuids]
+        """CRAM file input."""
+        return [self.get_submitted_files_for_file_format(self.CRAM_FORMAT)]
 
     @property
     def input_gvcfs(self):
         """gVCF file input."""
-        return [self.get_processed_file_for_format(self.GVCF_FORMAT)]
+        return [self.get_processed_files_for_file_format(self.GVCF_FORMAT)]
 
     @property
     def fastqs_r1(self):
@@ -1074,7 +1151,7 @@ class InputPropertiesFromSample:
     @property
     def input_bams(self):
         """BAM file input."""
-        return [self.get_processed_file_for_format(self.BAM_FORMAT)]
+        return [self.get_processed_files_for_file_format(self.BAM_FORMAT)]
 
     @property
     def rcktar_file_names(self):
