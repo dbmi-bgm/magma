@@ -10,6 +10,9 @@
 ################################################
 from magma.utils import check_presence_of_attributes, set_list_attributes, generate_ordered_steps_list
 
+
+#TODO: make parent class maybe
+
 ################################################
 #   MetaWorkflowStep
 ################################################
@@ -105,7 +108,8 @@ class MetaWorkflowHandler(object):
 
         # order the meta_workflows list based on dependencies
         ordered_meta_workflows = generate_ordered_steps_list(self.meta_workflows, "name", "dependencies")
-        self.meta_workflows = ordered_meta_workflows
+        self.ordered_meta_workflows = ordered_meta_workflows
+        #TODO: should i make this a new calculated attribute, rather than redefining? YES
 
         # create MetaWorkflow object for each metaworkflow step in meta_workflows
         #TODO: do in magma-ff? because requires pulling metadata using UUID
