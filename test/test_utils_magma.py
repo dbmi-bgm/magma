@@ -5,6 +5,7 @@ import pytest
 from copy import deepcopy
 
 from magma.utils import *
+
 # from magma.metawfl_handler import MetaWorkflowStep, MetaWorkflowHandler
 
 #################################################################
@@ -12,10 +13,11 @@ from magma.utils import *
 #################################################################
 
 # dummy class for creating simple objects
-class Tester:
+class ClassTester:
     """
     Class for creation of simple objects, based on an input dictionary
     """
+
     def __init__(self, input_dict):
         """
         Constructor method, initialize object and attributes.
@@ -26,127 +28,122 @@ class Tester:
         for key in input_dict:
             setattr(self, key, input_dict[key])
 
-# Stop pytest from collecting class Tester as test (prevent warning)
-Tester.__test__ = False
-
-#TODO: is there a way to functionalize this?
-# input dicts to create Tester objects
+# TODO: is there a way to functionalize this?
+# input dicts to create ClassTester objects
 INPUT_DICT_SINGLE_SIMPLE_ATTR = {"test_0": 0}
+INPUT_DICT_SINGLE_SIMPLE_ATTR_1 = {"test_1": 0}
+INPUT_DICT_SINGLE_SIMPLE_ATTR_2 = {"test_2": 0}
 INPUT_DICT_SEVERAL_SIMPLE_ATTRS = {"test_0": 0, "test_1": 1, "test_2": 2}
 INPUT_DICT_SINGLE_EMPTY_LIST_ATTR = {"list_empty_0": []}
-INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS = {"list_empty_0": [], "list_empty_1": [], "list_empty_2": []}
+INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS = {
+    "list_empty_0": [],
+    "list_empty_1": [],
+    "list_empty_2": [],
+}
 INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR = {"list_simple_0": [1, 2, 3]}
-INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS = {"list_simple_0": [1, 2, 3], "list_simple_1": ["a", "b", "c"]}
+INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS = {
+    "list_simple_0": [1, 2, 3],
+    "list_simple_1": ["a", "b", "c"],
+}
 INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR_W_DUP = {"list_simple_0": [1, 2, 3, 4, 3]}
-INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = {"list_simple_0": [1, "a", 3, 3], "list_simple_1": ["a", "b", "c"], "list_simple_2": ["c", 1, "c"]}
+INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = {
+    "list_simple_0": [1, "a", 3, 3],
+    "list_simple_1": ["a", "b", "c"],
+    "list_simple_2": ["c", 1, "c"],
+}
+INPUT_DICT_SINGLE_LIST_OF_DICTS = {
+    "list_of_dicts": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+    ]
+}
+INPUT_DICT_SEVERAL_LISTS_OF_DICTS = {
+    "list_of_dicts_0": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+    ],
+    "list_of_dicts_1": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+    ],
+}
+INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP = {
+    "list_of_dicts": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+    ]
+}
+INPUT_DICT_SEVERAL_LISTS_OF_DICTS_W_DUP = {
+    "list_of_dicts_0": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+    ],
+    "list_of_dicts_1": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+    ],
+    "list_of_dicts_2": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+    ],
+    "list_of_dicts_3": [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+    ],
+}
 
-# Tester objects
-TESTER_OBJ_SINGLE_SIMPLE_ATTR = Tester(INPUT_DICT_SINGLE_SIMPLE_ATTR)
-TESTER_OBJ_SEVERAL_SIMPLE_ATTRS = Tester(INPUT_DICT_SEVERAL_SIMPLE_ATTRS)
-TESTER_OBJ_SINGLE_EMPTY_LIST_ATTR = Tester(INPUT_DICT_SINGLE_EMPTY_LIST_ATTR)
-TESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS = Tester(INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS)
-TESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR = Tester(INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR)
-TESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS = Tester(INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS)
-TESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP = Tester(INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR_W_DUP)
-TESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = Tester(INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP)
 
-# TITLE = "Test MetaWorkflow Handler"
-# NAME = "test_metawf_handler"
-# VERSION = "v1"
-# DESCRIPTION = "Test metaworkflow handler"
-# PROJECT = "test_project"
-# INSTITUTION = "test_institution"
-# MWFH_UUID_0 =  "test_mwfh_uuid_0"
-# ALIASES = ["cgap:test_metawf_handler"]
-# MWF_UUID_0 = "test_mwf_uuid_0"
-# MWF_UUID_1 = "test_mwf_uuid_1"
-# MWF_UUID_2 = "test_mwf_uuid_2"
-# MWF_UUID_3 = "test_mwf_uuid_3"
-# MWF_UUID_4 = "test_mwf_uuid_4"
-# MWF_UUID_5 = "test_mwf_uuid_5"
-# MWF_NAME_A = "A"
-# MWF_NAME_B = "B"
-# MWF_NAME_C = "C"
-# MWF_NAME_D = "D"
-# MWF_NAME_E = "E"
-# MWF_NAME_F = "F"
-
-# ITEMS_FOR_CREATION_PROPERTY_TRACE_0 = "sample_processing.samples"
-# ITEMS_FOR_CREATION_UUID_0 = "test_sample_uuid_0"
-# ITEMS_FOR_CREATION_UUID_1 = "test_sample_uuid_1"
-
-
-
-# SIMPLE_META_WORKFLOW_DICT_0 = {
-#     "meta_workflow": MWF_UUID_0,
-#     "name": MWF_NAME_A
-# }
-# SIMPLE_META_WORKFLOW_DICT_1 = {
-#     "meta_workflow": MWF_UUID_1,
-#     "name": MWF_NAME_B
-# }
-# SIMPLE_META_WORKFLOW_DICT_2 = {
-#     "meta_workflow": MWF_UUID_2,
-#     "name": MWF_NAME_C
-# }
-
-# META_WORKFLOWS_ARRAY_SINGLE_ITEM = [SIMPLE_META_WORKFLOW_DICT_0]
-# SINGLE_ITEM_META_WORKFLOWS_DICT = {"meta_workflows": META_WORKFLOWS_ARRAY_SINGLE_ITEM}
-
-# META_WORKFLOWS_ARRAY_SEVERAL_ITEMS = [SIMPLE_META_WORKFLOW_DICT_0, SIMPLE_META_WORKFLOW_DICT_1, SIMPLE_META_WORKFLOW_DICT_2]
-# SEVERAL_ITEMS_META_WORKFLOWS_DICT = {"meta_workflows": META_WORKFLOWS_ARRAY_SEVERAL_ITEMS}
-
-# META_WORKFLOWS_ARRAY_SEVERAL_ITEMS_W_DUPLICATES = [SIMPLE_META_WORKFLOW_DICT_0, SIMPLE_META_WORKFLOW_DICT_2, SIMPLE_META_WORKFLOW_DICT_1, SIMPLE_META_WORKFLOW_DICT_2]
-# SEVERAL_ITEMS_W_DUPLICATES_META_WORKFLOWS_DICT = {"meta_workflows": META_WORKFLOWS_ARRAY_SEVERAL_ITEMS_W_DUPLICATES}
-
-# EMPTY_META_WORKFLOWS_DICT = {"meta_workflows": []}
-
-# SIMPLE_MWFH_DICT = {
-#         "title": TITLE,
-#         "name": NAME,
-#         "version": VERSION,
-#         "description": DESCRIPTION,
-#         "project": PROJECT,
-#         "institution": INSTITUTION,
-#         "uuid": MWFH_UUID_0,
-#         "aliases": ALIASES
-#     }
-
-# SIMPLE_MWFH_DICT_WITH_EMPTY_META_WORKFLOWS_LIST = deepcopy(SIMPLE_MWFH_DICT)
-# SIMPLE_MWFH_DICT_WITH_EMPTY_META_WORKFLOWS_LIST.update(EMPTY_META_WORKFLOWS_DICT)
-
-# SIMPLE_MWFH_DICT_WITH_SINGLE_ITEM_META_WORKFLOWS_LIST = deepcopy(SIMPLE_MWFH_DICT)
-# SIMPLE_MWFH_DICT_WITH_SINGLE_ITEM_META_WORKFLOWS_LIST.update(SINGLE_ITEM_META_WORKFLOWS_DICT)
-
-# SIMPLE_MWFH_DICT_WITH_SEVERAL_ITEMS_META_WORKFLOWS_LIST = deepcopy(SIMPLE_MWFH_DICT)
-# SIMPLE_MWFH_DICT_WITH_SEVERAL_ITEMS_META_WORKFLOWS_LIST.update(SEVERAL_ITEMS_META_WORKFLOWS_DICT)
-
-# SIMPLE_MWFH_DICT_WITH_SEVERAL_ITEMS_W_DUPLICATES_META_WORKFLOWS_LIST = deepcopy(SIMPLE_MWFH_DICT)
-# SIMPLE_MWFH_DICT_WITH_SEVERAL_ITEMS_W_DUPLICATES_META_WORKFLOWS_LIST.update(SEVERAL_ITEMS_W_DUPLICATES_META_WORKFLOWS_DICT)
-
-# # import pdb; pdb.set_trace()
-# SIMPLE_MWFH_OBJECT_WITH_EMPTY_META_WORKFLOWS_LIST = MetaWorkflowHandler(SIMPLE_MWFH_DICT_WITH_EMPTY_META_WORKFLOWS_LIST)
-# SIMPLE_MWFH_OBJECT_WITH_SINGLE_ITEM_META_WORKFLOWS_LIST = MetaWorkflowHandler(SIMPLE_MWFH_DICT_WITH_SINGLE_ITEM_META_WORKFLOWS_LIST)
-# SIMPLE_MWFH_OBJECT_WITH_SEVERAL_ITEMS_META_WORKFLOWS_LIST = MetaWorkflowHandler(SIMPLE_MWFH_DICT_WITH_SEVERAL_ITEMS_META_WORKFLOWS_LIST)
-# SIMPLE_MWFH_OBJECT_WITH_SEVERAL_ITEMS_W_DUPLICATES_META_WORKFLOWS_LIST = MetaWorkflowHandler(SIMPLE_MWFH_DICT_WITH_SEVERAL_ITEMS_W_DUPLICATES_META_WORKFLOWS_LIST)
+# ClassTester objects
+ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR = ClassTester(INPUT_DICT_SINGLE_SIMPLE_ATTR)
+ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS = ClassTester(INPUT_DICT_SEVERAL_SIMPLE_ATTRS)
+ClassTESTER_OBJ_SINGLE_EMPTY_LIST_ATTR = ClassTester(INPUT_DICT_SINGLE_EMPTY_LIST_ATTR)
+ClassTESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS = ClassTester(INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS)
+ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR = ClassTester(INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR)
+ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS = ClassTester(INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS)
+ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP = ClassTester(
+    INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR_W_DUP
+)
+ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = ClassTester(
+    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP
+)
+ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS = ClassTester(INPUT_DICT_SINGLE_LIST_OF_DICTS)
+ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS = ClassTester(INPUT_DICT_SEVERAL_LISTS_OF_DICTS)
+ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS_W_DUP = ClassTester(INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP)
+ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP = ClassTester(
+    INPUT_DICT_SEVERAL_LISTS_OF_DICTS_W_DUP
+)
 
 #################################################################
 #   Tests
 #################################################################
+
 
 @pytest.mark.parametrize(
     "variable, intended_type, return_value",
     [
         (2, int, True),
         (-2, int, True),
-        (float('inf'), float, True),
+        (float("inf"), float, True),
         (complex(1, 1.0), complex, True),
         (True, bool, True),
         (False, bool, True),
         (None, type(None), True),
         (None, object, True),
-        ('a', str, True),
-        ('a', object, True),
+        ("a", str, True),
+        ("a", object, True),
         ("test", str, True),
         ("test", object, True),
         ((1, 2), tuple, True),
@@ -162,17 +159,17 @@ TESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = Tester(INPUT_DICT_SEVERAL_SIMPLE_LI
         ({"hi": 1}, dict, True),
         ({"hi": 1}, object, True),
         (2, list, False),
-        (float('inf'), int, False),
+        (float("inf"), int, False),
         (complex(1, 1.0), float, False),
         (True, str, False),
         (None, bool, False),
-        ('a', int, False),
+        ("a", int, False),
         ("test", list, False),
         ((1, 2), set, False),
         (set(), tuple, False),
         ([1, "test"], dict, False),
-        ({"hi": 1}, list, False)
-    ]
+        ({"hi": 1}, list, False),
+    ],
 )
 def test_check_list_elements_type(variable, intended_type, return_value):
     """
@@ -181,7 +178,6 @@ def test_check_list_elements_type(variable, intended_type, return_value):
     result = check_variable_type(variable, intended_type)
     assert result == return_value
 
-   
 
 class TestCheckListElementsType:
     @pytest.mark.parametrize(
@@ -198,10 +194,12 @@ class TestCheckListElementsType:
             ([["1", "2", "3", "4", "5"], ["6"]], str, False),
             ([["1", "2", "3", "4", "5"], "6"], list, False),
             ([None, "test"], str, False),
-            ([1, "test"], int, False)
-        ]
+            ([1, "test"], int, False),
+        ],
     )
-    def test_check_list_elements_type_no_errors(self, list_to_check, intended_type, return_value):
+    def test_check_list_elements_type_no_errors(
+        self, list_to_check, intended_type, return_value
+    ):
         """
         Test for function checking that all elements of a list are of a specified type,
         no errors raised.
@@ -210,37 +208,22 @@ class TestCheckListElementsType:
         assert result == return_value
 
 
-    @pytest.mark.parametrize(
-        "list_to_check, intended_type",
-        [
-            (1, str),
-            ("test", list),
-            (None, str)
-        ]
-    )
-    def test_check_list_elements_type_typeerror(self, list_to_check, intended_type):
-        """
-        Test for function checking if all elements of a list are strings,
-        TypeError raised when list elements are not of the intended type.
-        """
-        with pytest.raises(TypeError) as type_err_info:
-            check_list_elements_type(list_to_check, intended_type)
-        assert str(type_err_info.value) == "list_to_check argument must be of type {0}".format(str(list))
-
 class TestCheckPresenceOfAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_check",
         [
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"])
-        ]
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
+        ],
     )
-    def test_check_presence_of_attributes_no_errors(self, input_object, attributes_to_check):
+    def test_check_presence_of_attributes_no_errors(
+        self, input_object, attributes_to_check
+    ):
         """
         Test for function checking that specified attributes are part of a given object,
         no errors raised.
@@ -251,31 +234,26 @@ class TestCheckPresenceOfAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_check",
         [
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, 1),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, "incorrect_input_type"),
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test", 4])
-        ]
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present"]),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present_0", "not_present_1"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "not_present"]),
+            (
+                ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
+                ["test_0", "not_present", "test_1", "test_2"],
+            ),
+            (
+                ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
+                ["test_0", "not_present_0", "test_2", "not_present_1"],
+            ),
+            (
+                ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
+                ["not_present", "test_0", "test_2", "test_1"],
+            ),
+        ],
     )
-    def test_check_presence_of_attributes_type_errors(self, input_object, attributes_to_check):
-        """
-        Test for function checking that specified attributes are part of a given object,
-        TypeError raised because of incorrect argument type.
-        """
-        with pytest.raises(TypeError):
-            check_presence_of_attributes(input_object, attributes_to_check)
-
-    @pytest.mark.parametrize(
-        "input_object, attributes_to_check",
-        [
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present"]),
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present_0", "not_present_1"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "not_present"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "not_present", "test_1", "test_2"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "not_present_0", "test_2", "not_present_1"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["not_present", "test_0", "test_2", "test_1"])
-        ]
-    )
-    def test_check_presence_of_attributes_value_errors(self, input_object, attributes_to_check):
+    def test_check_presence_of_attributes_value_errors(
+        self, input_object, attributes_to_check
+    ):
         """
         Test for function checking that specified attributes are part of a given object,
         ValueError raised.
@@ -284,20 +262,75 @@ class TestCheckPresenceOfAttributes:
             check_presence_of_attributes(input_object, attributes_to_check)
         assert "Object validation error" in str(value_err_info.value)
 
+
+class TestCheckPresenceOfKey:
+    @pytest.mark.parametrize(
+        "list_of_dicts, key_to_check, return_value",
+        [
+            ([], None, True),
+            ([], "key", True),  # kind of weird edge case, but not a biggie (TODO:)
+            (
+                [
+                    INPUT_DICT_SINGLE_EMPTY_LIST_ATTR,
+                    INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS,
+                ],
+                "list_empty_0",
+                True,
+            ),
+            (
+                [
+                    INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR,
+                    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS,
+                    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS,
+                    INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR_W_DUP,
+                    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP,
+                ],
+                "list_simple_0",
+                True,
+            ),
+            (
+                [INPUT_DICT_SINGLE_LIST_OF_DICTS],
+                "list_of_dicts_0",
+                False,
+            ),
+            (
+                [
+                    INPUT_DICT_SINGLE_LIST_OF_DICTS,
+                    INPUT_DICT_SEVERAL_LISTS_OF_DICTS,
+                    INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP,
+                ],
+                "list_of_dicts",
+                False,
+            ),
+        ],
+    )
+    def test_check_presence_of_key_no_errors(
+        self, list_of_dicts, key_to_check, return_value
+    ):
+        """
+        Test for function checking that all dictionaries in a given list have the
+        specified key, no errors raised.
+        """
+        result = check_presence_of_key(list_of_dicts, key_to_check)
+        assert result == return_value
+
+
 class TestSetListAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_set",
         [
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"])
-        ]
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
+        ],
     )
-    def test_set_list_attributes_of_existing_nonlist_attributes(self, input_object, attributes_to_set):
+    def test_set_list_attributes_of_existing_nonlist_attributes(
+        self, input_object, attributes_to_set
+    ):
         """
         Test for function that gets rid of duplicates within object attributes that are lists,
         or sets attributes to empty list if not present within the object.
@@ -306,36 +339,56 @@ class TestSetListAttributes:
         original_object = deepcopy(input_object)
         result = set_list_attributes(input_object, attributes_to_set)
         assert result == None
-        assert vars(input_object) == vars(original_object) # no attributes changed
-
-    @pytest.mark.parametrize(
-        "input_object, attributes_to_set",
-        [
-            (TESTER_OBJ_SINGLE_SIMPLE_ATTR, 1),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, "incorrect_input_type"),
-            (TESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["hi", 2])
-        ]
-    )
-    def test_set_list_attributes_type_errors(self, input_object, attributes_to_set):
-        """
-        Test for function setting list attributes,
-        TypeError raised because of incorrect argument type.
-        """
-        with pytest.raises(TypeError):
-            set_list_attributes(input_object, attributes_to_set)
+        assert vars(input_object) == vars(original_object)  # no attributes changed
 
     @pytest.mark.parametrize(
         "input_object, attributes_to_set, orig_lengths, reset_lengths",
         [
-            (TESTER_OBJ_SINGLE_EMPTY_LIST_ATTR, ["list_empty_0"], [0], [0]),
-            (TESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS, ["list_empty_0", "list_empty_1", "list_empty_2"], [0, 0, 0], [0, 0, 0]),
-            (TESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR, ["list_simple_0"], [3], [3]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS, ["list_simple_0", "list_simple_1"], [3, 3], [3, 3]),
-            (TESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP, ["list_simple_0"], [5], [4]),
-            (TESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP, ["list_simple_0", "list_simple_2", "list_simple_1"], [4, 3, 3], [3, 2, 3])
-        ]
+            (ClassTESTER_OBJ_SINGLE_EMPTY_LIST_ATTR, ["list_empty_0"], [0], [0]),
+            (
+                ClassTESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS,
+                ["list_empty_0", "list_empty_1", "list_empty_2"],
+                [0, 0, 0],
+                [0, 0, 0],
+            ),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR, ["list_simple_0"], [3], [3]),
+            (
+                ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS,
+                ["list_simple_0", "list_simple_1"],
+                [3, 3],
+                [3, 3],
+            ),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP, ["list_simple_0"], [5], [4]),
+            (
+                ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP,
+                ["list_simple_0", "list_simple_2", "list_simple_1"],
+                [4, 3, 3],
+                [3, 2, 3],
+            ),
+            (ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS, ["list_of_dicts"], [3], [3]),
+            (
+                ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS,
+                ["list_of_dicts_1", "list_of_dicts_0"],
+                [3, 3],
+                [3, 3],
+            ),
+            (ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS_W_DUP, ["list_of_dicts"], [6], [3]),
+            (
+                ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP,
+                [
+                    "list_of_dicts_1",
+                    "list_of_dicts_0",
+                    "list_of_dicts_2",
+                    "list_of_dicts_3",
+                ],
+                [3, 3, 5, 3],
+                [3, 3, 2, 1],
+            ),
+        ],
     )
-    def test_set_list_attributes_of_existing_list_attributes(self, input_object, attributes_to_set, orig_lengths, reset_lengths):
+    def test_set_list_attributes_of_existing_list_attributes(
+        self, input_object, attributes_to_set, orig_lengths, reset_lengths
+    ):
         """
         Test for function that gets rid of duplicates within object attributes that are lists,
         or sets attributes to empty list if not present within the object.
@@ -343,8 +396,8 @@ class TestSetListAttributes:
         """
         # import pdb; pdb.set_trace()
         # check original length of attributes_to_set
-        for ind, attribute in enumerate(attributes_to_set):
-            assert len(getattr(input_object, attribute)) == orig_lengths[ind]
+        for idx, attribute in enumerate(attributes_to_set):
+            assert len(getattr(input_object, attribute)) == orig_lengths[idx]
 
         result = set_list_attributes(input_object, attributes_to_set)
 
@@ -354,7 +407,42 @@ class TestSetListAttributes:
 
         assert result == None
 
+    @pytest.mark.parametrize(
+        "input_object, attributes_to_set, num_added_attributes",
+        [
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"], 0),
+            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_1"], 1),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_2", "test_3"], 1),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_5", "test_0", "test_4"], 2),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"], 0),
+            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"], 0),
+        ],
+    )
+    def test_set_list_attributes_of_nonexistent_attributes(
+        self, input_object, attributes_to_set, num_added_attributes
+    ):
+        """
+        Test for function that gets rid of duplicates within object attributes that are lists,
+        or sets attributes to empty list if not present within the object.
+        Cases where the attributes to set are nonexistent, so they are added with the value [].
+        """
+        # TODO: this changes the objects permanently since I'm setting attrs
+        # but I don't think this will affect further testing (specifically, fourth example)
 
-# #     # then do non lists
-# #     # then do nonexistent
-# #     # then do mixed
+        original_attributes_set = set(dir(input_object))
+        num_original_attributes = len(original_attributes_set)
+
+        result = set_list_attributes(input_object, attributes_to_set)
+        assert result == None
+
+        reset_attributes_set = set(dir(input_object))
+        num_reset_attributes = len(reset_attributes_set)
+
+        assert num_added_attributes == (num_reset_attributes - num_original_attributes)
+
+        added_attributes = reset_attributes_set.difference(original_attributes_set)
+        for attribute in added_attributes:
+            assert attribute in attributes_to_set
+            assert getattr(input_object, attribute) == []
+
+    # TODO: add a test for mixed cases? (nonexistent + lists + empties, etc.)
