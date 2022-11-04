@@ -8,7 +8,8 @@
 ################################################
 #   TODO: functions for dcic utils -- move later
 ################################################
-from magma.utils import check_presence_of_attributes, set_list_attributes, generate_ordered_steps_list
+from magma.utils import check_presence_of_attributes, set_list_attributes
+from magma.topological_sort import generate_ordered_steps_list
 
 
 #TODO: make parent class maybe

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #################################################################
 #   Libraries
 #################################################################
@@ -5,8 +7,6 @@ import pytest
 from copy import deepcopy
 
 from magma.utils import *
-
-# from magma.metawfl_handler import MetaWorkflowStep, MetaWorkflowHandler
 
 #################################################################
 #   Vars
@@ -51,85 +51,80 @@ INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = {
     "list_simple_1": ["a", "b", "c"],
     "list_simple_2": ["c", 1, "c"],
 }
-INPUT_DICT_SINGLE_LIST_OF_DICTS = {
-    "list_of_dicts": [
+
+LIST_OF_EMPTY_DICTS = [INPUT_DICT_SINGLE_EMPTY_LIST_ATTR, INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS]
+LIST_OF_SIMPLE_ATTR_DICTS = [
         INPUT_DICT_SINGLE_SIMPLE_ATTR,
         INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
         INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
     ]
+LIST_OF_SIMPLE_ATTR_DICTS_REORDERED = [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+    ]
+LIST_OF_SIMPLE_ATTR_DICTS_W_DUP = [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+    ]
+LIST_OF_SIMPLE_ATTR_DICTS_W_DUP_2 = [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR,
+    ]
+LIST_OF_SIMPLE_ATTR_DICTS_W_DUP_3 = [
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
+    ]
+
+INPUT_DICT_SINGLE_LIST_OF_DICTS = {
+    "list_of_dicts": LIST_OF_SIMPLE_ATTR_DICTS
 }
 INPUT_DICT_SEVERAL_LISTS_OF_DICTS = {
-    "list_of_dicts_0": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-    ],
-    "list_of_dicts_1": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
-    ],
+    "list_of_dicts_0": LIST_OF_SIMPLE_ATTR_DICTS,
+    "list_of_dicts_1": LIST_OF_SIMPLE_ATTR_DICTS_REORDERED,
 }
 INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP = {
-    "list_of_dicts": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-    ]
+    "list_of_dicts": LIST_OF_SIMPLE_ATTR_DICTS_W_DUP
 }
 INPUT_DICT_SEVERAL_LISTS_OF_DICTS_W_DUP = {
-    "list_of_dicts_0": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-    ],
-    "list_of_dicts_1": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
-    ],
-    "list_of_dicts_2": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_1,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR,
-    ],
-    "list_of_dicts_3": [
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-        INPUT_DICT_SINGLE_SIMPLE_ATTR_2,
-    ],
+    "list_of_dicts_0": LIST_OF_SIMPLE_ATTR_DICTS,
+    "list_of_dicts_1": LIST_OF_SIMPLE_ATTR_DICTS_REORDERED,
+    "list_of_dicts_2": LIST_OF_SIMPLE_ATTR_DICTS_W_DUP_2,
+    "list_of_dicts_3": LIST_OF_SIMPLE_ATTR_DICTS_W_DUP_3
 }
 
 
 # ClassTester objects
-ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR = ClassTester(INPUT_DICT_SINGLE_SIMPLE_ATTR)
-ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS = ClassTester(INPUT_DICT_SEVERAL_SIMPLE_ATTRS)
-ClassTESTER_OBJ_SINGLE_EMPTY_LIST_ATTR = ClassTester(INPUT_DICT_SINGLE_EMPTY_LIST_ATTR)
-ClassTESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS = ClassTester(INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS)
-ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR = ClassTester(INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR)
-ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS = ClassTester(INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS)
-ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP = ClassTester(
+CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR = ClassTester(INPUT_DICT_SINGLE_SIMPLE_ATTR)
+CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS = ClassTester(INPUT_DICT_SEVERAL_SIMPLE_ATTRS)
+CLASSTESTER_OBJ_SINGLE_EMPTY_LIST_ATTR = ClassTester(INPUT_DICT_SINGLE_EMPTY_LIST_ATTR)
+CLASSTESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS = ClassTester(INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS)
+CLASSTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR = ClassTester(INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR)
+CLASSTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS = ClassTester(INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS)
+CLASSTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP = ClassTester(
     INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR_W_DUP
 )
-ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = ClassTester(
+CLASSTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP = ClassTester(
     INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP
 )
-ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS = ClassTester(INPUT_DICT_SINGLE_LIST_OF_DICTS)
-ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS = ClassTester(INPUT_DICT_SEVERAL_LISTS_OF_DICTS)
-ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS_W_DUP = ClassTester(INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP)
-ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP = ClassTester(
+CLASSTESTER_OBJ_SINGLE_LIST_OF_DICTS = ClassTester(INPUT_DICT_SINGLE_LIST_OF_DICTS)
+CLASSTESTER_OBJ_SEVERAL_LISTS_OF_DICTS = ClassTester(INPUT_DICT_SEVERAL_LISTS_OF_DICTS)
+CLASSTESTER_OBJ_SINGLE_LIST_OF_DICTS_W_DUP = ClassTester(INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP)
+CLASSTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP = ClassTester(
     INPUT_DICT_SEVERAL_LISTS_OF_DICTS_W_DUP
 )
 
 #################################################################
 #   Tests
 #################################################################
-
 
 @pytest.mark.parametrize(
     "variable, intended_type, return_value",
@@ -171,7 +166,7 @@ ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP = ClassTester(
         ({"hi": 1}, list, False),
     ],
 )
-def test_check_list_elements_type(variable, intended_type, return_value):
+def test_check_variable_type(variable, intended_type, return_value):
     """
     Test for function checking if a variable is of a specified type.
     """
@@ -179,46 +174,45 @@ def test_check_list_elements_type(variable, intended_type, return_value):
     assert result == return_value
 
 
-class TestCheckListElementsType:
-    @pytest.mark.parametrize(
-        "list_to_check, intended_type, return_value",
-        [
-            ([], str, True),
-            ([], int, True),
-            ([], list, True),
-            ([], object, True),
-            (["id"], str, True),
-            (["1", "test", "2"], str, True),
-            ([1, 2, 3, 4], int, True),
-            ([[1], [2], ["test", "2"], []], list, True),
-            ([["1", "2", "3", "4", "5"], ["6"]], str, False),
-            ([["1", "2", "3", "4", "5"], "6"], list, False),
-            ([None, "test"], str, False),
-            ([1, "test"], int, False),
-        ],
-    )
-    def test_check_list_elements_type_no_errors(
-        self, list_to_check, intended_type, return_value
-    ):
-        """
-        Test for function checking that all elements of a list are of a specified type,
-        no errors raised.
-        """
-        result = check_list_elements_type(list_to_check, intended_type)
-        assert result == return_value
+@pytest.mark.parametrize(
+    "list_to_check, intended_type, return_value",
+    [
+        ([], str, True),
+        ([], int, True),
+        ([], list, True),
+        ([], object, True),
+        (["id"], str, True),
+        (["1", "test", "2"], str, True),
+        ([1, 2, 3, 4], int, True),
+        ([[1], [2], ["test", "2"], []], list, True),
+        ([["1", "2", "3", "4", "5"], ["6"]], str, False),
+        ([["1", "2", "3", "4", "5"], "6"], list, False),
+        ([None, "test"], str, False),
+        ([1, "test"], int, False),
+    ],
+)
+def test_check_list_elements_type_no_errors(
+    list_to_check, intended_type, return_value
+):
+    """
+    Test for function checking that all elements of a list are of a specified type,
+    no errors raised.
+    """
+    result = check_list_elements_type(list_to_check, intended_type)
+    assert result == return_value
 
 
 class TestCheckPresenceOfAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_check",
         [
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
         ],
     )
     def test_check_presence_of_attributes_no_errors(
@@ -234,19 +228,19 @@ class TestCheckPresenceOfAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_check",
         [
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present"]),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present_0", "not_present_1"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "not_present"]),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present"]),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["not_present_0", "not_present_1"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "not_present"]),
             (
-                ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
+                CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
                 ["test_0", "not_present", "test_1", "test_2"],
             ),
             (
-                ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
+                CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
                 ["test_0", "not_present_0", "test_2", "not_present_1"],
             ),
             (
-                ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
+                CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS,
                 ["not_present", "test_0", "test_2", "test_1"],
             ),
         ],
@@ -263,69 +257,17 @@ class TestCheckPresenceOfAttributes:
         assert "Object validation error" in str(value_err_info.value)
 
 
-class TestCheckPresenceOfKey:
-    @pytest.mark.parametrize(
-        "list_of_dicts, key_to_check, return_value",
-        [
-            ([], None, True),
-            ([], "key", True),  # kind of weird edge case, but not a biggie (TODO:)
-            (
-                [
-                    INPUT_DICT_SINGLE_EMPTY_LIST_ATTR,
-                    INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS,
-                ],
-                "list_empty_0",
-                True,
-            ),
-            (
-                [
-                    INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR,
-                    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS,
-                    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS,
-                    INPUT_DICT_SINGLE_SIMPLE_LIST_ATTR_W_DUP,
-                    INPUT_DICT_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP,
-                ],
-                "list_simple_0",
-                True,
-            ),
-            (
-                [INPUT_DICT_SINGLE_LIST_OF_DICTS],
-                "list_of_dicts_0",
-                False,
-            ),
-            (
-                [
-                    INPUT_DICT_SINGLE_LIST_OF_DICTS,
-                    INPUT_DICT_SEVERAL_LISTS_OF_DICTS,
-                    INPUT_DICT_SINGLE_LIST_OF_DICTS_W_DUP,
-                ],
-                "list_of_dicts",
-                False,
-            ),
-        ],
-    )
-    def test_check_presence_of_key_no_errors(
-        self, list_of_dicts, key_to_check, return_value
-    ):
-        """
-        Test for function checking that all dictionaries in a given list have the
-        specified key, no errors raised.
-        """
-        result = check_presence_of_key(list_of_dicts, key_to_check)
-        assert result == return_value
-
-
 class TestSetListAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_set",
         [
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, None),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, []),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_1", "test_2"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"]),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
         ],
     )
     def test_set_list_attributes_of_existing_nonlist_attributes(
@@ -340,41 +282,42 @@ class TestSetListAttributes:
         result = set_list_attributes(input_object, attributes_to_set)
         assert result == None
         assert vars(input_object) == vars(original_object)  # no attributes changed
+        #TODO: double check the above "vars" functionality
 
     @pytest.mark.parametrize(
         "input_object, attributes_to_set, orig_lengths, reset_lengths",
         [
-            (ClassTESTER_OBJ_SINGLE_EMPTY_LIST_ATTR, ["list_empty_0"], [0], [0]),
+            (CLASSTESTER_OBJ_SINGLE_EMPTY_LIST_ATTR, ["list_empty_0"], [0], [0]),
             (
-                ClassTESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS,
+                CLASSTESTER_OBJ_SEVERAL_EMPTY_LIST_ATTRS,
                 ["list_empty_0", "list_empty_1", "list_empty_2"],
                 [0, 0, 0],
                 [0, 0, 0],
             ),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR, ["list_simple_0"], [3], [3]),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR, ["list_simple_0"], [3], [3]),
             (
-                ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS,
+                CLASSTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS,
                 ["list_simple_0", "list_simple_1"],
                 [3, 3],
                 [3, 3],
             ),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP, ["list_simple_0"], [5], [4]),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_LIST_ATTR_W_DUP, ["list_simple_0"], [5], [4]),
             (
-                ClassTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP,
+                CLASSTESTER_OBJ_SEVERAL_SIMPLE_LIST_ATTRS_W_DUP,
                 ["list_simple_0", "list_simple_2", "list_simple_1"],
                 [4, 3, 3],
                 [3, 2, 3],
             ),
-            (ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS, ["list_of_dicts"], [3], [3]),
+            (CLASSTESTER_OBJ_SINGLE_LIST_OF_DICTS, ["list_of_dicts"], [3], [3]),
             (
-                ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS,
+                CLASSTESTER_OBJ_SEVERAL_LISTS_OF_DICTS,
                 ["list_of_dicts_1", "list_of_dicts_0"],
                 [3, 3],
                 [3, 3],
             ),
-            (ClassTESTER_OBJ_SINGLE_LIST_OF_DICTS_W_DUP, ["list_of_dicts"], [6], [3]),
+            (CLASSTESTER_OBJ_SINGLE_LIST_OF_DICTS_W_DUP, ["list_of_dicts"], [6], [3]),
             (
-                ClassTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP,
+                CLASSTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP,
                 [
                     "list_of_dicts_1",
                     "list_of_dicts_0",
@@ -410,12 +353,12 @@ class TestSetListAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_set, num_added_attributes",
         [
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"], 0),
-            (ClassTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_1"], 1),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_2", "test_3"], 1),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_5", "test_0", "test_4"], 2),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"], 0),
-            (ClassTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"], 0),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_0"], 0),
+            (CLASSTESTER_OBJ_SINGLE_SIMPLE_ATTR, ["test_1"], 1),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_2", "test_3"], 1),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_5", "test_0", "test_4"], 2),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2"], 0),
+            (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"], 0),
         ],
     )
     def test_set_list_attributes_of_nonexistent_attributes(
