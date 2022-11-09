@@ -4,6 +4,7 @@
 #   Libraries
 ################################################
 from copy import deepcopy
+from magma.utils import check_variable_type
 
 ################################################
 #   Functions
@@ -12,7 +13,7 @@ from copy import deepcopy
 def check_presence_of_key(list_of_dicts, key_to_check=None):
     """
     Takes in a list of dictionaries and a list of keys, checks that those keys 
-    are present within every dict in this list/array.
+    are present within every99 dict in this list/array.
 
     :param list_of_dicts: dictionaries to check
     :type input_dict: list[dict]
@@ -32,8 +33,19 @@ def check_presence_of_key(list_of_dicts, key_to_check=None):
 
     return True
 
+def generate_ordered_step_name_list(list_of_dicts, name_of_step_key):
+    """
+    Based on a list of dictionaries (representing a list of steps) with a "name" key
+    for each dictionary, return a list of the names of each dictionary with
+    indices corresponding to the indices of the dictionaries themselves (same order).
+    """
+    names = []
+    for dictionary in list_of_dicts:
+        names.append(dictionary[name_of_step_key])
+    return names
+
 #TODO: could make this more general...
-def set_dependency_list_values(list_of_dicts, name_of_step_key, name_of_dependencies_key):
+def set_dependency_list_values(list_of_dicts, name_of_step_key, name_of_dependencies_key, existing_steps_list):
     """
     Checks for dependency key within each dictionary in list_of_dicts.
     If not present, add that key and set value as empty list.
@@ -52,74 +64,37 @@ def set_dependency_list_values(list_of_dicts, name_of_step_key, name_of_dependen
     :rtype: list[dict]
     """
 
-    list_of_dicts_copy = deepcopy(list_of_dicts)
+    list_of_dicts_copy = deepcopy(list_of_dicts) #TODO: make sure original doesnt change in test
     # iterate through list of dicts and set dependencies key-value pair
     for dictionary in list_of_dicts_copy:
         # add empty dependency list if not present
         if not name_of_dependencies_key in dictionary:
             dictionary[name_of_dependencies_key] = []
+            continue
             #TODO: do some renaming of this function to follow pattern of obj vs dict key setting?
 
         # get rid of duplicates
         # I choose this method for generalization, in the case that dependencies is
         # a list of dictionaries, which are an unhashable type
         dependencies = dictionary[name_of_dependencies_key]
-        non_duplicated_dependencies = []
-        for dependency in dependencies:
-            if dependency not in non_duplicated_dependencies:
-                non_duplicated_dependencies.append(dependency)
-        dictionary[name_of_dependencies_key] = non_duplicated_dependencies
-        #TODO: note -- im working under the assumption that because of the limitations
-        # of the schema, the dependencies will be of the correct type. Must I include
-        # a check that each dependency is in fact a name of another metaworkflow?
-        #(...probably. :/ )
+        # check this is indeed a list
+        if not check_variable_type(dependencies, list):
+            dictionary[name_of_dependencies_key] = []
+            continue
+            #TODO: throw exception here instead of resetting value
 
-        # check for self-dependencies
-        new_dependencies = dictionary[name_of_dependencies_key] #repetitive, but just for readability
+        # get rid of duplicates and self-dependencies
+        # and each dependency is in fact a name of another metaworkflow
+        non_duplicated_dependencies = []
         dictionary_name = dictionary[name_of_step_key]
-        # remove from this list
-        #TODO: should I throw exception instead? I think it's fine to just remove bc it's easy
-        new_dependencies = list(filter(lambda element: element != dictionary_name, new_dependencies))
+        for dependency in dependencies:
+            if (dependency not in non_duplicated_dependencies) and (dependency != dictionary_name) and (dependency in existing_steps_list):
+                non_duplicated_dependencies.append(dependency)
+                #TODO: throw exception for self dependencies, duplicates, or nonexistent names?
+        dictionary[name_of_dependencies_key] = non_duplicated_dependencies
+        # dictionary["steps_after"] = []
 
     return list_of_dicts_copy
-
-def generate_ordered_step_name_list(list_of_dicts, name_of_step_key):
-    """
-    Based on a list of dictionaries (representing a list of steps) with a "name" key
-    for each dictionary, return a list of the names of each dictionary with
-    indices corresponding to the indices of the dictionaries themselves (same order).
-    """
-    names = []
-    for dictionary in list_of_dicts:
-        names.append(dictionary[name_of_step_key])
-    return names
-    #TODO: in test, check that it is always in the same order
-
-def define_forward_dependencies(list_of_dicts, name_of_step_key, name_of_dependencies_key):
-    """
-    Build directed graph by "reversing" dependencies TODO: redo comment
-    """
-    names = generate_ordered_step_name_list(list_of_dicts, name_of_step_key)
-
-    for dictionary in list_of_dicts:
-        current_dependencies = dictionary[name_of_dependencies_key]
-        current_dict_name = dictionary[name_of_step_key]
-
-        # go through each step this current step is dependent on
-        # and add "step_after" attribute
-        # (dependencies are "origin", "source", or "progenitor" steps)
-        for dependency in current_dependencies:
-            # isolate the index of the dependency using names list
-            #TODO: this matches to the first occurence of dependency within the array 
-            idx = names.index(dependency)
-            dependency_step_dict = list_of_dicts[idx]
-
-            #TODO: consider helper fxn? but not necessary
-            #TODO: rename this attribute
-            if not ("steps_after" in dependency_step_dict):
-                dependency_step_dict["steps_after"] = []
-
-            dependency_step_dict["steps_after"].append(current_dict_name)
 
 def find_index_with_given_step_name(steps_with_dependencies_list, name_of_step_key, name):
     for index, step in enumerate(steps_with_dependencies_list):
@@ -134,10 +109,10 @@ def topological_sort_DFS_helper(graph, curr_node, curr_idx, name_of_node_key, na
     
     visited_temporary[curr_idx] = True
 
-    for following_step in curr_node[name_of_dependencies_key]:
+    for previous_step in curr_node[name_of_dependencies_key]:
         #TODO: can't have duplicates in names with this method!
-        idx_following_node, following_node = find_index_with_given_step_name(graph, name_of_node_key, following_step)
-        topological_sort_DFS_helper(graph, following_node, idx_following_node, name_of_node_key, name_of_dependencies_key, visited_temporary, visited_permanent, queue)
+        idx_previous_node, previous_node = find_index_with_given_step_name(graph, name_of_node_key, previous_step)
+        topological_sort_DFS_helper(graph, previous_node, idx_previous_node, name_of_node_key, name_of_dependencies_key, visited_temporary, visited_permanent, queue)
 
     visited_temporary[curr_idx] = False
     visited_permanent[curr_idx] = True
@@ -225,17 +200,16 @@ def generate_ordered_steps_list(steps_with_dependencies_list, name_of_step_key, 
 
     ### List reordering based on dependencies ###
 
+    names = generate_ordered_step_name_list(steps_with_dependencies_list, name_of_step_key)
+
     ## Preprocessing of dependencies lists
     # add dependencies attribute if not present, remove duplicates from dependencies,
     # and check for self dependencies
-    preprocessed_steps_with_dependencies_list =  set_dependency_list_values(steps_with_dependencies_list, name_of_step_key, name_of_dependencies_key)
-    
-    ## Build directed graph by "reversing" dependencies (TODO: redo this comment and make own function)
-    define_forward_dependencies(preprocessed_steps_with_dependencies_list, name_of_step_key, name_of_dependencies_key) 
+    preprocessed_steps_with_dependencies_list =  set_dependency_list_values(steps_with_dependencies_list, name_of_step_key, name_of_dependencies_key, names)
 
+    # import pdb; pdb.set_trace()
     ordered_steps_list = topological_sort(preprocessed_steps_with_dependencies_list, name_of_step_key, name_of_dependencies_key)
             
     return ordered_steps_list
 
-
-    # TODO:edge cases: all steps have dependencies, no steps depending on each other, dependency on self, identical steps
+    # TODO:edge cases: all steps have dependencies (cycle or deleted self-dependency), no steps depending on each other, dependency on self, identical steps
