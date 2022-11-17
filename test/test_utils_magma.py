@@ -127,7 +127,7 @@ CLASSTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP = ClassTester(
 #################################################################
 
 @pytest.mark.parametrize(
-    "variable, intended_type, return_value",
+    "variable, intended_type, expected_result",
     [
         (2, int, True),
         (-2, int, True),
@@ -168,16 +168,16 @@ CLASSTESTER_OBJ_SEVERAL_LISTS_OF_DICTS_W_DUP = ClassTester(
         ({"hi": 1}, list, False),
     ],
 )
-def test_check_variable_type(variable, intended_type, return_value):
+def test_check_variable_type(variable, intended_type, expected_result):
     """
     Test for function checking if a variable is of a specified type.
     """
     result = check_variable_type(variable, intended_type)
-    assert result == return_value
+    assert result == expected_result
 
 
 @pytest.mark.parametrize(
-    "list_to_check, intended_type, return_value",
+    "list_to_check, intended_type, expected_result",
     [
         ([], str, True),
         ([], int, True),
@@ -194,14 +194,14 @@ def test_check_variable_type(variable, intended_type, return_value):
     ],
 )
 def test_check_list_elements_type_no_errors(
-    list_to_check, intended_type, return_value
+    list_to_check, intended_type, expected_result
 ):
     """
     Test for function checking that all elements of a list are of a specified type,
     no errors raised.
     """
     result = check_list_elements_type(list_to_check, intended_type)
-    assert result == return_value
+    assert result == expected_result
 
 
 class TestCheckPresenceOfAttributes:
@@ -225,7 +225,7 @@ class TestCheckPresenceOfAttributes:
         no errors raised.
         """
         result = check_presence_of_attributes(input_object, attributes_to_check)
-        assert result == None
+        assert result is None
 
     @pytest.mark.parametrize(
         "input_object, attributes_to_check",
@@ -259,7 +259,7 @@ class TestCheckPresenceOfAttributes:
         assert "Object validation error" in str(value_err_info.value)
 
 
-class TestSetListAttributes:
+class TestSetUniqueListAttributes:
     @pytest.mark.parametrize(
         "input_object, attributes_to_set",
         [
@@ -272,7 +272,7 @@ class TestSetListAttributes:
             (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"]),
         ],
     )
-    def test_set_list_attributes_of_existing_nonlist_attributes(
+    def test_set_unique_list_attributes_of_existing_nonlist_attributes(
         self, input_object, attributes_to_set
     ):
         """
@@ -281,8 +281,8 @@ class TestSetListAttributes:
         Cases where the attributes to set are existent and are NOT lists, no action done.
         """
         original_object = deepcopy(input_object)
-        result = set_list_attributes(input_object, attributes_to_set)
-        assert result == None
+        result = set_unique_list_attributes(input_object, attributes_to_set)
+        assert result is None
         assert vars(input_object) == vars(original_object)  # no attributes changed
         #TODO: double check the above "vars" functionality
 
@@ -331,7 +331,7 @@ class TestSetListAttributes:
             ),
         ],
     )
-    def test_set_list_attributes_of_existing_list_attributes(
+    def test_set_unique_list_attributes_of_existing_list_attributes(
         self, input_object, attributes_to_set, orig_lengths, reset_lengths
     ):
         """
@@ -344,13 +344,13 @@ class TestSetListAttributes:
         for idx, attribute in enumerate(attributes_to_set):
             assert len(getattr(input_object, attribute)) == orig_lengths[idx]
 
-        result = set_list_attributes(input_object, attributes_to_set)
+        result = set_unique_list_attributes(input_object, attributes_to_set)
 
         # check length of "reset" attributes_to_set
         for idx, attribute in enumerate(attributes_to_set):
             assert len(getattr(input_object, attribute)) == reset_lengths[idx]
 
-        assert result == None
+        assert result is None
 
     @pytest.mark.parametrize(
         "input_object, attributes_to_set, num_added_attributes",
@@ -363,7 +363,7 @@ class TestSetListAttributes:
             (CLASSTESTER_OBJ_SEVERAL_SIMPLE_ATTRS, ["test_0", "test_2", "test_1"], 0),
         ],
     )
-    def test_set_list_attributes_of_nonexistent_attributes(
+    def test_set_unique_list_attributes_of_nonexistent_attributes(
         self, input_object, attributes_to_set, num_added_attributes
     ):
         """
@@ -377,8 +377,8 @@ class TestSetListAttributes:
         original_attributes_set = set(dir(input_object))
         num_original_attributes = len(original_attributes_set)
 
-        result = set_list_attributes(input_object, attributes_to_set)
-        assert result == None
+        result = set_unique_list_attributes(input_object, attributes_to_set)
+        assert result is None
 
         reset_attributes_set = set(dir(input_object))
         num_reset_attributes = len(reset_attributes_set)

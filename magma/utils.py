@@ -70,7 +70,7 @@ def check_presence_of_attributes(input_object, attributes_to_check=None):
             raise ValueError("Object validation error, {0}\n"
                                 .format(e.args[0]))
 
-def set_list_attributes(input_object, attributes_to_set=None):
+def set_unique_list_attributes(input_object, attributes_to_set=None):
     """
     Checks for given attribute(s) of type list, sets as empty list if not present,
     else sets that list attribute, without duplicates.
