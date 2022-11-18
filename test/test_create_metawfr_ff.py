@@ -666,13 +666,20 @@ class TestMetaWorkflowRunInput:
             ("foo", [], 1, False, []),
             (
                 "input_files",
-                [["file_1"], ["file_2"]],
+                [["file_1", "file_2"]],
                 1,
                 False,
                 [
                     {"file": "file_1", "dimension": "0"},
                     {"file": "file_2", "dimension": "1"},
                 ],
+            ),
+            (
+                "input_files",
+                [["file_1"], ["file_2"]],
+                1,
+                True,
+                [],
             ),
             (
                 "input_files",
