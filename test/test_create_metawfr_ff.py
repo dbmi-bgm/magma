@@ -67,6 +67,7 @@ SAMPLE_UUID_2 = "uuid_2"
 SAMPLE_UUID_3 = "uuid_3"
 SAMPLE_UUID_4 = "uuid_4"
 SORTED_SAMPLE_UUIDS = [SAMPLE_UUID_3, SAMPLE_UUID_4, SAMPLE_UUID_2, SAMPLE_UUID_1]
+RCKTAR_FILE_NAMES = [f"{sample_name}.rck.gz" for sample_name in SORTED_SAMPLE_NAMES]
 SAMPLE_1 = {
     "uuid": SAMPLE_UUID_1,
     "bam_sample_id": SAMPLE_NAME_1,
@@ -1070,6 +1071,7 @@ class TestInputPropertiesFromSampleProcessing:
             ("input_vcfs", [VCF_UUIDS]),
             ("input_snv_vcfs", [[SNV_VCF_UUID]]),
             ("input_sv_vcfs", [[SV_VCF_UUID]]),
+            ("rcktar_file_names", RCKTAR_FILE_NAMES),
         ],
     )
     def test_attributes(self, attribute, expected, inputs_from_sample_processing):
