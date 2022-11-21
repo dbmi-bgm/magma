@@ -45,9 +45,16 @@ FASTQ_R1_UUIDS = [
     [FASTQ_R1_UUID_1, FASTQ_R1_UUID_1_2],
 ]
 FASTQ_R2_UUID_1 = "fastq_r2_sample_1"
+FASTQ_R2_UUID_1_2 = "fastq_r2_sample_1_2"
 FASTQ_R2_UUID_2 = "fastq_r2_sample_2"
 FASTQ_R2_UUID_3 = "fastq_r2_sample_3"
 FASTQ_R2_UUID_4 = "fastq_r2_sample_4"
+FASTQ_R2_UUIDS = [
+    [FASTQ_R2_UUID_3],
+    [FASTQ_R2_UUID_4],
+    [FASTQ_R2_UUID_2],
+    [FASTQ_R2_UUID_1, FASTQ_R2_UUID_1_2],
+]
 PROJECT = "/projects/cgap-core/"
 INSTITUTION = "/institutions/hms-dbmi/"
 SAMPLE_NAME_1 = "SAMPLE1-DNA-WGS"
@@ -80,6 +87,11 @@ SAMPLE_1 = {
         },
         {
             "uuid": FASTQ_R2_UUID_1,
+            "paired_end": "2",
+            "file_format": {"file_format": "fastq"},
+        },
+        {
+            "uuid": FASTQ_R2_UUID_1_2,
             "paired_end": "2",
             "file_format": {"file_format": "fastq"},
         },
@@ -1052,6 +1064,7 @@ class TestInputPropertiesFromSampleProcessing:
             ("input_sample_uuids", SORTED_SAMPLE_UUIDS),
             ("input_crams", INPUT_CRAMS),
             ("fastqs_r1", FASTQ_R1_UUIDS),
+            ("fastqs_r2", FASTQ_R2_UUIDS),
             ("input_bams", BAM_UUIDS),
             ("input_gvcfs", GVCF_UUIDS),
             ("input_vcfs", [VCF_UUIDS]),
@@ -1180,7 +1193,7 @@ class TestInputPropertiesFromSample:
         [
             (SAMPLE_1, "0", True, None),
             (SAMPLE_1, "1", False, [FASTQ_R1_UUID_1, FASTQ_R1_UUID_1_2]),
-            (SAMPLE_1, "2", False, [FASTQ_R2_UUID_1]),
+            (SAMPLE_1, "2", False, [FASTQ_R2_UUID_1, FASTQ_R2_UUID_1_2]),
             (SAMPLE_2, "1", False, [FASTQ_R1_UUID_2]),
             (SAMPLE_2, "2", False, [FASTQ_R2_UUID_2]),
         ],
