@@ -4,7 +4,6 @@
 #   Libraries
 #################################################################
 import pytest
-# from copy import deepcopy
 
 from magma.topological_sort import *
 
@@ -20,7 +19,7 @@ INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS = {
 
 LIST_OF_DICTS_EMPTY_LIST_ATTR = [INPUT_DICT_SINGLE_EMPTY_LIST_ATTR, INPUT_DICT_SEVERAL_EMPTY_LIST_ATTRS]
 
-# of the form (mwf_uuid, mwf_name)
+# of the form [mwf_uuid, mwf_name]
 # used for factory fixture to generate lists of dicts (steps with dependencies array)
 MWF_A = ["test_mwf_uuid_0", "A"]
 MWF_B = ["test_mwf_uuid_1", "B"]
