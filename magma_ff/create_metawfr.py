@@ -488,33 +488,48 @@ class MetaWorkflowRunInput:
             than 1 entry per sample (i.e. is 2 dimensional)
         """
         result = []
-        for input_idx, file_input in enumerate(file_input_value):
-            if input_dimensions == 1:
-                if len(file_input) > 1:
-                    raise MetaWorkflowRunCreationError(
-                        "Found multiple input files when only 1 was expected for"
-                        " parameter %s: %s" % (file_parameter, file_input)
-                    )
-                for file_uuid in file_input:
-                    dimension = str(input_idx)
-                    formatted_file_result = {
-                        self.FILE: file_uuid,
-                        self.DIMENSION: dimension,
-                    }
-                    result.append(formatted_file_result)
-            elif input_dimensions == 2:
-                for file_uuid_idx, file_uuid in enumerate(file_input):
-                    dimension = "%s,%s" % (input_idx, file_uuid_idx)
-                    formatted_file_result = {
-                        self.FILE: file_uuid,
-                        self.DIMENSION: dimension,
-                    }
-                    result.append(formatted_file_result)
-            else:
+        if input_dimensions == 1:  # List of <= 1 list expected
+            if len(file_input_value) > 1:
                 raise MetaWorkflowRunCreationError(
-                    "Received an unexpected dimension number for parameter %s: %s"
-                    % (file_parameter, input_dimensions)
+                    f"Input file dimensions were greater than expected for"
+                    f" parameter {file_parameter}. Expected input dimension"
+                    f" {input_dimensions} but received input: {file_input_value}."
                 )
+            for file_input_item in file_input_value:
+                for file_idx, file_uuid in enumerate(file_input_item):
+                    if not isinstance(file_uuid, str):
+                        raise MetaWorkflowRunCreationError(
+                            f"File input for parameter {file_parameter} was unexpected."
+                            f" Exected input file dimension {input_dimensions} but"
+                            f" received the following: {file_input_value}."
+                        )
+                    dimension = str(file_idx)
+                    formatted_file_result = {
+                        self.FILE: file_uuid,
+                        self.DIMENSION: dimension,
+                    }
+                    result.append(formatted_file_result)
+        elif input_dimensions == 2:
+            for input_idx, file_input_item in enumerate(file_input_value):
+                if not isinstance(file_input_item, list):  # List of lists expected
+                    raise MetaWorkflowRunCreationError(
+                        f"Input file dimensions were greater than expected for"
+                        f" parameter {file_parameter}. Expected input dimension"
+                        f" {input_dimensions} but received input: {file_input_value}."
+                    )
+                for file_uuid_idx, file_uuid in enumerate(file_input_item):
+                    if not isinstance(file_uuid, str):
+                        raise MetaWorkflowRunCreationError(
+                            f"File input for parameter {file_parameter} was unexpected."
+                            f" Exected input file dimension {input_dimensions} but received"
+                            f" the following: {file_input_value}."
+                        )
+                    dimension = f"{input_idx},{file_uuid_idx}"
+                    formatted_file_result = {
+                        self.FILE: file_uuid,
+                        self.DIMENSION: dimension,
+                    }
+                    result.append(formatted_file_result)
         return result
 
     def fetch_parameters(self, parameters_to_fetch):
@@ -949,7 +964,7 @@ class InputPropertiesFromSampleProcessing:
     @property
     def fastqs_r2(self):
         """FASTQ paired-end 2 file input."""
-        return self.get_property_from_samples("fastqs_r1")
+        return self.get_property_from_samples("fastqs_r2")
 
     @property
     def input_bams(self):
