@@ -1,16 +1,10 @@
 ################################################
-#   TODO: functions for dcic utils -- move later
-################################################
-from magma.utils import check_presence_of_attributes
-
-
-################################################
-#   ValidatedDictionary
+#   ValidatedDictionary TODO: eventually make part of dcicutils?
 ################################################
 class ValidatedDictionary(object):
     """
-    Parent class for MetaWorkflowStep and MetaWorkflowHandler classes.
-    Takes in an input dictionary, and validates basic attributes.
+    Parent class for MetaWorkflow(Run)Step and MetaWorkflow(Run) Handler classes.
+    Takes in an input dictionary, and validates basic attributes (makes sure given attributes are present).
     """
 
     def __init__(self, input_dict):
@@ -24,9 +18,19 @@ class ValidatedDictionary(object):
         for key in input_dict:
             setattr(self, key, input_dict[key])
 
-    def _validate_basic_attributes(self, list_of_attributes=None):
-        """ TODO: make list of attributes a class attribute
+    def _validate_basic_attributes(self, *attributes_to_check):
+        """
         Validation of the JSON input for this object.
         Checks that given attributes are present in the created object.
+
+        :param attributes_to_check: attributes that are checked (variable number of non-keyword arguments)
+        :type attributes_to_check: str(s)
+        :return: None, if all specified attributes are present
+        :raises ValueError: if this Validated Dictionary object doesn't have a specified attribute
         """
-        check_presence_of_attributes(self, list_of_attributes)
+        for attribute in attributes_to_check:
+            try:
+                getattr(self, attribute)
+            except AttributeError as e:
+                raise ValueError("Object validation error, {0}\n"
+                                    .format(e.args[0]))
