@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ################################################
 #   ValidatedDictionary TODO: eventually make part of dcicutils?
 ################################################
@@ -32,5 +34,5 @@ class ValidatedDictionary(object):
             try:
                 getattr(self, attribute)
             except AttributeError as e:
-                raise ValueError("Object validation error, {0}\n"
+                raise AttributeError("Object validation error, {0}\n"
                                     .format(e.args[0]))

@@ -73,11 +73,11 @@ class TestValidatedDictionary:
             (EXTENSIVE_VALIDATED_DICT, ("attr_0", "attr_1", "not_present", "attr_2"))
         ]
     )
-    def test_validate_basic_attributes_value_errors(self, validated_dictionary_object, attributes_to_check):
+    def test_validate_basic_attributes_attribute_errors(self, validated_dictionary_object, attributes_to_check):
         """
         Test for function checking that specified attributes are part of a given ValidatedDictionary object,
-        ValueError raised.
+        AttributeError raised.
         """
-        with pytest.raises(ValueError) as value_err_info:
+        with pytest.raises(AttributeError) as attr_err_info:
             validated_dictionary_object._validate_basic_attributes(*attributes_to_check)
-        assert "Object validation error" in str(value_err_info.value)
+        assert "Object validation error" in str(attr_err_info.value)
