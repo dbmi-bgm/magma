@@ -3,8 +3,6 @@
 ################################################
 #   Libraries
 ################################################
-from copy import deepcopy
-
 from dcicutils.misc_utils import TopologicalSorter
 
 ################################################

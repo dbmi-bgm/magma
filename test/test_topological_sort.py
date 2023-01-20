@@ -142,7 +142,7 @@ class TestTopologicalSortHandler:
     @pytest.mark.parametrize(
         "array_of_mwf, possible_sorted_lists",
         [
-            (DAG_0, [[A_name, B_name, C_name]]),
+            (DAG_0, [[A_name, B_name, C_name], [B_name, A_name, C_name], [B_name, C_name, A_name]]),
             (DAG_1, [[B_name, C_name, A_name, D_name], [C_name, B_name, A_name, D_name]])
         ],
     )

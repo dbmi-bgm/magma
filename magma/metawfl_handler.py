@@ -3,8 +3,10 @@
 ################################################
 #   Libraries
 ################################################
+from copy import deepcopy
+
 from magma.validated_dictionary import ValidatedDictionary
-# from magma.topological_sort import generate_ordered_steps_list
+from magma.topological_sort import TopologicalSortHandler
 
 ################################################
 #   MetaWorkflowStep
@@ -54,71 +56,81 @@ class MetaWorkflowStep(ValidatedDictionary):
             raise AttributeError("Object validation error, 'MetaWorkflowStep' object cannot have both of the following attributes: 'items_for_creation_property_trace' and 'items_for_creation_uuid'")
 
 
-# ################################################
-# #   MetaWorkflowHandler
-# ################################################
-# class MetaWorkflowHandler(ValidatedDictionary):
-#     """
-#     Class representing a MetaWorkflow Handler object,
-#     a list of MetaWorkflows with specified dependencies
-#     """
+################################################
+#   MetaWorkflowHandler
+################################################
+class MetaWorkflowHandler(ValidatedDictionary):
+    """
+    Class representing a MetaWorkflow Handler object,
+    a list of MetaWorkflows with specified dependencies
+    """
 
-#     UUID_ATTR = "uuid"
-#     META_WORKFLOWS_ATTR = "meta_workflows"
-#     META_WORKFLOW_NAME_ATTR = "name"
-#     META_WORKFLOW_DEPENDENCIES_ATTR = "dependencies"
+    UUID_ATTR = "uuid"
+    META_WORKFLOWS_ATTR = "meta_workflows"
+    META_WORKFLOW_NAME_ATTR = "name"
+    META_WORKFLOW_DEPENDENCIES_ATTR = "dependencies"
 
-#     def __init__(self, input_dict):
-#         """
-#         Constructor method, initialize object and attributes.
+    def __init__(self, input_dict):
+        """
+        Constructor method, initialize object and attributes.
 
-#         :param input_dict: MetaWorkflow Handler object, defined by json file from portal
-#         :type input_dict: dict
-#         """
-#         ### Basic attributes ###
-#         super.__init__(input_dict)
+        :param input_dict: MetaWorkflow Handler object, defined by json file from portal
+        :type input_dict: dict
+        """
+        ### Basic attributes ###
+        super().__init__(input_dict)
         
-#         self._validate_basic_attributes(self.UUID_ATTR)
+        super()._validate_basic_attributes(self.UUID_ATTR)
 
-#         ### Calculated attributes ###
-#         # to check for non-existent meta_workflows attribute
-#         # if present, get rid of duplicates (by MetaWorkflow name)
-#         self._set_meta_workflows_list()
+        ### Calculated attributes ###
+        # set meta_workflows attribute
+        self._set_meta_workflows_dict()
 
-#         # order the meta_workflows list based on dependencies
-#         self.ordered_meta_workflows = self._create_ordered_meta_workflows_list()
+        # order the meta_workflows list based on dependencies TODO: use setattr instead?
+        self.ordered_meta_workflows = self._create_ordered_meta_workflows_list()
 
 #         # using ordered metaworkflows list, create a list of objects using class MetaWorkflowStep
 #         # this validates basic attributes needed for each metaworkflow step
 #         self.ordered_meta_workflow_steps = self._create_meta_workflow_step_objects()
 
-#     def _set_meta_workflows_list(self):
-#         """
-#         Checks for meta_workflows attribute, 
-#         sets as empty list if not present,
-#         else gets rid of duplicates (by metaworkflow name)
-#         """
-#         if not hasattr(self, self.META_WORKFLOWS_ATTR):
-#             # if not present, set attribute as empty list
-#             setattr(self, self.META_WORKFLOWS_ATTR, [])
-#         else:
-#             attrib = getattr(self, self.META_WORKFLOWS_ATTR)
+    def _set_meta_workflows_dict(self):
+        """
+        Checks for meta_workflows attribute. 
 
-#             # then get rid of duplicates, if present
-#             # non_dup_attrib = []
-#             # for item in attrib:
-#             #     if item not in non_dup_attrib:
-#             #         non_dup_attrib.append(item)
-#             # setattr(self, self.META_WORKFLOWS_ATTR, non_dup_attrib)
+        If nonexistent, set as an empty dictionary
+        If present, copy that list temporarily and redefine as a dictionary
+        of the form {meta_workflow_name: meta_workflow_step,....} 
+        getting rid of duplicates in the process (by MetaWorkflow name)
+        # TODO: this method doesn't allow for metaworkflows of the same name 
+        # to be utilized in the same handler, even if they have distinct dependencies
+        # check if this is disastrous lol
 
-#     def _create_ordered_meta_workflows_list(self):
-#         return generate_ordered_steps_list(self.meta_workflows, self.META_WORKFLOW_NAME_ATTR, self.META_WORKFLOW_DEPENDENCIES_ATTR)
+        :return: None, if all MetaWorkflowSteps are created successfully
+        """
+        if not hasattr(self, self.META_WORKFLOWS_ATTR):
+            # if not present, set attribute as empty dictionary
+            setattr(self, self.META_WORKFLOWS_ATTR, {})
+        else:
+            orig_mwf_list_copy = deepcopy(getattr(self, self.META_WORKFLOWS_ATTR))
 
-#     def _create_meta_workflow_step_objects(self):
-#         meta_workflow_step_list = []
-#         for meta_workflow in self.ordered_meta_workflows:
-#             meta_workflow_step_object = MetaWorkflowStep(meta_workflow)
-#             meta_workflow_step_list.append(meta_workflow_step_object)
-#         return meta_workflow_step_list
+            temp_mwf_step_dict = {}
 
-#         #TODO: check that there are no duplictes in ordered metaworkflows -- does this throw error or nah? TBD.
+            for mwf in orig_mwf_list_copy:
+                # create MetaWorkflowStep object for this metaworkflow
+                mwf_step = MetaWorkflowStep(mwf)
+
+                # then add to the meta_workflows dictionary
+                # of the form {mwf["name"]: MetaWorkflowStep(mwf)}
+                temp_mwf_step_dict.setdefault(mwf["name"], mwf_step)
+
+            # reset the "meta_workflows" attribute as an empty dictionary (rather than array)
+            setattr(self, self.META_WORKFLOWS_ATTR, temp_mwf_step_dict)
+
+    def _create_ordered_meta_workflows_list(self):
+        # create "graph" that will be passed into the topological sorter
+        # graph = self._create_topo_sort_graph()
+        meta_workflows_dict = getattr(self, self.META_WORKFLOWS_ATTR)
+        sorter = TopologicalSortHandler(meta_workflows_dict)
+
+        # # now topologically sort the steps
+        return sorter.sorted_graph_list()
