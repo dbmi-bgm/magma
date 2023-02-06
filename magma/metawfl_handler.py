@@ -7,6 +7,20 @@ from copy import deepcopy
 
 from magma.validated_dictionary import ValidatedDictionary
 from magma.topological_sort import TopologicalSortHandler
+from dcicutils.misc_utils import CycleError
+
+################################################
+#   Custom Exception classes
+################################################
+class MetaWorkflowStepCycleError(CycleError):
+    """Custom exception for cycle error tracking."""
+    pass
+
+class MetaWorkflowStepDuplicateError(ValueError):
+    pass
+
+class MetaWorkflowStepSelfDependencyError(ValueError):
+    pass
 
 ################################################
 #   MetaWorkflowStep
@@ -19,6 +33,7 @@ class MetaWorkflowStep(ValidatedDictionary):
 
     META_WORKFLOW_ATTR = "meta_workflow"
     NAME_ATTR = "name"
+    DEPENDENCIES_ATTR = "dependencies"
     DUP_FLAG_ATTR = "duplication_flag"
     ITEMS_CREATION_PROP_TRACE = "items_for_creation_property_trace"
     ITEMS_CREATION_UUID = "items_for_creation_uuid"
@@ -35,6 +50,8 @@ class MetaWorkflowStep(ValidatedDictionary):
         # Validate presence of basic attributes of this MetaWorkflow step
         self._validate_basic_attributes(self.META_WORKFLOW_ATTR, self.NAME_ATTR, self.DUP_FLAG_ATTR)
 
+        self._check_self_dependency()
+
     def _validate_basic_attributes(self, *list_of_attributes):
         """
         Validation of the JSON input for the MetaWorkflow step.
@@ -44,6 +61,8 @@ class MetaWorkflowStep(ValidatedDictionary):
         # str, must be unique TODO: name filling in ff
         try:
             # set None for [default] arg to not throw AttributeError
+            #TODO: move the differentiation with property trace to FF
+            # and just handle creation uuids here
             if not getattr(self, self.ITEMS_CREATION_UUID, None):
                 getattr(self, self.ITEMS_CREATION_PROP_TRACE)
         except AttributeError as e:
@@ -54,6 +73,13 @@ class MetaWorkflowStep(ValidatedDictionary):
         # either the UUID or property trace, but not both
         if hasattr(self, self.ITEMS_CREATION_PROP_TRACE) and hasattr(self, self.ITEMS_CREATION_UUID):
             raise AttributeError("Object validation error, 'MetaWorkflowStep' object cannot have both of the following attributes: 'items_for_creation_property_trace' and 'items_for_creation_uuid'")
+
+    def _check_self_dependency(self):
+        if hasattr(self, self.DEPENDENCIES_ATTR):
+            dependencies = getattr(self, self.DEPENDENCIES_ATTR)
+            for dependency in dependencies:
+                if dependency == getattr(self, self.NAME_ATTR):
+                    raise MetaWorkflowStepSelfDependencyError(f'"{dependency}" has a self dependency.')
 
 
 ################################################
@@ -84,14 +110,14 @@ class MetaWorkflowHandler(ValidatedDictionary):
 
         ### Calculated attributes ###
         # set meta_workflows attribute
+        # TODO: is this redefinition into a dictionary allowed?
+        # or should I just make a new attribute? I dunno how this would affect json in portal
+        # except maybe in patching
         self._set_meta_workflows_dict()
 
-        # order the meta_workflows list based on dependencies TODO: use setattr instead?
+        # order the meta_workflows list based on dependencies
+        # this ordered list is what's used to create the array of mwf runs in Run handler
         self.ordered_meta_workflows = self._create_ordered_meta_workflows_list()
-
-#         # using ordered metaworkflows list, create a list of objects using class MetaWorkflowStep
-#         # this validates basic attributes needed for each metaworkflow step
-#         self.ordered_meta_workflow_steps = self._create_meta_workflow_step_objects()
 
     def _set_meta_workflows_dict(self):
         """
@@ -101,9 +127,6 @@ class MetaWorkflowHandler(ValidatedDictionary):
         If present, copy that list temporarily and redefine as a dictionary
         of the form {meta_workflow_name: meta_workflow_step,....} 
         getting rid of duplicates in the process (by MetaWorkflow name)
-        # TODO: this method doesn't allow for metaworkflows of the same name 
-        # to be utilized in the same handler, even if they have distinct dependencies
-        # check if this is disastrous lol
 
         :return: None, if all MetaWorkflowSteps are created successfully
         """
@@ -121,16 +144,58 @@ class MetaWorkflowHandler(ValidatedDictionary):
 
                 # then add to the meta_workflows dictionary
                 # of the form {mwf["name"]: MetaWorkflowStep(mwf)}
-                temp_mwf_step_dict.setdefault(mwf["name"], mwf_step)
+                if temp_mwf_step_dict.setdefault(mwf["name"], mwf_step) != mwf_step:
+                    raise MetaWorkflowStepDuplicateError(f'"{mwf["name"]}" is a duplicate MetaWorkflow, all MetaWorkflow names must be unique.')
 
             # reset the "meta_workflows" attribute as an empty dictionary (rather than array)
             setattr(self, self.META_WORKFLOWS_ATTR, temp_mwf_step_dict)
 
     def _create_ordered_meta_workflows_list(self):
-        # create "graph" that will be passed into the topological sorter
-        # graph = self._create_topo_sort_graph()
         meta_workflows_dict = getattr(self, self.META_WORKFLOWS_ATTR)
-        sorter = TopologicalSortHandler(meta_workflows_dict)
 
-        # # now topologically sort the steps
-        return sorter.sorted_graph_list()
+        try:
+            # create "graph" that will be passed into the topological sorter
+            sorter = TopologicalSortHandler(meta_workflows_dict)
+            # now topologically sort the steps
+            return sorter.sorted_graph_list()
+        except CycleError:
+            raise MetaWorkflowStepCycleError()
+
+    # def create_meta_workflow_run_handler_input_dict(self, associated_item_uuid):
+    #     """
+    #     Completes attributes and other metadata for Metaworkflow Run Handler
+
+    #     TODO: should assoc item be a param? because it is a required mwfr handler attr for CGAP
+
+    #     :param associated_item_uuid: 
+    #     :type associated_item_uuid: str
+    #     :return: input dictionary (JSON?? TODO:) to create MetaWorkflowRunHandler object
+    #     :rtype: dict
+    #     """
+
+    #     #TODO: when should i do the check on the duplication flag?
+
+    #     #TODO: use getattr with constants rather than self references
+
+    #     input_dict = {
+    #         #TODO: what's commented out will be taken care of in create_metawfr_handler.py
+    #         # "project": self.project,
+    #         # "institution": self.institution,
+    #         #TODO: can you use a mwf handler from one proj/inst to
+    #         # create a handler with a different proj/inst?
+    #         "meta_workflow_handler": self.uuid, # assuming it's already converted from uuid to str?
+    #         "associated_item": associated_item_uuid,
+    #         "final_status": "pending", #TODO: make this a constant
+    #         "meta_workflow_runs": []
+    #     }
+
+    #     # this goes stepwise, in order, and accessing mwf metadata through corresponding dict lookup by name
+    #     for meta_workflow_name in self.ordered_meta_workflows:
+    #         meta_workflow_run_dict = {}
+    #         meta_workflow_run_dict.setdefault("name", meta_workflow_name)
+    #         meta_workflow_run_dict.setdefault("items_for_creation", self.meta_workflows[meta_workflow_name].ITEMS_CREATION_UUID)
+    #         meta_workflow_run_dict.setdefault("dependencies", self.meta_workflows[meta_workflow_name].dependencies)
+    #         meta_workflow_run_dict.setdefault("status", "pending") #TODO: constant here
+    #         #TODO: meta_workflow_run uuid taken care of in ff creation of run handler
+
+    #         input_dict["meta_workflow_runs"].append(meta_workflow_run_dict)
