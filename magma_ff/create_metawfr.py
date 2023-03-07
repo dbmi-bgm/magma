@@ -1166,7 +1166,15 @@ class InputPropertiesFromSample:
     @property
     def input_bams(self):
         """BAM file input."""
-        return [self.get_processed_files_for_file_format(self.BAM_FORMAT)]
+        bams = self.get_processed_files_for_file_format(self.BAM_FORMAT)
+        return [self.keep_last_item(bams)]
+
+    def keep_last_item(self, items):
+        if len(items) <= 1:
+            result = items
+        elif len(items) > 1:
+            result = items[-1:]
+        return result
 
     @property
     def rcktar_file_names(self):
