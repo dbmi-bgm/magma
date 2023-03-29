@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "magma-suite"
-version = "1.2.1"
+version = "1.3.0"
 description = "Collection of tools to manage meta-workflows automation."
 authors = ["Michele Berselli <berselli.michele@gmail.com>", "Doug Rioux", "Soo Lee", "CGAP team"]
 license = "MIT"
@@ -28,6 +28,10 @@ tibanna-ff = "^1.0.0"
 [tool.poetry.dev-dependencies]
 mock = "*"
 pytest = "*"
+
+
+[tool.poetry.scripts]
+create-meta-workflow-run = "magma_ff.commands.create_meta_workflow_run:main"
 
 
 [build-system]
