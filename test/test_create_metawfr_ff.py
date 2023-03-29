@@ -1,11 +1,14 @@
 import datetime
 import json
+from contextlib import contextmanager
 from copy import deepcopy
+from typing import Iterator, List
 
 import mock
 import pytest
 
 import magma_ff.create_metawfr as create_mwfr_module
+import magma_ff.utils as utils_module
 from magma_ff.create_metawfr import (
     InputPropertiesFromSampleProcessing,
     InputPropertiesFromSample,
@@ -14,8 +17,13 @@ from magma_ff.create_metawfr import (
     MetaWorkflowRunFromSample,
     MetaWorkflowRunFromItem,
     MetaWorkflowRunInput,
+    create_meta_workflow_run,
     get_files_for_file_formats,
+    get_item_types,
+    is_type,
 )
+from magma_ff.utils import JsonObject
+from .utils import patch_context
 
 BAM_UUID_1 = "bam_sample_1"
 BAM_UUID_2 = "bam_sample_2"
@@ -97,6 +105,7 @@ SAMPLE_1 = {
             "file_format": {"file_format": "fastq"},
         },
     ],
+    "@type": ["Sample", "Item"],
 }
 SAMPLE_2 = {
     "uuid": SAMPLE_UUID_2,
@@ -345,6 +354,7 @@ SAMPLE_PROCESSING = {
     "samples": SAMPLES,
     "meta_workflow_runs": SAMPLE_PROCESSING_META_WORKFLOW_RUNS,
     "files": SAMPLE_PROCESSING_SUBMITTED_FILES,
+    "@type": ["SampleProcessing", "Item"],
 }
 ITEM_UUID = "item_uuid"
 ARBITRARY_ITEM = {
@@ -611,6 +621,112 @@ def meta_workflow_run_from_sample():
                 return_value=META_WORKFLOW_RUN_UUID,
             ):
                 return MetaWorkflowRunFromSample(None, None, AUTH_KEY)
+
+
+@contextmanager
+def patch_get_metadata(**kwargs) -> Iterator[mock.MagicMock]:
+    with patch_context(
+        create_mwfr_module.ff_utils,
+        "get_metadata",
+        **kwargs
+    ) as mock_item:
+        yield mock_item
+
+
+@contextmanager
+def patch_create_from_sample(**kwargs) -> Iterator[mock.MagicMock]:
+    with patch_context(
+        create_mwfr_module,
+        "create_meta_workflow_run_from_sample",
+        **kwargs
+    ) as mock_item:
+        yield mock_item
+
+
+@contextmanager
+def patch_create_from_sample_processing(**kwargs) -> Iterator[mock.MagicMock]:
+    with patch_context(
+        create_mwfr_module,
+        "create_meta_workflow_run_from_sample_processing",
+        **kwargs
+    ) as mock_item:
+        yield mock_item
+
+
+@pytest.mark.parametrize(
+    "item,exception_expected,from_sample_expected,from_sample_processing_expected",
+    [
+        ({}, True, False, False),
+        (META_WORKFLOW, True, False, False),
+        (SAMPLE_1, False, True, False),
+        (SAMPLE_PROCESSING, False, False, True),
+    ]
+)
+def test_create_meta_workflow_run(
+    item: JsonObject, exception_expected: bool,
+    from_sample_expected: bool, from_sample_processing_expected: bool,
+) -> None:
+    item_identifier = "foo"
+    meta_workflow_identifier = "bar"
+    auth_key = "fu"
+    post = True
+    patch = False
+    with patch_get_metadata(return_value=item) as mock_get_metadata:
+        with patch_create_from_sample() as mock_create_from_sample:
+            with patch_create_from_sample_processing() as mock_create_from_sample_processing:
+                if exception_expected:
+                    with pytest.raises(MetaWorkflowRunCreationError):
+                        create_meta_workflow_run(
+                            item_identifier, meta_workflow_identifier, auth_key,
+                            post=post, patch=patch
+                        )
+                else:
+                    create_meta_workflow_run(
+                        item_identifier, meta_workflow_identifier, auth_key,
+                        post=post, patch=patch
+                    )
+                mock_get_metadata.assert_called_once_with(
+                    item_identifier, key=auth_key, add_on="frame=object"
+                )
+                if from_sample_expected:
+                    mock_create_from_sample.assert_called_once_with(
+                        item_identifier, meta_workflow_identifier, auth_key,
+                        post=post, patch=patch
+                    )
+                else:
+                    mock_create_from_sample.assert_not_called()
+                if from_sample_processing_expected:
+                    mock_create_from_sample_processing.assert_called_once_with(
+                        item_identifier, meta_workflow_identifier, auth_key,
+                        post=post, patch=patch
+                    )
+                else:
+                    mock_create_from_sample_processing.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "item_type,item,expected",
+    [
+        ("foo", {}, False),
+        ("foo", {"@type": ["foo", "bar"]}, True),
+        ("fu", {"@type": ["foo", "bar"]}, False),
+    ]
+)
+def test_is_type(item_type: str, item: JsonObject, expected: bool) -> None:
+    result = is_type(item_type, item)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "item,expected",
+    [
+        ({}, []),
+        ({"@type": ["foo", "bar"]}, ["foo", "bar"]),
+    ]
+)
+def test_get_item_types(item: JsonObject, expected: List[str]) -> None:
+    result = get_item_types(item)
+    assert result == expected
 
 
 class InputPropertiesForTest:

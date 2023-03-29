@@ -10,8 +10,15 @@
 #   Libraries
 ################################################
 import json
+from pathlib import Path
+from typing import Any, Dict
 
 from dcicutils import ff_utils
+
+
+JsonObject = Dict[str, Any]
+
+CGAP_KEYS_FILE = Path.expanduser(Path("~/.cgap-keys.json").absolute())
 
 
 ################################################
@@ -98,3 +105,24 @@ def check_status(meta_workflow_run, valid_final_status=None):
     else:
         result = False
     return result
+
+
+class AuthorizationError(Exception):
+    pass
+
+
+def get_cgap_keys_path() -> Path:
+    return CGAP_KEYS_FILE
+
+
+# TODO: Move to dcicutils
+def get_auth_key(env_key: str) -> JsonObject:
+    keys_path = get_cgap_keys_path()
+    with keys_path.open() as file_handle:
+        keys = json.load(file_handle)
+    key = keys.get(env_key)
+    if key is None:
+        raise AuthorizationError(
+            f"No key in {str(CGAP_KEYS_FILE.absolute())} matches {env_key}"
+        )
+    return key

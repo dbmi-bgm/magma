@@ -6,28 +6,85 @@
 #
 ################################################
 
-################################################
-#   Libraries
-################################################
+import argparse
 import datetime
 import json
 import uuid
+from typing import List
 
 from dcicutils import ff_utils
 
-# magma
 from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import make_embed_request
+from magma_ff.utils import JsonObject, make_embed_request, get_auth_key
 
 
 FILE_FORMAT = "file_format"
+SAMPLE_PROCESSING_TYPE = "SampleProcessing"
+SAMPLE_TYPE = "Sample"
+TYPE = "@type"
 UUID = "uuid"
 
 
-################################################
-#   MetaWorkflowRunCreationError
-################################################
+def create_meta_workflow_run(
+    item_identifier: str, meta_workflow_identifier: str, auth_key: JsonObject,
+    post: bool = True, patch: bool = True
+) -> None:
+    item = ff_utils.get_metadata(item_identifier, key=auth_key, add_on="frame=object")
+    if is_type(SAMPLE_TYPE, item):
+        create_meta_workflow_run_from_sample(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
+    elif is_type(SAMPLE_PROCESSING_TYPE, item):
+        create_meta_workflow_run_from_sample_processing(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
+    else:
+        raise MetaWorkflowRunCreationError(
+            f"No methods available to create MetaWorkflowRun for item of type(s):"
+            f" {get_item_types(item)}"
+        )
+
+
+def is_type(item_type: str, item: JsonObject) -> bool:
+    item_types = get_item_types(item)
+    if item_type in item_types:
+        return True
+    return False
+
+
+def get_item_types(item: JsonObject) -> List[str]:
+    return item.get(TYPE, [])
+
+
+def create_meta_workflow_run_from_sample(
+    item_identifier: str, meta_workflow_identifier: str, auth_key: JsonObject,
+    post=True, patch=True,
+) -> None:
+    meta_workflow_run = MetaWorkflowRunFromSample(
+        item_identifier,  meta_workflow_identifier, auth_key
+    )
+    if post:
+        if patch:
+            meta_workflow_run.post_and_patch()
+        else:
+            meta_workflow_run.post_meta_workflow_run()
+
+
+def create_meta_workflow_run_from_sample_processing(
+    item_identifier: str, meta_workflow_identifier: str, auth_key: JsonObject,
+    post=True, patch=True,
+) -> None:
+    meta_workflow_run = MetaWorkflowRunFromSampleProcessing(
+        item_identifier,  meta_workflow_identifier, auth_key
+    )
+    if post:
+        if patch:
+            meta_workflow_run.post_and_patch()
+        else:
+            meta_workflow_run.post_meta_workflow_run()
+
+
 class MetaWorkflowRunCreationError(Exception):
     """Custom exception for error tracking."""
 
@@ -83,7 +140,7 @@ class MetaWorkflowRunFromItem:
             raise MetaWorkflowRunCreationError(
                 "No Item found for given identifier: %s" % input_item_identifier
             )
-        self.meta_workflow = self.get_item_properties(meta_workflow_identifier)
+        self.meta_workflow = self.get_item_properties(meta_workflow_identifier, auth_key)
         if not self.meta_workflow:
             raise MetaWorkflowRunCreationError(
                 "No MetaWorkflow found for given identifier: %s"
@@ -129,7 +186,6 @@ class MetaWorkflowRunFromItem:
     def get_item_properties(self, item_identifier):
         """Retrieve item from given environment without raising
         exception if not found.
-
         :param item_identifier: Item identifier on the portal
         :type item_identifier: str
         :return: Raw view of item if found
@@ -1184,3 +1240,38 @@ class InputPropertiesFromSample:
     def input_sample_uuids(self):
         """Sample UUID"""
         return [self.sample[self.UUID]]
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Create MetaWorkflowRun")
+    parser.add_argument(
+        "input_item_identifier", help="Identifier for item for input to MWFR"
+    )
+    parser.add_argument(
+        "meta_workflow_identifier", help="MetaWorkflow identifier for input to MWFR"
+    )
+    parser.add_argument(
+        "-e", "--auth-env", default="default", help="Env name in ~/.cgap-keys.json"
+    )
+    parser.add_argument(
+        "--no-post", action="store_true", help="Do not POST the MWFR created"
+    )
+    parser.add_argument(
+        "--no-patch", action="store_true",
+        help="Do not PATCH the input item with the MWFR created",
+    )
+    args = parser.parse_args()
+    auth_key = get_auth_key(args.auth_env)
+    post = not args.no_post
+    patch = not args.no_patch
+    create_meta_workflow_run(
+        args.input_item_identifier,
+        args.meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch
+    )
+
+
+if __name__ == "__main__":
+    main()
