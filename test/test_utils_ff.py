@@ -4,7 +4,7 @@ import pytest
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, Iterator
+from typing import Any, Iterator, Sequence
 
 from magma_ff import utils as magma_ff_utils_module
 from magma_ff.utils import (
@@ -12,6 +12,7 @@ from magma_ff.utils import (
     check_status,
     chunk_ids,
     get_auth_key,
+    keep_last_item,
     make_embed_request,
     AuthorizationError,
 )
@@ -143,3 +144,16 @@ def test_get_auth_key(
             else:
                 result = get_auth_key(env_key)
                 assert result == expected
+
+
+@pytest.mark.parametrize(
+    "items,expected",
+    (
+        ([], []),
+        (["foo"], ["foo"]),
+        (["foo", "bar"], ["bar"]),
+    ),
+)
+def test_keep_last_item(items: Sequence, expected: Sequence) -> None:
+    result = keep_last_item(items)
+    assert result == expected

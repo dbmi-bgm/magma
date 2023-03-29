@@ -16,7 +16,7 @@ from dcicutils import ff_utils
 
 from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import JsonObject, make_embed_request, get_auth_key
+from magma_ff.utils import JsonObject, keep_last_item, get_auth_key, make_embed_request
 
 
 FILE_FORMAT = "file_format"
@@ -1231,7 +1231,8 @@ class InputPropertiesFromSample:
     @property
     def input_bams(self):
         """BAM file input."""
-        return [self.get_processed_files_for_file_format(self.BAM_FORMAT)]
+        bams = self.get_processed_files_for_file_format(self.BAM_FORMAT)
+        return [keep_last_item(bams)]
 
     @property
     def rcktar_file_names(self):

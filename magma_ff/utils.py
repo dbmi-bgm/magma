@@ -11,7 +11,7 @@
 ################################################
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Sequence
 
 from dcicutils import ff_utils
 
@@ -126,3 +126,11 @@ def get_auth_key(env_key: str) -> JsonObject:
             f"No key in {str(CGAP_KEYS_FILE.absolute())} matches '{env_key}'"
         )
     return key
+
+
+def keep_last_item(items: Sequence) -> Sequence:
+    if len(items) <= 1:
+        result = items
+    elif len(items) > 1:
+        result = items[-1:]
+    return result

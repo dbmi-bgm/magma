@@ -81,6 +81,7 @@ SAMPLE_1 = {
     "bam_sample_id": SAMPLE_NAME_1,
     "files": [{"uuid": CRAM_UUID_1, "file_format": {"file_format": "cram"}}],
     "processed_files": [
+        {"uuid": BAM_UUID_2, "file_format": {"file_format": "bam"}},
         {"uuid": BAM_UUID_1, "file_format": {"file_format": "bam"}},
         {"uuid": GVCF_UUID_1, "file_format": {"file_format": "gvcf_gz"}},
         {"uuid": GVCF_UUID_1_2, "file_format": {"file_format": "gvcf_gz"}},
