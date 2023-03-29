@@ -140,7 +140,7 @@ class MetaWorkflowRunFromItem:
             raise MetaWorkflowRunCreationError(
                 "No Item found for given identifier: %s" % input_item_identifier
             )
-        self.meta_workflow = self.get_item_properties(meta_workflow_identifier, auth_key)
+        self.meta_workflow = self.get_item_properties(meta_workflow_identifier)
         if not self.meta_workflow:
             raise MetaWorkflowRunCreationError(
                 "No MetaWorkflow found for given identifier: %s"

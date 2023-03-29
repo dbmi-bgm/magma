@@ -18,7 +18,7 @@ from dcicutils import ff_utils
 
 JsonObject = Dict[str, Any]
 
-CGAP_KEYS_FILE = Path.expanduser(Path("~/.cgap-keys.json").absolute())
+CGAP_KEYS_FILE = Path.expanduser(Path("~/.cgap-keys.json")).absolute()
 
 
 ################################################
@@ -123,6 +123,6 @@ def get_auth_key(env_key: str) -> JsonObject:
     key = keys.get(env_key)
     if key is None:
         raise AuthorizationError(
-            f"No key in {str(CGAP_KEYS_FILE.absolute())} matches {env_key}"
+            f"No key in {str(CGAP_KEYS_FILE.absolute())} matches '{env_key}'"
         )
     return key
