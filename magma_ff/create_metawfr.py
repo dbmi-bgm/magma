@@ -27,8 +27,11 @@ UUID = "uuid"
 
 
 def create_meta_workflow_run(
-    item_identifier: str, meta_workflow_identifier: str, auth_key: JsonObject,
-    post: bool = True, patch: bool = True
+    item_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
 ) -> None:
     item = ff_utils.get_metadata(item_identifier, key=auth_key, add_on="frame=object")
     if is_type(SAMPLE_TYPE, item):
@@ -58,11 +61,14 @@ def get_item_types(item: JsonObject) -> List[str]:
 
 
 def create_meta_workflow_run_from_sample(
-    item_identifier: str, meta_workflow_identifier: str, auth_key: JsonObject,
-    post=True, patch=True,
+    item_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post=True,
+    patch=True,
 ) -> None:
     meta_workflow_run = MetaWorkflowRunFromSample(
-        item_identifier,  meta_workflow_identifier, auth_key
+        item_identifier, meta_workflow_identifier, auth_key
     )
     if post:
         if patch:
@@ -72,11 +78,14 @@ def create_meta_workflow_run_from_sample(
 
 
 def create_meta_workflow_run_from_sample_processing(
-    item_identifier: str, meta_workflow_identifier: str, auth_key: JsonObject,
-    post=True, patch=True,
+    item_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post=True,
+    patch=True,
 ) -> None:
     meta_workflow_run = MetaWorkflowRunFromSampleProcessing(
-        item_identifier,  meta_workflow_identifier, auth_key
+        item_identifier, meta_workflow_identifier, auth_key
     )
     if post:
         if patch:
@@ -1257,7 +1266,8 @@ def main() -> None:
         "--no-post", action="store_true", help="Do not POST the MWFR created"
     )
     parser.add_argument(
-        "--no-patch", action="store_true",
+        "--no-patch",
+        action="store_true",
         help="Do not PATCH the input item with the MWFR created",
     )
     args = parser.parse_args()
@@ -1269,7 +1279,7 @@ def main() -> None:
         args.meta_workflow_identifier,
         auth_key,
         post=post,
-        patch=patch
+        patch=patch,
     )
 
 

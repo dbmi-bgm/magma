@@ -8,7 +8,11 @@ from typing import Any, Iterator
 
 from magma_ff import utils as magma_ff_utils_module
 from magma_ff.utils import (
-    JsonObject, check_status, chunk_ids, get_auth_key, make_embed_request,
+    JsonObject,
+    check_status,
+    chunk_ids,
+    get_auth_key,
+    make_embed_request,
     AuthorizationError,
 )
 from .utils import patch_context
@@ -107,9 +111,7 @@ SOME_AUTH_KEY = {"foo": SOME_AUTH}
 @contextmanager
 def patch_cgap_keys_path(**kwargs) -> Iterator[mock.MagicMock]:
     with patch_context(
-        magma_ff_utils_module,
-        "get_cgap_keys_path",
-        **kwargs
+        magma_ff_utils_module, "get_cgap_keys_path", **kwargs
     ) as mock_item:
         yield mock_item
 
@@ -127,9 +129,11 @@ def get_named_tmp_file_path_with_content(contents: Any) -> NamedTemporaryFile:
     [
         ("fu", True, None),
         ("foo", False, SOME_AUTH),
-    ]
+    ],
 )
-def test_get_auth_key(env_key: str, exception_expected: bool, expected: JsonObject) -> None:
+def test_get_auth_key(
+    env_key: str, exception_expected: bool, expected: JsonObject
+) -> None:
     tmp_contents = json.dumps(SOME_AUTH_KEY)
     with get_named_tmp_file_path_with_content(tmp_contents) as tmp_path:
         with patch_cgap_keys_path(return_value=tmp_path):

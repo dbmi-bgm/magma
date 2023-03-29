@@ -626,9 +626,7 @@ def meta_workflow_run_from_sample():
 @contextmanager
 def patch_get_metadata(**kwargs) -> Iterator[mock.MagicMock]:
     with patch_context(
-        create_mwfr_module.ff_utils,
-        "get_metadata",
-        **kwargs
+        create_mwfr_module.ff_utils, "get_metadata", **kwargs
     ) as mock_item:
         yield mock_item
 
@@ -636,9 +634,7 @@ def patch_get_metadata(**kwargs) -> Iterator[mock.MagicMock]:
 @contextmanager
 def patch_create_from_sample(**kwargs) -> Iterator[mock.MagicMock]:
     with patch_context(
-        create_mwfr_module,
-        "create_meta_workflow_run_from_sample",
-        **kwargs
+        create_mwfr_module, "create_meta_workflow_run_from_sample", **kwargs
     ) as mock_item:
         yield mock_item
 
@@ -646,9 +642,7 @@ def patch_create_from_sample(**kwargs) -> Iterator[mock.MagicMock]:
 @contextmanager
 def patch_create_from_sample_processing(**kwargs) -> Iterator[mock.MagicMock]:
     with patch_context(
-        create_mwfr_module,
-        "create_meta_workflow_run_from_sample_processing",
-        **kwargs
+        create_mwfr_module, "create_meta_workflow_run_from_sample_processing", **kwargs
     ) as mock_item:
         yield mock_item
 
@@ -660,11 +654,13 @@ def patch_create_from_sample_processing(**kwargs) -> Iterator[mock.MagicMock]:
         (META_WORKFLOW, True, False, False),
         (SAMPLE_1, False, True, False),
         (SAMPLE_PROCESSING, False, False, True),
-    ]
+    ],
 )
 def test_create_meta_workflow_run(
-    item: JsonObject, exception_expected: bool,
-    from_sample_expected: bool, from_sample_processing_expected: bool,
+    item: JsonObject,
+    exception_expected: bool,
+    from_sample_expected: bool,
+    from_sample_processing_expected: bool,
 ) -> None:
     item_identifier = "foo"
     meta_workflow_identifier = "bar"
@@ -677,28 +673,40 @@ def test_create_meta_workflow_run(
                 if exception_expected:
                     with pytest.raises(MetaWorkflowRunCreationError):
                         create_meta_workflow_run(
-                            item_identifier, meta_workflow_identifier, auth_key,
-                            post=post, patch=patch
+                            item_identifier,
+                            meta_workflow_identifier,
+                            auth_key,
+                            post=post,
+                            patch=patch,
                         )
                 else:
                     create_meta_workflow_run(
-                        item_identifier, meta_workflow_identifier, auth_key,
-                        post=post, patch=patch
+                        item_identifier,
+                        meta_workflow_identifier,
+                        auth_key,
+                        post=post,
+                        patch=patch,
                     )
                 mock_get_metadata.assert_called_once_with(
                     item_identifier, key=auth_key, add_on="frame=object"
                 )
                 if from_sample_expected:
                     mock_create_from_sample.assert_called_once_with(
-                        item_identifier, meta_workflow_identifier, auth_key,
-                        post=post, patch=patch
+                        item_identifier,
+                        meta_workflow_identifier,
+                        auth_key,
+                        post=post,
+                        patch=patch,
                     )
                 else:
                     mock_create_from_sample.assert_not_called()
                 if from_sample_processing_expected:
                     mock_create_from_sample_processing.assert_called_once_with(
-                        item_identifier, meta_workflow_identifier, auth_key,
-                        post=post, patch=patch
+                        item_identifier,
+                        meta_workflow_identifier,
+                        auth_key,
+                        post=post,
+                        patch=patch,
                     )
                 else:
                     mock_create_from_sample_processing.assert_not_called()
@@ -710,7 +718,7 @@ def test_create_meta_workflow_run(
         ("foo", {}, False),
         ("foo", {"@type": ["foo", "bar"]}, True),
         ("fu", {"@type": ["foo", "bar"]}, False),
-    ]
+    ],
 )
 def test_is_type(item_type: str, item: JsonObject, expected: bool) -> None:
     result = is_type(item_type, item)
@@ -722,7 +730,7 @@ def test_is_type(item_type: str, item: JsonObject, expected: bool) -> None:
     [
         ({}, []),
         ({"@type": ["foo", "bar"]}, ["foo", "bar"]),
-    ]
+    ],
 )
 def test_get_item_types(item: JsonObject, expected: List[str]) -> None:
     result = get_item_types(item)

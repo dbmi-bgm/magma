@@ -78,7 +78,7 @@ def chunk_ids(ids):
     result = []
     chunk_size = 5
     for idx in range(0, len(ids), chunk_size):
-        result.append(ids[idx: idx + chunk_size])
+        result.append(ids[idx : idx + chunk_size])
     return result
 
 
