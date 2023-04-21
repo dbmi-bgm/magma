@@ -145,32 +145,32 @@ class FFMetaWfrUtils(object):
         # Cache for access key
         self._ff_key = None
 
-    def wfr_metadata(self, job_id):
-        """Get portal run metadata from job_id.
-        Return None if a run associated with job id cannot be found.
-        """
-        # Use cache
-        if job_id in self._metadata:
-            return self._metadata[job_id]
-        # Search by job id
-        query='/search/?type=WorkflowRun&awsem_job_id=%s' % job_id
-        try:
-            search_res = ff_utils.search_metadata(query, key=self.ff_key)
-        except Exception as e:
-            raise FdnConnectionException(e)
-        if search_res:
-            self._metadata[job_id] = search_res[0]
-            return self._metadata[job_id]
-        else:
-            # find it from dynamoDB
-            job_info = Job.info(job_id)
-            if not job_info:
-                return None
-            wfr_uuid = job_info.get('WorkflowRun uuid', '')
-            if not wfr_uuid:
-                return None
-            self._metadata[job_id] = ff_utils.get_metadata(wfr_uuid, key=self.ff_key)
-            return self._metadata[job_id]
+    # def wfr_metadata(self, job_id):
+    #     """Get portal run metadata from job_id.
+    #     Return None if a run associated with job id cannot be found.
+    #     """
+    #     # Use cache
+    #     if job_id in self._metadata:
+    #         return self._metadata[job_id]
+    #     # Search by job id
+    #     query='/search/?type=WorkflowRun&awsem_job_id=%s' % job_id
+    #     try:
+    #         search_res = ff_utils.search_metadata(query, key=self.ff_key)
+    #     except Exception as e:
+    #         raise FdnConnectionException(e)
+    #     if search_res:
+    #         self._metadata[job_id] = search_res[0]
+    #         return self._metadata[job_id]
+    #     else:
+    #         # find it from dynamoDB
+    #         job_info = Job.info(job_id)
+    #         if not job_info:
+    #             return None
+    #         wfr_uuid = job_info.get('WorkflowRun uuid', '')
+    #         if not wfr_uuid:
+    #             return None
+    #         self._metadata[job_id] = ff_utils.get_metadata(wfr_uuid, key=self.ff_key)
+    #         return self._metadata[job_id]
 
     # def wfr_run_uuid(self, job_id):
     #     """This is the function to be used by Magma.
@@ -195,10 +195,11 @@ class FFMetaWfrUtils(object):
 
     @property
     def ff_key(self):
-        """Get access key for the portal.
         """
-        # Use cache
+        Get access key for the portal.
+        """
         if not self._ff_key:
-            # Use tibanna key for now
+            # Use tibanna key for now -- TODO: is this correct? don't really understand why
+            # https://github.com/4dn-dcic/utils/blob/master/dcicutils/s3_utils.py#L276
             self._ff_key = s3Utils(env=self.env).get_access_keys('access_key_tibanna')
         return self._ff_key

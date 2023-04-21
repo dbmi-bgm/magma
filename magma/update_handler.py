@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
 ################################################
-#   Libraries
-################################################
-import sys, os
-
-################################################
 #   UpdateHandler
 ################################################
 class UpdateHandler(object):
     """
-    Class to handle MetaWorkflowRunHandler and MetaWorkflowRun object updates.
+    Class to handle MetaWorkflowRunHandler and MetaWorkflowRun Step object updates.
     """
 
     def __init__(self, run_handler_obj):
@@ -24,21 +19,24 @@ class UpdateHandler(object):
         # Basic attributes
         self.run_handler_obj = run_handler_obj
 
-    def reset_steps(self, step_names):
+    def reset_specified_steps(self, metaworkflow_run_step_names):
         """
-        Reset MetaWorkflowRun object in step_names list.
+        Reset MetaWorkflowRun Step object(s) in step_names list, and update final_status of MetaWorkflowRunHandler.
 
-        :param step_names: List of names for MetaWorkflowRun steps to be reset
-        :type step_names: list[str]
+        :param metaworkflow_run_step_names: List of MetaWorkflowRun steps to be reset, by name
+        :type metaworkflow_run_step_names: list[str]
         :return: Updated meta_workflow_runs and handler final_status information
         :rtype: dict
         """
-        for name in step_names:
-            self.wflrun_obj.reset_step(name)
+        # Resets each MetaWorkflowRun step in the list (status and meta_workflow_run LinkTo)
+        for metaworkflow_run_name in metaworkflow_run_step_names:
+            self.run_handler_obj.reset_meta_workflow_run_step(metaworkflow_run_name)
 
-        # used later to PATCH onto the portal
-        return {'final_status':  self.run_handler_obj.update_final_status(),
-                'workflow_runs': self.wflrun_obj.runs_to_json()}
+        # Return dictionary of attributes to be PATCHed for Run Handler on the CGAP portal
+        # TODO: put this in ff? since it is CGAP portal specific?
+        
+        # return {'final_status':  self.run_handler_obj.update_final_status(),
+        #         'workflow_runs': self.wflrun_obj.runs_to_json()} TODO: is this right....
 
     # def import_steps(self, wflrun_obj, steps_name, import_input=True):
     #     """Update current MetaWorkflowRun[obj] information.

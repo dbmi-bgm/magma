@@ -9,7 +9,6 @@
 ################################################
 #   Libraries
 ################################################
-import sys, os
 
 # magma
 from magma.checkstatus import AbstractCheckStatus
@@ -34,7 +33,7 @@ class CheckStatusFF(AbstractCheckStatus):
 
         # Portal-related attributes
         self._env = env
-        # For FFMetaWfrUtils object
+        # For FFWfrUtils object
         self._ff = None
     #end def
 
@@ -65,17 +64,17 @@ class CheckStatusFF(AbstractCheckStatus):
     def get_uuid(self, jobid):
         """
         """
-        return self.ff.wfr_run_uuid(jobid)
+        return self._ff.wfr_run_uuid(jobid)
 
     def get_status(self, jobid):
         """
         """
-        return self.ff.wfr_run_status(jobid)
+        return self._ff.wfr_run_status(jobid)
 
     def get_output(self, jobid):
         """
         """
-        return self.ff.get_minimal_processed_output(jobid)
+        return self._ff.get_minimal_processed_output(jobid)
 
     @property
     def ff(self):
@@ -113,6 +112,18 @@ class CheckStatusRunHandlerFF(object):
         self._env = env
         # For FFMetaWfrUtils object, to search CGAP portal-related attributes
         self._ff = None
+
+    @property
+    def status_map(self):
+        """Mapping from get_status output to magma status.
+        Set to property so that inherited classes can overwrite it.
+        """
+        return {
+            'pending': 'pending',
+            'running': 'running',
+            'completed': 'completed',
+            'failed' : 'failed'
+        }
 
     # @property
     # def status_map(self):
@@ -207,7 +218,8 @@ class CheckStatusRunHandlerFF(object):
 
     @property
     def ff(self):
-        """Internal property used for get_status from CGAP portal for given MetaWorkflow Run
+        """
+        Internal property used for get_status from CGAP portal for given MetaWorkflow Run
         """
         if not self._ff:
             self._ff = FFMetaWfrUtils(self._env)

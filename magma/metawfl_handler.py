@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # TODO: use getattr with constants rather than self references
-# TODO: parsing necessary to get rid of extra attributes?
+# TODO: parsing necessary to get rid of extra attributes? i dont think so
 
 ################################################
 #   Libraries

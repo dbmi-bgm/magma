@@ -41,7 +41,6 @@ class MetaWorkflowRunStep(ValidatedDictionary):
 ################################################
 #   MetaWorkflowRunHandler
 ################################################
-#TODO: what about associated item on the MWF handler itself, not just items for creation?
 class MetaWorkflowRunHandler(ValidatedDictionary):
     """
     Class representing a MetaWorkflowRun Handler object,
@@ -82,6 +81,7 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
 
 
     def _create_meta_workflow_run_step_objects(self):
+        # creates dict: {name_1: step_obj_1, name_2: step_obj_2,...}
         meta_workflow_run_step_dict = {}
         for meta_workflow_run in self.meta_workflow_runs:
             meta_workflow_run_step_object = MetaWorkflowRunStep(meta_workflow_run)
