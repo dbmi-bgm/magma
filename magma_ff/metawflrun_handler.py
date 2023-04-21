@@ -5,12 +5,15 @@
 ################################################
 
 # magma
-from magma.metawfl_handler import MetaWorkflowHandler as MetaWorkflowHandlerFromMagma
+from magma.metawfl_handler import MetaWorkflowRunHandler as MetaWorkflowRunHandlerFromMagma
+
+# from magma import metawfl #TODO: do this in FF
+# from magma_ff.utils import make_embed_request #check_status, chunk_ids
 
 ################################################
 #   MetaWorkflow Handler, Fourfront
 ################################################
-class MetaWorkflowHandler(MetaWorkflowHandlerFromMagma):
+class MetaWorkflowHandler(MetaWorkflowRunHandlerFromMagma):
 
     def __init__(self, input_dict):
         """
@@ -21,6 +24,4 @@ class MetaWorkflowHandler(MetaWorkflowHandlerFromMagma):
         """
         super().__init__(input_dict)
 
-        #TODO: name filling with property traces
-        #change design so mwf handler from magma only has uuids
-        #prop trace handled here (change may be within mwf steps)
+    #TODO: update cost ---- embed jobid ...

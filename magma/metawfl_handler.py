@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# TODO: use getattr with constants rather than self references
+# TODO: parsing necessary to get rid of extra attributes?
+
 ################################################
 #   Libraries
 ################################################
@@ -160,42 +163,3 @@ class MetaWorkflowHandler(ValidatedDictionary):
             return sorter.sorted_graph_list()
         except CycleError:
             raise MetaWorkflowStepCycleError()
-
-    # def create_meta_workflow_run_handler_input_dict(self, associated_item_uuid):
-    #     """
-    #     Completes attributes and other metadata for Metaworkflow Run Handler
-
-    #     TODO: should assoc item be a param? because it is a required mwfr handler attr for CGAP
-
-    #     :param associated_item_uuid: 
-    #     :type associated_item_uuid: str
-    #     :return: input dictionary (JSON?? TODO:) to create MetaWorkflowRunHandler object
-    #     :rtype: dict
-    #     """
-
-    #     #TODO: when should i do the check on the duplication flag?
-
-    #     #TODO: use getattr with constants rather than self references
-
-    #     input_dict = {
-    #         #TODO: what's commented out will be taken care of in create_metawfr_handler.py
-    #         # "project": self.project,
-    #         # "institution": self.institution,
-    #         #TODO: can you use a mwf handler from one proj/inst to
-    #         # create a handler with a different proj/inst?
-    #         "meta_workflow_handler": self.uuid, # assuming it's already converted from uuid to str?
-    #         "associated_item": associated_item_uuid,
-    #         "final_status": "pending", #TODO: make this a constant
-    #         "meta_workflow_runs": []
-    #     }
-
-    #     # this goes stepwise, in order, and accessing mwf metadata through corresponding dict lookup by name
-    #     for meta_workflow_name in self.ordered_meta_workflows:
-    #         meta_workflow_run_dict = {}
-    #         meta_workflow_run_dict.setdefault("name", meta_workflow_name)
-    #         meta_workflow_run_dict.setdefault("items_for_creation", self.meta_workflows[meta_workflow_name].ITEMS_CREATION_UUID)
-    #         meta_workflow_run_dict.setdefault("dependencies", self.meta_workflows[meta_workflow_name].dependencies)
-    #         meta_workflow_run_dict.setdefault("status", "pending") #TODO: constant here
-    #         #TODO: meta_workflow_run uuid taken care of in ff creation of run handler
-
-    #         input_dict["meta_workflow_runs"].append(meta_workflow_run_dict)

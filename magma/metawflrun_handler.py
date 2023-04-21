@@ -124,6 +124,9 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
         if all_steps_completed:
             setattr(self, self.FINAL_STATUS_ATTR, "completed")
 
+        #TODO: update pytests here
+        return self.FINAL_STATUS_ATTR
+
     # the following allows for resetting a MetaWorkflow Run Step
     # this can happen only when the duplication flag is set to True
     def reset_meta_workflow_run_step(self, meta_workflow_run_name):
