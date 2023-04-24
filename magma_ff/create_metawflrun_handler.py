@@ -51,6 +51,10 @@ class MetaWorkflowRunHandlerFromItem:
     DEPENDENCIES = "dependencies"
     ITEMS_FOR_CREATION = "items_for_creation"
     ERROR = "error"
+
+    # mwf step
+    ITEMS_FOR_CREATION_UUID = "items_for_creation_uuid"
+    ITEMS_FOR_CREATION_PROP_TRACE = "items_for_creation_property_trace"
     
     PENDING = "pending"
 
@@ -104,6 +108,7 @@ class MetaWorkflowRunHandlerFromItem:
 
         # this is a dict of linkTos and corresponding aliases {linkTo: [aliases]}
         # self.existing_meta_workflow_runs = self.extract_mwfr_names(existing_meta_workflow_runs_linktos)
+        # this is a dict of MWF linkTos (UUIDs TODO:) and corresponding MWFR linkTos {mwf uuid: mwfr uuid}
         self.existing_meta_workflows_on_assoc_item = self.extract_mwf_linktos(existing_meta_workflow_runs_linktos)
 
         # and now create the actual MetaWorkflow Run Handler
@@ -125,12 +130,12 @@ class MetaWorkflowRunHandlerFromItem:
     #     return linkto_alias_dict
 
     def extract_mwf_linktos(self, existing_meta_workflow_runs_linktos):
-        existing_mwfs = []
+        existing_mwfs = {}
         for mwfr_id in existing_meta_workflow_runs_linktos:
-            corresponding_mwf = make_embed_request(mwfr_id, ["meta_workflow"], self.auth_key, single_item=True)
-            if not corresponding_mwf:
+            mwf_id = make_embed_request(mwfr_id, ["meta_workflow"], self.auth_key, single_item=True)
+            if not mwf_id:
                 continue #TODO: error check tho??
-            existing_mwfs.append(corresponding_mwf)
+            existing_mwfs[mwf_id] = mwfr_id
         return existing_mwfs
 
     def get_item_properties(self, item_identifier):
@@ -199,22 +204,39 @@ class MetaWorkflowRunHandlerFromItem:
         #TODO: constants list, and error catching with this call
         ordered_meta_workflows = getattr(associated_meta_workflow_handler_object, "ordered_meta_workflows")
         
+        ordered_meta_workflow_runs = [] # will eventually be the completed pending MWFRs array, in order
         for meta_workflow_step_obj in ordered_meta_workflows:
-
+            meta_workflow_run_step_obj = {} # will become the populated MWFR step object
             # mwf attrs: meta_workflow, name, items_for_creation (proptrace/uuid), dependencies, duplication_flag
             # mwfr attrs: meta_workflow_run, name, status, dependencies, items_for_creation, error
             # attrs that stay the same and are passed in: name, dependencies
+            meta_workflow_run_step_obj[self.NAME] = meta_workflow_step_obj[self.NAME]
+            meta_workflow_run_step_obj[self.DEPENDENCIES] = meta_workflow_step_obj[self.DEPENDENCIES]
             # run attrs that are automatically set already: status (pending)
+
+            # now check duplication flag (rename -- make new if exists)
+            # if there is no existing mwfr for this mwf, don't even worry about it (make new one)
+
+            # when False --> do not duplicate an existing mwfr for this mwf
+            # TODO: if False but mwfr exists
+            # use existing one regardless of status
+
+
+            # when True --> duplicate existing mwfr for this mwf (TODO: does this include the status??)
+            # --> run another w same mwf as template -- new uuid and new status (so overall new item)
+            # overall make a new one regardless of anything
+
+            # now check if items for creation is prop trace(s) or uuid(s)
+            # make embed request as necessary
+            if not getattr(meta_workflow_step_obj, )
+            
+
 
 
 
         # and there is where you can check the duplication flag thing
         # and also items for creation prop trace?
 
-        #TODO: item for creation prop trace
-        #TODO: handle duplication flag
-        # TODO: case where mwf run already exists? and dup flag = F? reset the run? or just redefine? yikes
-        pass
 
     # TODO: for POST and PATCH, will there be changes to schemas other than handlers
     # in order to accomodate this? like maybe within the mixins schemas file
