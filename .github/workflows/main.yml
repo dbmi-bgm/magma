@@ -41,6 +41,7 @@ jobs:
           AWS_DEFAULT_OUTPUT: json
           AWS_ACCOUNT_NUMBER: 123456789011
           TIBANNA_AWS_REGION: us-east-1
+          GLOBAL_ENV_BUCKET: something
         run: |
           make configure
           make build
