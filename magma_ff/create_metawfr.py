@@ -32,30 +32,43 @@ def create_meta_workflow_run(
     post: bool = True,
     patch: bool = True,
 ) -> None:
+    """Create a MetaWorkflowRun for the given item and MetaWorkflow.
+
+    POST MetaWorkflowRun and PATCH associated item as instructed.
+
+    :param item_identfier: Identifier (e.g. UUID, @id) for item from
+        which to create the MetaWorkflowRun
+    :param meta_workflow_identifier: Identifier for the MetaWorkflow
+        from which to create the MetaWorkflowRun
+    :param auth_key: Authorization keys for C4 account
+    :param post: Whether to POST the MetaWorkflowRun created
+    :param patch: Whether to PATCH the item given by the
+        item_identifier with the created MetaWorkflowRun
+    """
     item = ff_utils.get_metadata(item_identifier, key=auth_key, add_on="frame=object")
-    if is_type(SAMPLE_TYPE, item):
+    if _is_item_of_type(SAMPLE_TYPE, item):
         create_meta_workflow_run_from_sample(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
-    elif is_type(SAMPLE_PROCESSING_TYPE, item):
+    elif _is_item_of_type(SAMPLE_PROCESSING_TYPE, item):
         create_meta_workflow_run_from_sample_processing(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
     else:
         raise MetaWorkflowRunCreationError(
             f"No methods available to create MetaWorkflowRun for item of type(s):"
-            f" {get_item_types(item)}"
+            f" {_get_item_types(item)}"
         )
 
 
-def is_type(item_type: str, item: JsonObject) -> bool:
-    item_types = get_item_types(item)
+def _is_item_of_type(item_type: str, item: JsonObject) -> bool:
+    item_types = _get_item_types(item)
     if item_type in item_types:
         return True
     return False
 
 
-def get_item_types(item: JsonObject) -> List[str]:
+def _get_item_types(item: JsonObject) -> List[str]:
     return item.get(TYPE, [])
 
 

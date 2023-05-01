@@ -8,7 +8,6 @@ import mock
 import pytest
 
 import magma_ff.create_metawfr as create_mwfr_module
-import magma_ff.utils as utils_module
 from magma_ff.create_metawfr import (
     InputPropertiesFromSampleProcessing,
     InputPropertiesFromSample,
@@ -19,11 +18,11 @@ from magma_ff.create_metawfr import (
     MetaWorkflowRunInput,
     create_meta_workflow_run,
     get_files_for_file_formats,
-    get_item_types,
-    is_type,
+    _get_item_types,
+    _is_item_of_type,
 )
 from magma_ff.utils import JsonObject
-from .utils import patch_context
+from test.utils import patch_context
 
 BAM_UUID_1 = "bam_sample_1"
 BAM_UUID_2 = "bam_sample_2"
@@ -721,8 +720,8 @@ def test_create_meta_workflow_run(
         ("fu", {"@type": ["foo", "bar"]}, False),
     ],
 )
-def test_is_type(item_type: str, item: JsonObject, expected: bool) -> None:
-    result = is_type(item_type, item)
+def test__is_item_of_type(item_type: str, item: JsonObject, expected: bool) -> None:
+    result = _is_item_of_type(item_type, item)
     assert result == expected
 
 
@@ -733,8 +732,8 @@ def test_is_type(item_type: str, item: JsonObject, expected: bool) -> None:
         ({"@type": ["foo", "bar"]}, ["foo", "bar"]),
     ],
 )
-def test_get_item_types(item: JsonObject, expected: List[str]) -> None:
-    result = get_item_types(item)
+def test__get_item_types(item: JsonObject, expected: List[str]) -> None:
+    result = _get_item_types(item)
     assert result == expected
 
 

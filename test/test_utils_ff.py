@@ -16,7 +16,7 @@ from magma_ff.utils import (
     make_embed_request,
     AuthorizationError,
 )
-from .utils import patch_context
+from test.utils import patch_context
 
 
 class ReturnValue:
