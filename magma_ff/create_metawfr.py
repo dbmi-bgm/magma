@@ -47,18 +47,17 @@ def create_meta_workflow_run(
     """
     item = ff_utils.get_metadata(item_identifier, key=auth_key, add_on="frame=object")
     if _is_item_of_type(SAMPLE_TYPE, item):
-        create_meta_workflow_run_from_sample(
+        return create_meta_workflow_run_from_sample(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
-    elif _is_item_of_type(SAMPLE_PROCESSING_TYPE, item):
-        create_meta_workflow_run_from_sample_processing(
+    if _is_item_of_type(SAMPLE_PROCESSING_TYPE, item):
+        return create_meta_workflow_run_from_sample_processing(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
-    else:
-        raise MetaWorkflowRunCreationError(
-            f"No methods available to create MetaWorkflowRun for item of type(s):"
-            f" {_get_item_types(item)}"
-        )
+    raise MetaWorkflowRunCreationError(
+        f"No methods available to create MetaWorkflowRun for item of type(s):"
+        f" {_get_item_types(item)}"
+    )
 
 
 def _is_item_of_type(item_type: str, item: JsonObject) -> bool:
@@ -79,14 +78,15 @@ def create_meta_workflow_run_from_sample(
     post=True,
     patch=True,
 ) -> None:
-    meta_workflow_run = MetaWorkflowRunFromSample(
+    meta_workflow_run_creator = MetaWorkflowRunFromSample(
         item_identifier, meta_workflow_identifier, auth_key
     )
     if post:
         if patch:
-            meta_workflow_run.post_and_patch()
+            meta_workflow_run_creator.post_and_patch()
         else:
-            meta_workflow_run.post_meta_workflow_run()
+            meta_workflow_run_creator.post_meta_workflow_run()
+    return meta_workflow_run_creator.get_meta_workflow_run()
 
 
 def create_meta_workflow_run_from_sample_processing(
@@ -96,14 +96,15 @@ def create_meta_workflow_run_from_sample_processing(
     post=True,
     patch=True,
 ) -> None:
-    meta_workflow_run = MetaWorkflowRunFromSampleProcessing(
+    meta_workflow_run_creator = MetaWorkflowRunFromSampleProcessing(
         item_identifier, meta_workflow_identifier, auth_key
     )
     if post:
         if patch:
-            meta_workflow_run.post_and_patch()
+            meta_workflow_run_creator.post_and_patch()
         else:
-            meta_workflow_run.post_meta_workflow_run()
+            meta_workflow_run_creator.post_meta_workflow_run()
+    return meta_workflow_run_creator.get_meta_workflow_run()
 
 
 class MetaWorkflowRunCreationError(Exception):
@@ -176,6 +177,9 @@ class MetaWorkflowRunFromItem:
         )
         self.meta_workflow_run_uuid = str(uuid.uuid4())
         self.meta_workflow_run = {}  # Overwrite in child classes
+
+    def get_meta_workflow_run(self) -> JsonObject:
+        return self.meta_workflow_run
 
     def create_workflow_runs(self, meta_workflow_run):
         """Create shards and update MetaWorkflowRun[json].

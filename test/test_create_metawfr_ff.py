@@ -668,8 +668,12 @@ def test_create_meta_workflow_run(
     post = True
     patch = False
     with patch_get_metadata(return_value=item) as mock_get_metadata:
-        with patch_create_from_sample() as mock_create_from_sample:
-            with patch_create_from_sample_processing() as mock_create_from_sample_processing:
+        with patch_create_from_sample(
+            return_value=META_WORKFLOW_RUN
+        ) as mock_create_from_sample:
+            with patch_create_from_sample_processing(
+                return_value=META_WORKFLOW_RUN
+            ) as mock_create_from_sample_processing:
                 if exception_expected:
                     with pytest.raises(MetaWorkflowRunCreationError):
                         create_meta_workflow_run(
@@ -680,13 +684,14 @@ def test_create_meta_workflow_run(
                             patch=patch,
                         )
                 else:
-                    create_meta_workflow_run(
+                    result = create_meta_workflow_run(
                         item_identifier,
                         meta_workflow_identifier,
                         auth_key,
                         post=post,
                         patch=patch,
                     )
+                    assert result == META_WORKFLOW_RUN
                 mock_get_metadata.assert_called_once_with(
                     item_identifier, key=auth_key, add_on="frame=object"
                 )
@@ -720,7 +725,7 @@ def test_create_meta_workflow_run(
         ("fu", {"@type": ["foo", "bar"]}, False),
     ],
 )
-def test__is_item_of_type(item_type: str, item: JsonObject, expected: bool) -> None:
+def test_is_item_of_type(item_type: str, item: JsonObject, expected: bool) -> None:
     result = _is_item_of_type(item_type, item)
     assert result == expected
 
@@ -732,7 +737,7 @@ def test__is_item_of_type(item_type: str, item: JsonObject, expected: bool) -> N
         ({"@type": ["foo", "bar"]}, ["foo", "bar"]),
     ],
 )
-def test__get_item_types(item: JsonObject, expected: List[str]) -> None:
+def test_get_item_types(item: JsonObject, expected: List[str]) -> None:
     result = _get_item_types(item)
     assert result == expected
 
