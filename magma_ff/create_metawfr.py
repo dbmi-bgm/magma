@@ -12,6 +12,7 @@
 import datetime
 import json
 import uuid
+from typing import Any, Dict, List
 
 from dcicutils import ff_utils
 
@@ -20,6 +21,8 @@ from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
 from magma_ff.utils import make_embed_request
 
+
+JsonObject = Dict[str, Any]
 
 FILE_FORMAT = "file_format"
 UUID = "uuid"
@@ -98,6 +101,18 @@ class MetaWorkflowRunFromItem:
         )
         self.meta_workflow_run_uuid = str(uuid.uuid4())
         self.meta_workflow_run = {}  # Overwrite in child classes
+
+    def _get_meta_workflow_run_title(self) -> str:
+        meta_workflow_title = self.meta_workflow.get(self.TITLE)
+        today = datetime.date.today().isoformat()
+        return f"MetaWorkflowRun {meta_workflow_title} from {today}"
+
+    def _get_meta_workflow_run_common_fields(self) -> JsonObject:
+        return {
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
+        }
 
     def create_workflow_runs(self, meta_workflow_run):
         """Create shards and update MetaWorkflowRun[json].
@@ -261,25 +276,15 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         :return: MetaWorkflowRun[json]
         :rtype: dict
         """
-        meta_workflow_title = self.meta_workflow.get(self.TITLE)
-        creation_date = datetime.date.today().isoformat()
-        title = "MetaWorkflowRun %s from %s" % (
-            meta_workflow_title,
-            creation_date,
-        )
         meta_workflow_run = {
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
-            self.TITLE: title,
+            self.TITLE: self._get_meta_workflow_run_title(),
             self.PROJECT: self.project,
             self.INSTITUTION: self.institution,
             self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
             self.ASSOCIATED_SAMPLE_PROCESSING: self.input_item_uuid,
-            self.COMMON_FIELDS: {
-                self.PROJECT: self.project,
-                self.INSTITUTION: self.institution,
-                self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
-            },
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
             self.UUID: self.meta_workflow_run_uuid,
@@ -338,24 +343,59 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         :return: MetaWorkflowRun[json]
         :rtype: dict
         """
-        meta_workflow_title = self.meta_workflow.get(self.TITLE)
-        creation_date = datetime.date.today().isoformat()
-        title = "MetaWorkflowRun %s from %s" % (
-            meta_workflow_title,
-            creation_date,
-        )
         meta_workflow_run = {
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
-            self.TITLE: title,
+            self.TITLE: self._get_meta_workflow_run_title(),
             self.PROJECT: self.project,
             self.INSTITUTION: self.institution,
             self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
-            self.COMMON_FIELDS: {
-                self.PROJECT: self.project,
-                self.INSTITUTION: self.institution,
-                self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
-            },
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
+            self.FINAL_STATUS: self.PENDING,
+            self.WORKFLOW_RUNS: [],
+            self.UUID: self.meta_workflow_run_uuid,
+        }
+        self.create_workflow_runs(meta_workflow_run)
+        return meta_workflow_run
+
+
+class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
+    FIELDS_TO_GET = [
+    ]
+
+    def __init__(
+        self,
+        cohort_analysis_identifier: str,
+        meta_workflow_identifier: str,
+        auth_key: JsonObject,
+    ):
+        """Initialize the object and set all attributes.
+        :param cohort_analysis_identifier: cohort_analysis UUID or @id
+        :param meta_workflow_identifier: MetaWorkflow[portal] UUID,
+            @id, or accession
+        :param auth_key: Portal authorization key
+        :raises MetaWorkflowRunCreationError: If required item cannot
+            be found on environment of authorization key
+        """
+        super().__init__(cohort_analysis_identifier, meta_workflow_identifier, auth_key)
+        self.input_properties = InputPropertiesFromCohortAnalysis(self.input_item)
+        self.meta_workflow_run_input = MetaWorkflowRunInput(
+            self.meta_workflow, self.input_properties
+        ).create_input()
+        self.meta_workflow_run = self.create_meta_workflow_run()
+
+    def create_meta_workflow_run(self) -> JsonObject:
+        """Create MetaWorkflowRun[json] to later POST to portal.
+
+        :return: MetaWorkflowRun[json]
+        """
+        meta_workflow_run = {
+            self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
+            self.INPUT: self.meta_workflow_run_input,
+            self.TITLE: self._get_meta_workflow_run_title(),
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
             self.UUID: self.meta_workflow_run_uuid,
@@ -1184,3 +1224,48 @@ class InputPropertiesFromSample:
     def input_sample_uuids(self):
         """Sample UUID"""
         return [self.sample[self.UUID]]
+
+
+class InputPropertiesFromCohortAnalysis:
+
+    # Schema constants
+    CASE_SAMPLES = "case_samples"
+    CONTROL_SAMPLES = "control_samples"
+
+    def __init__(self, cohort_analysis: JsonObject) -> None:
+        """Initialize the object and set attributes.
+
+        :param sample: Sample metadata
+        :type sample: dict
+        """
+        self.cohort_analysis = cohort_analysis
+        case_samples = cohort_analysis.get(self.CASE_SAMPLES, [])
+        self.case_sample_inputs = [
+            InputPropertiesFromSample(sample) for sample in case_samples
+        ]
+        control_samples = cohort_analysis.get(self.CONTROL_SAMPLES, [])
+        self.control_sample_inputs = [
+            InputPropertiesFromSample(sample) for sample in control_samples
+        ]
+
+    def _get_input_property_from_all_samples(self, input_property_name: str) -> List[Any]:
+        result = []
+        result += self._get_input_property_from_case_samples(input_property_name)
+        result += self._get_input_property_from_control_samples(input_property_name)
+        return result
+
+    def _get_input_property_from_case_samples(self, input_property_name: str) -> List[Any]:
+        result = []
+        for case_sample_input in self.case_sample_inputs:
+            result += getattr(case_sample_input, input_property_name)
+        return result
+
+    def _get_input_property_from_control_samples(self, input_property_name: str) -> List[Any]:
+        result = []
+        for control_sample_input in self.control_sample_inputs:
+            result += getattr(control_sample_input, input_property_name)
+        return result
+
+    @property
+    def input_gvcfs(self) -> List[List[str]]:
+        return self._get_input_property_from_all_samples("input_gvcf")
