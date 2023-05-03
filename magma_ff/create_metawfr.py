@@ -1220,7 +1220,8 @@ class InputPropertiesFromSample:
     @property
     def input_gvcfs(self):
         """gVCF file input."""
-        return [self.get_processed_files_for_file_format(self.GVCF_FORMAT)]
+        gvcfs = self.get_processed_files_for_file_format(self.GVCF_FORMAT)
+        return [keep_last_item(gvcfs)]
 
     @property
     def fastqs_r1(self):

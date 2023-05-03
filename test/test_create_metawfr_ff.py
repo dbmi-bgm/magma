@@ -34,7 +34,7 @@ GVCF_UUID_1_2 = "gvcf_sample_1_2"
 GVCF_UUID_2 = "gvcf_sample_2"
 GVCF_UUID_3 = "gvcf_sample_3"
 GVCF_UUID_4 = "gvcf_sample_4"
-GVCF_UUIDS = [[GVCF_UUID_3], [GVCF_UUID_4], [GVCF_UUID_2], [GVCF_UUID_1, GVCF_UUID_1_2]]
+GVCF_UUIDS = [[GVCF_UUID_3], [GVCF_UUID_4], [GVCF_UUID_2], [GVCF_UUID_1_2]]
 CRAM_UUID_1 = "cram_sample_1"
 CRAM_UUID_2 = "cram_sample_2"
 CRAM_UUID_3 = "cram_sample_3"
@@ -188,6 +188,7 @@ SAMPLE_3 = {
     ],
     "processed_files": [
         {"uuid": BAM_UUID_3, "file_format": {"file_format": "bam"}},
+        {"uuid": GVCF_UUID_1, "file_format": {"file_format": "gvcf_gz"}},
         {"uuid": GVCF_UUID_3, "file_format": {"file_format": "gvcf_gz"}},
     ],
 }
