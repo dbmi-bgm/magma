@@ -13,11 +13,23 @@ from dcicutils import ff_utils
 from magma_ff.metawfl_handler import MetaWorkflowHandler
 from magma_ff.metawflrun_handler import MetaWorkflowRunHandler
 from magma_ff.utils import make_embed_request
+from magma_ff.create_metawfr import create_meta_workflow_run, MetaWorkflowRunCreationError
 
 ################################################
 #   Constants
 ################################################
 # UUID = "uuid"
+#TODO: make a file of these
+
+MWFR_TO_HANDLER_STEP_STATUS_DICT = {
+    "pending": "pending",
+    "running": "running",
+    "completed": "completed",
+    "failed": "failed",
+    "inactive": "pending",
+    "stopped": "stopped",
+    "quality metric failed": "failed"
+}
 
 ################################################
 #   Custom Exception class(es)
@@ -33,8 +45,7 @@ class MetaWorkflowRunHandlerFromItem:
     Base class to hold common methods required to create and POST a
     MetaWorkflowRun Handler, and PATCH the Item used to create it (the "associated item").
     """
-    # Schema constants #TODO: make these constants throughout all files? and where to put that file?
-    # or a file with different constant classes?
+    # Schema constants
     PROJECT = "project"
     INSTITUTION = "institution"
     UUID = "uuid"
@@ -44,19 +55,45 @@ class MetaWorkflowRunHandlerFromItem:
     FINAL_STATUS = "final_status"
     META_WORKFLOW_RUNS = "meta_workflow_runs"
     
-    # specific to a mwf run step #TODO: called later on in this class, right?
+    # specific to a mwf run step #TODO: called later on in this class, right? right.
     META_WORKFLOW_RUN = "meta_workflow_run"
     NAME = "name"
     MWFR_STATUS = "status"
     DEPENDENCIES = "dependencies"
     ITEMS_FOR_CREATION = "items_for_creation"
     ERROR = "error"
+    DUP_FLAG = "duplication_flag"
 
-    # mwf step
+    # mwf step (from template mwf handler)
+    MWF_UUID = "meta_workflow"
     ITEMS_FOR_CREATION_UUID = "items_for_creation_uuid"
     ITEMS_FOR_CREATION_PROP_TRACE = "items_for_creation_property_trace"
     
     PENDING = "pending"
+    FAILED = "failed"
+
+    # for embed requests
+    #TODO: use from constants file plz
+    ASSOC_ITEM_FIELDS = [
+        "project",
+        "institution",
+        "uuid",
+        "meta_workflow_runs.uuid",
+        "meta_workflow_runs.meta_workflow", #TODO: this is sometimes an @id??
+        "meta_workflow_runs.final_status"
+    ]
+
+    # MWFH_FIELDS = [
+    #     "uuid",
+    #     "meta_workflows",
+    #     "meta_workflows.items_for_creation_property_trace", #TODO: same as above??
+    #     "meta_workflows.items_for_creation_uuid"
+    # ]
+
+
+    # TODO: is this correct?? also, will we end up patching on assoc item??
+    # TODO: if so, create a schema mixin (seems unnecessary, for now)
+    self.META_WORKFLOW_RUN_HANDLER_ENDPOINT = "meta-workflow-run-handlers"
 
     def __init__(self, associated_item_identifier, meta_workflow_handler_identifier, auth_key):
         """
@@ -66,7 +103,7 @@ class MetaWorkflowRunHandlerFromItem:
             on which this MetaWorkflow Run Handler is being created
         :type associated_item_identifier: str
         :param meta_workflow_handler_identifier: Associated MetaWorkflow Handler identifier
-            (UUID, @id, or accession)
+            (UUID, @id, or accession) -- TODO: does embed request work with an accession
         :type meta_workflow_handler_identifier: str
         :param auth_key: Portal authorization key
         :type auth_key: dict
@@ -74,88 +111,64 @@ class MetaWorkflowRunHandlerFromItem:
             be found on environment of authorization key
         """
         self.auth_key = auth_key
-        # this calls for the specified metadata on the associated_item of this MWF Run Handler to be created
-        #TODO: use normal get request (ffutils get metadata)
-        # embedding pulls outta postgres, which is slower than elasticsearch
-        # use embedding for the property tracing and duplication flag checks
-        #TODO: make this change for the mwfr data structure too?
 
-        self.associated_item_json = self.get_item_properties(associated_item_identifier)
-        if not self.associated_item_json: # TODO: restructure so this creation error is in method get_item_properties
+        self.associated_item_attributes = make_embed_request(
+            associated_item_identifier,
+            self.ASSOC_ITEM_FIELDS,
+            self.auth_key,
+            single_item=True
+        )
+        if not self.associated_item_attributes:
             raise MetaWorkflowRunHandlerCreationError(
                 "No Item found for given 'associated item' identifier: %s" % associated_item_identifier
             )
 
         # check that the specified identifier for the associated MWF Handler does indeed exist on portal
-        #TODO: a check to make sure it is indeed of mwf handler type? does this function exist on ff_utils?
-        self.meta_workflow_handler_json = self.get_item_properties(meta_workflow_handler_identifier)
+        # TODO: a check to make sure it is indeed of mwf handler type? does this function exist on ff_utils?
+        # same for above associated item request
+        #TODO: is this even necessary?? is it too complicated of a call to
+        # just check it exists? what about just a get request?
+        # self.meta_workflow_handler_json = make_embed_request(
+        #     meta_workflow_handler_identifier,
+        #     self.MWFH_FIELDS,
+        #     self.auth_key,
+        #     single_item=True
+        # )
+        self.meta_workflow_handler_json = ff_utils.get_metadata(
+            meta_workflow_handler_identifier, 
+            key=self.auth_key, 
+            add_on="frame=raw"
+        )
         if not self.meta_workflow_handler_json:
             raise MetaWorkflowRunHandlerCreationError(
                 "No MetaWorkflow Handler found for given identifier: %s"
                 % meta_workflow_handler_identifier
-            )
+            ) 
 
         # now fill in the rest of the attributes of this MWF Run Handler
-        self.project = self.associated_item_json.get(self.PROJECT) # project is same as associated item
-        self.institution = self.associated_item_json.get(self.INSTITUTION) # institution is same as associated item
-        self.associated_item_id = self.associated_item_json.get(self.UUID) # get uuid of associated item
+        self.project = self.associated_item_attributes.get(self.PROJECT) # project is same as associated item
+        self.institution = self.associated_item_attributes.get(self.INSTITUTION) # institution is same as associated item
+        self.associated_item_id = self.associated_item_attributes.get(self.UUID) # get uuid of associated item
         self.meta_workflow_handler_id = self.meta_workflow_handler_json.get(self.UUID) # get uuid of the template mwf handler
         self.meta_workflow_run_handler_uuid = str(uuid.uuid4()) #TODO: put exception to catch duplicates? i think the portal handles this
 
         #TODO: this is to check for duplicating metaworkflows
-        existing_meta_workflow_runs_linktos = self.associated_item_json.get(self.META_WORKFLOW_RUNS, [])
+        existing_meta_workflow_runs_on_assoc_item = self.associated_item_attributes.get(self.META_WORKFLOW_RUNS, [])
         # above returns [] if no existing mwfr, else returns list of linktos
+        existing_mwfs = {}
+        existing_mwfrs = {}
+        for mwfr in existing_meta_workflow_runs_on_assoc_item:
+            existing_mwfs[mwfr["meta_workflow"]] = mwfr["uuid"]
+            existing_mwfrs[mwfr["uuid"]] = mwfr["final_status"]
 
-        # this is a dict of linkTos and corresponding aliases {linkTo: [aliases]}
-        # self.existing_meta_workflow_runs = self.extract_mwfr_names(existing_meta_workflow_runs_linktos)
-        # this is a dict of MWF linkTos (UUIDs TODO:) and corresponding MWFR linkTos {mwf uuid: mwfr uuid}
-        self.existing_meta_workflows_on_assoc_item = self.extract_mwf_linktos(existing_meta_workflow_runs_linktos)
+        self.existing_meta_workflows_on_assoc_item = existing_mwfs
+        self.statuses_of_existing_mwfrs = existing_mwfrs
 
         # and now create the actual MetaWorkflow Run Handler
         # this returns the dict itself, not just an ID
         # this attribute is later used to run the thang
         self.meta_workflow_run_handler = self.create_meta_workflow_run_handler()
 
-    # def extract_mwfr_names(self, existing_linktos_list):
-    #     linkto_alias_dict = {}
-    #     for linkto in existing_linktos_list:
-    #         #TODO: does embed request work with @ids and uuids
-    #         #TODO: match user submitted names to existing aliases...or....
-    #         # because there is no existing "name" attr on mwfr schema at the moment
-    #         # also is it common for an item to have several aliases
-    #         aliases = make_embed_request(linkto, ["aliases"], self.auth_key, single_item=True)
-    #         if not aliases:
-    #             aliases = []
-    #         linkto_alias_dict[linkto] = aliases
-    #     return linkto_alias_dict
-
-    def extract_mwf_linktos(self, existing_meta_workflow_runs_linktos):
-        existing_mwfs = {}
-        for mwfr_id in existing_meta_workflow_runs_linktos:
-            mwf_id = make_embed_request(mwfr_id, ["meta_workflow"], self.auth_key, single_item=True)
-            if not mwf_id:
-                continue #TODO: error check tho??
-            existing_mwfs[mwf_id] = mwfr_id
-        return existing_mwfs
-
-    def get_item_properties(self, item_identifier):
-        """
-        Retrieve item from given environment without raising
-        Exception if not found, rather, returns None.
-
-        :param item_identifier: Item identifier (UUID, @id, or accession) on the portal
-        :type item_identifier: str
-        :return: Raw view of item if found
-        :rtype: dict or None
-        """
-        # TODO: same as create_metawfr.py --> make a generalized function?
-        try:
-            result = ff_utils.get_metadata(
-                item_identifier, key=self.auth_key, add_on="frame=raw"
-            )
-        except Exception:
-            result = None
-        return result
 
     def create_meta_workflow_run_handler(self):
         """
@@ -184,62 +197,84 @@ class MetaWorkflowRunHandlerFromItem:
         }
 
         # now call helper function to populate and create the MetaWorkflow Runs
-        # TODO: handle duplication flag??
-        # TODO: should duplication only happen when the status of the original
-        # mwfr is not successful?
         meta_workflow_runs_array = self.create_meta_workflow_runs_array()
 
         meta_workflow_run_handler[self.META_WORKFLOW_RUNS] = meta_workflow_runs_array
         #TODO: check for whether this is empty or nah?
 
-        # return the completed MWFR Handler dictionary, following the CGAP schema
-        #TODO: or the object itself??
+        # return the completed MWFR Handler dictionary, which follows the CGAP schema
         return meta_workflow_run_handler
 
     def create_meta_workflow_runs_array(self):
         # create MetaWorkflowHandler object
         associated_meta_workflow_handler_object = MetaWorkflowHandler(self.meta_workflow_handler_json)
+        # this'll make sure all necessary attrs are present in the following run handler creation
 
         # then extract the ordered list of metaworkflows
-        #TODO: constants list, and error catching with this call
+        #TODO: add ordered_meta_workflows to constants file
+        # and error catching with this call
         ordered_meta_workflows = getattr(associated_meta_workflow_handler_object, "ordered_meta_workflows")
         
         ordered_meta_workflow_runs = [] # will eventually be the completed pending MWFRs array, in order
         for meta_workflow_step_obj in ordered_meta_workflows:
             meta_workflow_run_step_obj = {} # will become the populated MWFR step object
-            # mwf attrs: meta_workflow, name, items_for_creation (proptrace/uuid), dependencies, duplication_flag
-            # mwfr attrs: meta_workflow_run, name, status, dependencies, items_for_creation, error
+
+            # mwfr attrs: meta_workflow_run
             # attrs that stay the same and are passed in: name, dependencies
             meta_workflow_run_step_obj[self.NAME] = meta_workflow_step_obj[self.NAME]
             meta_workflow_run_step_obj[self.DEPENDENCIES] = meta_workflow_step_obj[self.DEPENDENCIES]
-            # run attrs that are automatically set already: status (pending)
 
-            # now check duplication flag (rename -- make new if exists)
-            # if there is no existing mwfr for this mwf, don't even worry about it (make new one)
+            # handle items_for_creation attribute
+            if self.ITEMS_FOR_CREATION_UUID in meta_workflow_step_obj.keys():
+                meta_workflow_run_step_obj[self.ITEMS_FOR_CREATION] = meta_workflow_step_obj[self.ITEMS_FOR_CREATION_UUID]
+            else: # make embed requests as necessary
+                items_for_creation_uuids = []
+                for item_prop_trace in meta_workflow_step_obj[self.ITEMS_FOR_CREATION_PROP_TRACE]:
+                    item_uuid = make_embed_request(
+                        self.associated_item_id,
+                        [item_prop_trace],
+                        self.auth_key,
+                        single_item=True
+                    )
+                    items_for_creation_uuids.append(item_uuid)
+                meta_workflow_run_step_obj[self.ITEMS_FOR_CREATION] = items_for_creation_uuids
 
-            # when False --> do not duplicate an existing mwfr for this mwf
-            # TODO: if False but mwfr exists
-            # use existing one regardless of status
+            # now handle duplication flag (TODO: todo at the end --> rename -- make new if exists)
+            try:
+                meta_workflow_linkto = generated_mwfr_obj[self.UUID]
+                # if False and a mwfr for that mwf template exists, use existing one regardless of status
+                # i.e. do not duplicate the existing mwfr and linkTo the existing one
+                # TODO: copy over the status, right?
+                if (meta_workflow_step_obj[self.DUP_FLAG] == False) \
+                    and (meta_workflow_linkto in self.existing_meta_workflows_on_assoc_item.keys()):
+                    meta_workflow_run_step_obj[self.META_WORKFLOW_RUN] =  self.existing_meta_workflows_on_assoc_item[meta_workflow_linkto] # the linkTo
+                    curr_mwfr_uuid = meta_workflow_run_step_obj[self.META_WORKFLOW_RUN]
+                    meta_workflow_run_step_obj[self.MWFR_STATUS] = MWFR_TO_HANDLER_STEP_STATUS_DICT[self.statuses_of_existing_mwfrs[curr_mwfr_uuid]]  # copy over its status
+                else: # if True, make a new MWFR for the MWF template regardless of if one exists
+                    # or it could be False, but if there's no existing mwfr for this mwf, make new one
+                    generated_mwfr_obj = create_meta_workflow_run(self.associated_item_id, meta_workflow_step_obj[self.MWF_UUID], self.auth_key)
+                    meta_workflow_run_step_obj[self.META_WORKFLOW_RUN] = meta_workflow_linkto # the linkTo
+                    meta_workflow_run_step_obj[self.MWFR_STATUS] = self.PENDING
+            except MetaWorkflowRunCreationError as err:
+                # here the error attribute is handled, if applicable
+                #TODO: not saving full traceback here
+                # also TODO: catching and not reraising the error. is this correct?
+                meta_workflow_run_step_obj[self.MWFR_STATUS] = self.FAILED
+                meta_workflow_run_step_obj[self.ERROR] = err
+
+            ordered_meta_workflow_runs.append(meta_workflow_run_step_obj)
+
+        return ordered_meta_workflow_runs
 
 
-            # when True --> duplicate existing mwfr for this mwf (TODO: does this include the status??)
-            # --> run another w same mwf as template -- new uuid and new status (so overall new item)
-            # overall make a new one regardless of anything
-
-            # now check if items for creation is prop trace(s) or uuid(s)
-            # make embed request as necessary
-            if not getattr(meta_workflow_step_obj, )
-            
-
-
-
-
-        # and there is where you can check the duplication flag thing
-        # and also items for creation prop trace?
-
-
-    # TODO: for POST and PATCH, will there be changes to schemas other than handlers
-    # in order to accomodate this? like maybe within the mixins schemas file
-    # which can then be easily integrated within other schemas in the future?
-    # because the mwfr handler will now be living on whatever item, rather than
-    # a sample or a sample processing
+    def post_meta_workflow_run_handler(self):
+        try:
+            ff_utils.post_metadata(
+                self.meta_workflow_run_handler,
+                self.META_WORKFLOW_RUN_HANDLER_ENDPOINT,
+                key=self.auth_key,
+            )
+        except Exception as error_msg:
+            raise MetaWorkflowRunHandlerCreationError(
+                "MetaWorkflowRunHandler not POSTed: \n%s" % str(error_msg)
+            )
