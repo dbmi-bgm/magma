@@ -1,7 +1,22 @@
+import json
 import mock
 import pytest
+from contextlib import contextmanager
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import Any, Iterator, Sequence
 
-from magma_ff.utils import check_status, chunk_ids, make_embed_request
+from magma_ff import utils as magma_ff_utils_module
+from magma_ff.utils import (
+    JsonObject,
+    check_status,
+    chunk_ids,
+    get_auth_key,
+    keep_last_item,
+    make_embed_request,
+    AuthorizationError,
+)
+from test.utils import patch_context
 
 
 class ReturnValue:
@@ -87,4 +102,58 @@ def test_chunk_ids(ids, expected):
 def test_check_status(meta_workflow_run, valid_status, expected):
     """Test validating MetaWorkflowRun status and final status."""
     result = check_status(meta_workflow_run, valid_status)
+    assert result == expected
+
+
+SOME_AUTH = {"auth": "bar"}
+SOME_AUTH_KEY = {"foo": SOME_AUTH}
+
+
+@contextmanager
+def patch_cgap_keys_path(**kwargs) -> Iterator[mock.MagicMock]:
+    with patch_context(
+        magma_ff_utils_module, "get_cgap_keys_path", **kwargs
+    ) as mock_item:
+        yield mock_item
+
+
+@contextmanager
+def get_named_tmp_file_path_with_content(contents: Any) -> NamedTemporaryFile:
+    with NamedTemporaryFile("w") as tmp:
+        tmp.write(contents)
+        tmp.seek(0)
+        yield Path(tmp.name).absolute()
+
+
+@pytest.mark.parametrize(
+    "env_key,exception_expected,expected",
+    [
+        ("fu", True, None),
+        ("foo", False, SOME_AUTH),
+    ],
+)
+def test_get_auth_key(
+    env_key: str, exception_expected: bool, expected: JsonObject
+) -> None:
+    tmp_contents = json.dumps(SOME_AUTH_KEY)
+    with get_named_tmp_file_path_with_content(tmp_contents) as tmp_path:
+        with patch_cgap_keys_path(return_value=tmp_path):
+            if exception_expected:
+                with pytest.raises(AuthorizationError):
+                    get_auth_key(env_key)
+            else:
+                result = get_auth_key(env_key)
+                assert result == expected
+
+
+@pytest.mark.parametrize(
+    "items,expected",
+    (
+        ([], []),
+        (["foo"], ["foo"]),
+        (["foo", "bar"], ["bar"]),
+    ),
+)
+def test_keep_last_item(items: Sequence, expected: Sequence) -> None:
+    result = keep_last_item(items)
     assert result == expected
