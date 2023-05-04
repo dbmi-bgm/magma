@@ -78,7 +78,7 @@ def create_meta_workflow_run_from_sample(
     meta_workflow_identifier: str,
     auth_key: JsonObject,
     post: bool = True,
-    patch=True,
+    patch: bool = True,
 ) -> JsonObject:
     return _create_meta_workflow_run(
         MetaWorkflowRunFromSample,
