@@ -5,6 +5,7 @@
 #   create_metawfr
 #
 ################################################
+from __future__ import annotations
 
 import datetime
 import json
@@ -44,6 +45,7 @@ def create_meta_workflow_run(
     :param post: Whether to POST the MetaWorkflowRun created
     :param patch: Whether to PATCH the item given by the
         item_identifier with the created MetaWorkflowRun
+    :returns: MetaWorkflowRun created
     """
     item = ff_utils.get_metadata(item_identifier, key=auth_key, add_on="frame=object")
     if _is_item_of_type(SAMPLE_TYPE, item):
@@ -72,31 +74,48 @@ def _get_item_types(item: JsonObject) -> List[str]:
 
 
 def create_meta_workflow_run_from_sample(
-    item_identifier: str,
+    sample_identifier: str,
     meta_workflow_identifier: str,
     auth_key: JsonObject,
     post=True,
     patch=True,
 ) -> JsonObject:
-    meta_workflow_run_creator = MetaWorkflowRunFromSample(
-        item_identifier, meta_workflow_identifier, auth_key
+    return _create_meta_workflow_run(
+        MetaWorkflowRunFromSample,
+        sample_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
     )
-    if post:
-        if patch:
-            meta_workflow_run_creator.post_and_patch()
-        else:
-            meta_workflow_run_creator.post_meta_workflow_run()
-    return meta_workflow_run_creator.get_meta_workflow_run()
 
 
 def create_meta_workflow_run_from_sample_processing(
-    item_identifier: str,
+    sample_processing_identifier: str,
     meta_workflow_identifier: str,
     auth_key: JsonObject,
     post=True,
     patch=True,
 ) -> JsonObject:
-    meta_workflow_run_creator = MetaWorkflowRunFromSampleProcessing(
+    return _create_meta_workflow_run(
+        MetaWorkflowRunFromSampleProcessing,
+        sample_processing_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
+    )
+
+
+def _create_meta_workflow_run(
+    meta_workflow_run_creator_class: MetaWorkflowRunFromItem,
+    item_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    meta_workflow_run_creator = meta_workflow_run_creator_class(
         item_identifier, meta_workflow_identifier, auth_key
     )
     if post:
