@@ -2,7 +2,7 @@ import datetime
 import json
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Iterator, List
+from typing import Any, Iterator, List
 
 import mock
 import pytest
@@ -443,7 +443,34 @@ META_WORKFLOW_FOR_SAMPLE = {
     ],
     "proband_only": PROBAND_ONLY_FALSE,
 }
-META_WORKFLOW_FOR_COHORT_ANALYSIS = {}
+META_WORKFLOW_FOR_COHORT_ANALYSIS = {
+    "uuid": META_WORKFLOW_UUID,
+    "title": "Joint Calling v0.0.0",
+    "input": [
+        {
+            "argument_name": "input_gvcfs",
+            "argument_type": "file",
+            "dimensionality": 1,
+        },
+    ],
+    "workflows": [
+        {
+            "name": "workflow_do-something",
+            "workflow": "some_uuid",
+            "config": {
+                "run_name": "A fine workflow",
+            },
+            "input": [
+                {
+                    "scatter": 1,
+                    "argument_name": "input_gvcfs",
+                    "argument_type": "file",
+                    "source_argument_name": "input_gvcfs",
+                },
+            ],
+        },
+    ],
+}
 INPUT_PROPERTIES_INPUT_BAMS = [[BAM_UUID_1], [BAM_UUID_2]]
 INPUT_PROPERTIES_FAMILY_SIZE = 2
 AUTH_KEY = {"key": "foo"}
@@ -561,7 +588,33 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     ],
     "uuid": META_WORKFLOW_RUN_UUID,
 }
-META_WORKFLOW_RUN_FROM_COHORT_ANALYSIS = {}
+META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS = {
+    "meta_workflow": META_WORKFLOW_UUID,
+    "input": [
+        {
+            "argument_name": "input_gvcfs",
+            "argument_type": "file",
+            "files": [
+                {"file": GVCF_UUID_1_2, "dimension": "0"},
+                {"file": GVCF_UUID_2, "dimension": "1"},
+                {"file": GVCF_UUID_3, "dimension": "2"},
+                {"file": GVCF_UUID_4, "dimension": "3"},
+            ],
+        },
+    ],
+    "title": "MetaWorkflowRun Joint Calling v0.0.0 from %s" % TODAY,
+    "project": PROJECT,
+    "institution": INSTITUTION,
+    "common_fields": COMMON_FIELDS,
+    "final_status": "pending",
+    "workflow_runs": [
+        {"name": "workflow_do-something", "status": "pending", "shard": "0"},
+        {"name": "workflow_do-something", "status": "pending", "shard": "1"},
+        {"name": "workflow_do-something", "status": "pending", "shard": "2"},
+        {"name": "workflow_do-something", "status": "pending", "shard": "3"},
+    ],
+    "uuid": META_WORKFLOW_RUN_UUID,
+}
 
 
 @pytest.fixture
@@ -1597,3 +1650,36 @@ class TestMetaWorkflowRunFromSample:
         """Test creation of MetaWorkflowRun properties."""
         result = meta_workflow_run_from_sample.create_meta_workflow_run()
         assert result == META_WORKFLOW_RUN_FOR_SAMPLE_3
+
+
+class TestMetaWorkflowRunFromCohortAnalysis:
+    @pytest.mark.parametrize(
+        "attribute,expected",
+        [
+            ("project", PROJECT),
+            ("institution", INSTITUTION),
+            ("input_item", COHORT_ANALYSIS),
+            ("input_item_uuid", COHORT_ANALYSIS_UUID),
+            ("auth_key", AUTH_KEY),
+            ("meta_workflow", META_WORKFLOW_FOR_COHORT_ANALYSIS),
+            ("existing_meta_workflow_runs", []),
+            ("meta_workflow_run", META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS),
+        ],
+    )
+    def test_attributes(
+        self,
+        attribute: str,
+        expected: Any,
+        meta_workflow_run_from_cohort_analysis: MetaWorkflowRunFromCohortAnalysis,
+    ) -> None:
+        """Test attributes set correctly."""
+        result = getattr(meta_workflow_run_from_cohort_analysis, attribute)
+        assert result == expected
+
+    def test_create_meta_workflow_run(
+        self,
+        meta_workflow_run_from_cohort_analysis: MetaWorkflowRunFromCohortAnalysis,
+    ):
+        """Test creation of MetaWorkflowRun properties."""
+        result = meta_workflow_run_from_cohort_analysis.create_meta_workflow_run()
+        assert result == META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS
