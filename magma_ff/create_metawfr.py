@@ -31,7 +31,7 @@ def create_meta_workflow_run(
     auth_key: JsonObject,
     post: bool = True,
     patch: bool = True,
-) -> None:
+) -> JsonObject:
     """Create a MetaWorkflowRun for the given item and MetaWorkflow.
 
     POST MetaWorkflowRun and PATCH associated item as instructed.
@@ -77,7 +77,7 @@ def create_meta_workflow_run_from_sample(
     auth_key: JsonObject,
     post=True,
     patch=True,
-) -> None:
+) -> JsonObject:
     meta_workflow_run_creator = MetaWorkflowRunFromSample(
         item_identifier, meta_workflow_identifier, auth_key
     )
@@ -95,7 +95,7 @@ def create_meta_workflow_run_from_sample_processing(
     auth_key: JsonObject,
     post=True,
     patch=True,
-) -> None:
+) -> JsonObject:
     meta_workflow_run_creator = MetaWorkflowRunFromSampleProcessing(
         item_identifier, meta_workflow_identifier, auth_key
     )
