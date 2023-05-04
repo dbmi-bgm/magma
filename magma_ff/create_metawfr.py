@@ -85,7 +85,7 @@ def create_meta_workflow_run_from_sample(
     post: bool = True,
     patch: bool = True,
 ) -> JsonObject:
-    return _create_meta_workflow_run(
+    return _create_meta_workflow_run_for_item_type(
         MetaWorkflowRunFromSample,
         sample_identifier,
         meta_workflow_identifier,
@@ -102,7 +102,7 @@ def create_meta_workflow_run_from_sample_processing(
     post: bool = True,
     patch: bool = True,
 ) -> JsonObject:
-    return _create_meta_workflow_run(
+    return _create_meta_workflow_run_for_item_type(
         MetaWorkflowRunFromSampleProcessing,
         sample_processing_identifier,
         meta_workflow_identifier,
@@ -119,7 +119,7 @@ def create_meta_workflow_run_from_cohort_analysis(
     post: bool = True,
     patch: bool = True,
 ) -> JsonObject:
-    return _create_meta_workflow_run(
+    return _create_meta_workflow_run_for_item_type(
         MetaWorkflowRunFromCohortAnalysis,
         cohort_analysis_identifier,
         meta_workflow_identifier,
@@ -129,7 +129,7 @@ def create_meta_workflow_run_from_cohort_analysis(
     )
 
 
-def _create_meta_workflow_run(
+def _create_meta_workflow_run_for_item_type(
     meta_workflow_run_creator_class: MetaWorkflowRunFromItem,
     item_identifier: str,
     meta_workflow_identifier: str,
