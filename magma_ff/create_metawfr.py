@@ -10,7 +10,7 @@ from __future__ import annotations
 import datetime
 import json
 import uuid
-from typing import Any, Dict, List
+from typing import Any, List
 
 from dcicutils import ff_utils
 
@@ -19,8 +19,7 @@ from magma_ff.metawflrun import MetaWorkflowRun
 from magma_ff.utils import JsonObject, keep_last_item, make_embed_request
 
 
-JsonObject = Dict[str, Any]
-
+COHORT_ANALYSIS_TYPE = "CohortAnalysis"
 FILE_FORMAT = "file_format"
 SAMPLE_PROCESSING_TYPE = "SampleProcessing"
 SAMPLE_TYPE = "Sample"
@@ -56,6 +55,10 @@ def create_meta_workflow_run(
         )
     if _is_item_of_type(SAMPLE_PROCESSING_TYPE, item):
         return create_meta_workflow_run_from_sample_processing(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
+    if _is_item_of_type(COHORT_ANALYSIS_TYPE, item):
+        return create_meta_workflow_run_from_cohort_analysis(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
     raise MetaWorkflowRunCreationError(
@@ -102,6 +105,23 @@ def create_meta_workflow_run_from_sample_processing(
     return _create_meta_workflow_run(
         MetaWorkflowRunFromSampleProcessing,
         sample_processing_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
+    )
+
+
+def create_meta_workflow_run_from_cohort_analysis(
+    cohort_analysis_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    return _create_meta_workflow_run(
+        MetaWorkflowRunFromCohortAnalysis,
+        cohort_analysis_identifier,
         meta_workflow_identifier,
         auth_key,
         post=post,
@@ -458,8 +478,28 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         return meta_workflow_run
 
 
+def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
+    sample_fields_to_get = [
+        "bam_sample_id",
+        "uuid",
+        "files.uuid",
+        "files.file_format.file_format",
+        "processed_files.uuid",
+        "processed_files.file_format.file_format",
+    ]
+    return [f"{sample_prefix}.{field}" for field in sample_fields_to_get]
+
+
 class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
-    FIELDS_TO_GET = []
+    FIELDS_TO_GET = (
+        [
+            "project",
+            "institution",
+            "uuid",
+        ]
+        + _get_sample_fields_to_embed("case_samples")
+        + _get_sample_fields_to_embed("control_samples")
+    )
 
     def __init__(
         self,
@@ -608,59 +648,58 @@ class MetaWorkflowRunInput:
         return result
 
     def format_file_input_value(
-        self, file_parameter, file_input_value, input_dimensions
-    ):
+        self,
+        file_parameter: str,
+        file_input_value: List[List[str]],
+        input_dimensions: int,
+    ) -> List[JsonObject]:
         """Create one structured file input for MetaWorkflowRun[json].
 
+        File inputs arrive as lists of lists of UUIDs. For dimension 1,
+        each sub-list should contain <= 1 UUID. For dimension 2, any
+        number of UUIDs can be in each sub-list.
+
         :param file_parameter: Name of file input argument
-        :type file_parameter: str
         :param file_input_value: File input values
-        :type file_value: list
         :param input_dimensions: The number of dimensions to use for
             the given file parameter
-        :type input_dimensions: int
         :return: Structured file argument input
-        :rtype: dict
         :raises MetaWorkflowRunCreationError: If expected dimensions
             could not be handled or an input of dimension 1 has more
             than 1 entry per sample (i.e. is 2 dimensional)
         """
         result = []
-        if input_dimensions == 1:  # List of <= 1 list expected
-            if len(file_input_value) > 1:
+        for input_idx, file_input in enumerate(file_input_value):
+            if not file_input:
                 raise MetaWorkflowRunCreationError(
-                    f"Input file dimensions were greater than expected for"
-                    f" parameter {file_parameter}. Expected input dimension"
-                    f" {input_dimensions} but received input: {file_input_value}."
+                    f"Found an empty list of input files for parameter {file_parameter}"
                 )
-            for file_input_item in file_input_value:
-                for file_idx, file_uuid in enumerate(file_input_item):
+            if input_dimensions == 1:
+                if len(file_input) > 1:
+                    raise MetaWorkflowRunCreationError(
+                        f"Found multiple input files when only 1 was expected for"
+                        f" parameter {file_parameter}: {file_input}"
+                    )
+                for file_uuid in file_input:
                     if not isinstance(file_uuid, str):
                         raise MetaWorkflowRunCreationError(
                             f"File input for parameter {file_parameter} was unexpected."
                             f" Exected input file dimension {input_dimensions} but"
                             f" received the following: {file_input_value}."
                         )
-                    dimension = str(file_idx)
+                    dimension = str(input_idx)
                     formatted_file_result = {
                         self.FILE: file_uuid,
                         self.DIMENSION: dimension,
                     }
                     result.append(formatted_file_result)
-        elif input_dimensions == 2:
-            for input_idx, file_input_item in enumerate(file_input_value):
-                if not isinstance(file_input_item, list):  # List of lists expected
-                    raise MetaWorkflowRunCreationError(
-                        f"Input file dimensions were greater than expected for"
-                        f" parameter {file_parameter}. Expected input dimension"
-                        f" {input_dimensions} but received input: {file_input_value}."
-                    )
-                for file_uuid_idx, file_uuid in enumerate(file_input_item):
+            elif input_dimensions == 2:
+                for file_uuid_idx, file_uuid in enumerate(file_input):
                     if not isinstance(file_uuid, str):
                         raise MetaWorkflowRunCreationError(
                             f"File input for parameter {file_parameter} was unexpected."
-                            f" Exected input file dimension {input_dimensions} but received"
-                            f" the following: {file_input_value}."
+                            f" Exected input file dimension {input_dimensions} but"
+                            f" received the following: {file_input_value}."
                         )
                     dimension = f"{input_idx},{file_uuid_idx}"
                     formatted_file_result = {
@@ -668,6 +707,11 @@ class MetaWorkflowRunInput:
                         self.DIMENSION: dimension,
                     }
                     result.append(formatted_file_result)
+            else:
+                raise MetaWorkflowRunCreationError(
+                    f"Received an unexpected dimension number for parameter"
+                    f" {file_parameter}: {input_dimensions}"
+                )
         return result
 
     def fetch_parameters(self, parameters_to_fetch):
@@ -1374,4 +1418,4 @@ class InputPropertiesFromCohortAnalysis:
 
     @property
     def input_gvcfs(self) -> List[List[str]]:
-        return self._get_input_property_from_all_samples("input_gvcf")
+        return self._get_input_property_from_all_samples("input_gvcfs")

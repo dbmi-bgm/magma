@@ -9,12 +9,14 @@ import pytest
 
 import magma_ff.create_metawfr as create_mwfr_module
 from magma_ff.create_metawfr import (
-    InputPropertiesFromSampleProcessing,
+    InputPropertiesFromCohortAnalysis,
     InputPropertiesFromSample,
+    InputPropertiesFromSampleProcessing,
     MetaWorkflowRunCreationError,
-    MetaWorkflowRunFromSampleProcessing,
-    MetaWorkflowRunFromSample,
+    MetaWorkflowRunFromCohortAnalysis,
     MetaWorkflowRunFromItem,
+    MetaWorkflowRunFromSample,
+    MetaWorkflowRunFromSampleProcessing,
     MetaWorkflowRunInput,
     create_meta_workflow_run,
     get_files_for_file_formats,
@@ -357,6 +359,20 @@ SAMPLE_PROCESSING = {
     "files": SAMPLE_PROCESSING_SUBMITTED_FILES,
     "@type": ["SampleProcessing", "Item"],
 }
+COHORT_ANALYSIS_UUID = "uuid_for_cohort_analysis"
+COHORT_ANALYSIS = {
+    "uuid": COHORT_ANALYSIS_UUID,
+    "project": PROJECT,
+    "institution": INSTITUTION,
+    "case_samples": [SAMPLE_1, SAMPLE_2],
+    "control_samples": [SAMPLE_3, SAMPLE_4],
+}
+COHORT_ANALYSIS_INPUT_GVCFS = [
+    [GVCF_UUID_1_2],
+    [GVCF_UUID_2],
+    [GVCF_UUID_3],
+    [GVCF_UUID_4],
+]
 ITEM_UUID = "item_uuid"
 ARBITRARY_ITEM = {
     "uuid": ITEM_UUID,
@@ -427,6 +443,7 @@ META_WORKFLOW_FOR_SAMPLE = {
     ],
     "proband_only": PROBAND_ONLY_FALSE,
 }
+META_WORKFLOW_FOR_COHORT_ANALYSIS = {}
 INPUT_PROPERTIES_INPUT_BAMS = [[BAM_UUID_1], [BAM_UUID_2]]
 INPUT_PROPERTIES_FAMILY_SIZE = 2
 AUTH_KEY = {"key": "foo"}
@@ -544,6 +561,7 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     ],
     "uuid": META_WORKFLOW_RUN_UUID,
 }
+META_WORKFLOW_RUN_FROM_COHORT_ANALYSIS = {}
 
 
 @pytest.fixture
@@ -562,6 +580,11 @@ def inputs_from_sample_processing():
 def inputs_from_sample():
     """Class for tests."""
     return InputPropertiesFromSample(deepcopy(SAMPLE_3))
+
+
+@pytest.fixture
+def inputs_from_cohort_analysis():
+    return InputPropertiesFromCohortAnalysis(deepcopy(COHORT_ANALYSIS))
 
 
 @pytest.fixture
@@ -622,6 +645,26 @@ def meta_workflow_run_from_sample():
                 return_value=META_WORKFLOW_RUN_UUID,
             ):
                 return MetaWorkflowRunFromSample(None, None, AUTH_KEY)
+
+
+@pytest.fixture
+def meta_workflow_run_from_cohort_analysis():
+    with mock.patch(
+        "magma_ff.create_metawfr.make_embed_request",
+        return_value=COHORT_ANALYSIS,
+    ):
+        with mock.patch(
+            (
+                "magma_ff.create_metawfr.MetaWorkflowRunFromCohortAnalysis"
+                ".get_item_properties"
+            ),
+            return_value=META_WORKFLOW_FOR_COHORT_ANALYSIS,
+        ):
+            with mock.patch(
+                "magma_ff.create_metawfr.uuid.uuid4",
+                return_value=META_WORKFLOW_RUN_UUID,
+            ):
+                return MetaWorkflowRunFromCohortAnalysis(None, None, AUTH_KEY)
 
 
 @contextmanager
@@ -807,9 +850,11 @@ class TestMetaWorkflowRunInput:
         "file_parameter,file_value,input_dimensions,error,expected",
         [
             ("foo", [], 1, False, []),
+            ("foo", [[]], 1, True, []),
+            ("foo", [[]], 2, True, []),
             (
                 "input_files",
-                [["file_1", "file_2"]],
+                [["file_1"], ["file_2"]],
                 1,
                 False,
                 [
@@ -819,7 +864,7 @@ class TestMetaWorkflowRunInput:
             ),
             (
                 "input_files",
-                [["file_1"], ["file_2"]],
+                [["file_1", "file_2"]],
                 1,
                 True,
                 [],
@@ -1359,6 +1404,19 @@ class TestInputPropertiesFromSample:
     def test_attributes(self, attribute, expected, inputs_from_sample):
         """Test properties on class."""
         result = getattr(inputs_from_sample, attribute)
+        assert result == expected
+
+
+class TestInputPropertiesFromCohortAnalysis:
+    @pytest.mark.parametrize(
+        "attribute,expected",
+        [
+            ("input_gvcfs", COHORT_ANALYSIS_INPUT_GVCFS),
+        ],
+    )
+    def test_attributes(self, attribute, expected, inputs_from_cohort_analysis):
+        """Test properties on class."""
+        result = getattr(inputs_from_cohort_analysis, attribute)
         assert result == expected
 
 
