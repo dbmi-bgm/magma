@@ -123,15 +123,10 @@ class FFWfrUtils(object):
 #end class
 
 
-class FdnConnectionException(Exception):
-    pass
-
-#end class
-
-
 ################################################
 #   FFMetaWfrUtils
 ################################################
+#TODO: make pytests
 class FFMetaWfrUtils(object):
     def __init__(self, env):
         """
@@ -141,65 +136,51 @@ class FFMetaWfrUtils(object):
         self.env = env
 
         # Cache for metadata
+        # can save several mwfr's metadata dicts at a time
         self._metadata = dict()
-        # Cache for access key
-        self._ff_key = None
 
-    # def wfr_metadata(self, job_id):
-    #     """Get portal run metadata from job_id.
-    #     Return None if a run associated with job id cannot be found.
-    #     """
-    #     # Use cache
-    #     if job_id in self._metadata:
-    #         return self._metadata[job_id]
-    #     # Search by job id
-    #     query='/search/?type=WorkflowRun&awsem_job_id=%s' % job_id
-    #     try:
-    #         search_res = ff_utils.search_metadata(query, key=self.ff_key)
-    #     except Exception as e:
-    #         raise FdnConnectionException(e)
-    #     if search_res:
-    #         self._metadata[job_id] = search_res[0]
-    #         return self._metadata[job_id]
-    #     else:
-    #         # find it from dynamoDB
-    #         job_info = Job.info(job_id)
-    #         if not job_info:
-    #             return None
-    #         wfr_uuid = job_info.get('WorkflowRun uuid', '')
-    #         if not wfr_uuid:
-    #             return None
-    #         self._metadata[job_id] = ff_utils.get_metadata(wfr_uuid, key=self.ff_key)
-    #         return self._metadata[job_id]
-
-    # def wfr_run_uuid(self, job_id):
-    #     """This is the function to be used by Magma.
-    #     """
-    #     wfr_meta = self.wfr_metadata(job_id)
-    #     if not wfr_meta:
-    #         return None
-    #     return wfr_meta['uuid']
-
-    # def wfr_run_status(self, job_id):
-    #     """This is the function to be used by Magma.
-    #     Return the status of the run associated with specified job_id.
-    #     If run associated with job_id is not found, we consider it failed.
-    #     """
-    #     wfr_meta = self.wfr_metadata(job_id)
-    #     if not wfr_meta:
-    #         return 'error'
-        # else:
-        #     return wfr_meta['run_status']
-
-
-
-    @property
-    def ff_key(self):
+    def get_meta_wfr_current_status(self, mwfr_uuid):
         """
-        Get access key for the portal.
+        Return the status of the mwfr associated with specified uuid.
+        If run associated with uuid is not found, return None.
         """
-        if not self._ff_key:
-            # Use tibanna key for now -- TODO: is this correct? don't really understand why
-            # https://github.com/4dn-dcic/utils/blob/master/dcicutils/s3_utils.py#L276
-            self._ff_key = s3Utils(env=self.env).get_access_keys('access_key_tibanna')
-        return self._ff_key
+        mwfr_meta = self._mwfr_metadata(mwfr_uuid)
+        if not mwfr_meta: # if an empty list is result
+            return None
+        else:
+            return mwfr_meta['final_status']
+
+    def get_meta_wfr_cost(self, mwfr_uuid):
+        """
+        Return the status of the mwfr associated with specified uuid.
+        If run associated with uuid is not found, return None.
+        """
+        mwfr_meta = self._mwfr_metadata(mwfr_uuid)
+        if not mwfr_meta: # if an empty list is result
+            return None
+        else:
+            return mwfr_meta['cost']
+
+    def _mwfr_metadata(self, mwfr_uuid):
+        """Get portal metawfrun metadata from uuid.
+        Return [] if a run associated with uuid isn't found.
+        """
+        # Use cache
+        if mwfr_uuid in self._metadata:
+            return self._metadata[mwfr_uuid]
+
+        # Search by uuid
+        query='/search/?type=MetaWorkflowRun&frame=object&uuid=%s' % mwfr_uuid
+        try:
+            search_result_list = ff_utils.search_metadata(query, key=self.ff_key)
+        except Exception as e:
+            raise FdnConnectionException(e)
+
+        self._metadata[mwfr_uuid] = search_result_list[0]
+        return self._metadata[mwfr_uuid]
+
+
+class FdnConnectionException(Exception):
+    pass
+
+#end class

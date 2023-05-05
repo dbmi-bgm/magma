@@ -61,9 +61,9 @@ class MetaWorkflowRunStepGenerator:
 
                 
 
-                # update final status & mwfr array of overall handler and yield for PATCHING
-                yield {'final_status':  self.mwfr_handler_obj.update_final_status(),
-                       'meta_workflow_runs': self.mwfr_handler_obj.update_meta_workflows_array()}
+            # update final status & mwfr array of overall handler and yield for PATCHING
+            yield {'final_status':  self.mwfr_handler_obj.update_final_status(),
+                    'meta_workflow_runs': self.mwfr_handler_obj.update_meta_workflows_array()}
         
 
 ################################################
