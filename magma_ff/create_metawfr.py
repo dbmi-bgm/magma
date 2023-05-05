@@ -5,29 +5,127 @@
 #   create_metawfr
 #
 ################################################
+from __future__ import annotations
 
-################################################
-#   Libraries
-################################################
 import datetime
 import json
 import uuid
+from typing import List
 
 from dcicutils import ff_utils
 
-# magma
 from magma_ff.metawfl import MetaWorkflow
 from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import make_embed_request
+from magma_ff.utils import JsonObject, keep_last_item, make_embed_request
 
 
 FILE_FORMAT = "file_format"
+SAMPLE_PROCESSING_TYPE = "SampleProcessing"
+SAMPLE_TYPE = "Sample"
+TYPE = "@type"
 UUID = "uuid"
 
 
-################################################
-#   MetaWorkflowRunCreationError
-################################################
+def create_meta_workflow_run(
+    item_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    """Create a MetaWorkflowRun for the given item and MetaWorkflow.
+
+    POST MetaWorkflowRun and PATCH associated item as instructed.
+
+    :param item_identfier: Identifier (e.g. UUID, @id) for item from
+        which to create the MetaWorkflowRun
+    :param meta_workflow_identifier: Identifier for the MetaWorkflow
+        from which to create the MetaWorkflowRun
+    :param auth_key: Authorization keys for C4 account
+    :param post: Whether to POST the MetaWorkflowRun created
+    :param patch: Whether to PATCH the item given by the
+        item_identifier with the created MetaWorkflowRun
+    :returns: MetaWorkflowRun created
+    """
+    item = ff_utils.get_metadata(item_identifier, key=auth_key, add_on="frame=object")
+    if _is_item_of_type(SAMPLE_TYPE, item):
+        return create_meta_workflow_run_from_sample(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
+    if _is_item_of_type(SAMPLE_PROCESSING_TYPE, item):
+        return create_meta_workflow_run_from_sample_processing(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
+    raise MetaWorkflowRunCreationError(
+        f"No methods available to create MetaWorkflowRun for item of type(s):"
+        f" {_get_item_types(item)}"
+    )
+
+
+def _is_item_of_type(item_type: str, item: JsonObject) -> bool:
+    item_types = _get_item_types(item)
+    if item_type in item_types:
+        return True
+    return False
+
+
+def _get_item_types(item: JsonObject) -> List[str]:
+    return item.get(TYPE, [])
+
+
+def create_meta_workflow_run_from_sample(
+    sample_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    return _create_meta_workflow_run(
+        MetaWorkflowRunFromSample,
+        sample_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
+    )
+
+
+def create_meta_workflow_run_from_sample_processing(
+    sample_processing_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    return _create_meta_workflow_run(
+        MetaWorkflowRunFromSampleProcessing,
+        sample_processing_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
+    )
+
+
+def _create_meta_workflow_run(
+    meta_workflow_run_creator_class: MetaWorkflowRunFromItem,
+    item_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    meta_workflow_run_creator = meta_workflow_run_creator_class(
+        item_identifier, meta_workflow_identifier, auth_key
+    )
+    if post:
+        if patch:
+            meta_workflow_run_creator.post_and_patch()
+        else:
+            meta_workflow_run_creator.post_meta_workflow_run()
+    return meta_workflow_run_creator.get_meta_workflow_run()
+
+
 class MetaWorkflowRunCreationError(Exception):
     """Custom exception for error tracking."""
 
@@ -99,6 +197,9 @@ class MetaWorkflowRunFromItem:
         self.meta_workflow_run_uuid = str(uuid.uuid4())
         self.meta_workflow_run = {}  # Overwrite in child classes
 
+    def get_meta_workflow_run(self) -> JsonObject:
+        return self.meta_workflow_run
+
     def create_workflow_runs(self, meta_workflow_run):
         """Create shards and update MetaWorkflowRun[json].
 
@@ -129,7 +230,6 @@ class MetaWorkflowRunFromItem:
     def get_item_properties(self, item_identifier):
         """Retrieve item from given environment without raising
         exception if not found.
-
         :param item_identifier: Item identifier on the portal
         :type item_identifier: str
         :return: Raw view of item if found
@@ -1139,7 +1239,8 @@ class InputPropertiesFromSample:
     @property
     def input_gvcfs(self):
         """gVCF file input."""
-        return [self.get_processed_files_for_file_format(self.GVCF_FORMAT)]
+        gvcfs = self.get_processed_files_for_file_format(self.GVCF_FORMAT)
+        return [keep_last_item(gvcfs)]
 
     @property
     def fastqs_r1(self):
@@ -1166,7 +1267,8 @@ class InputPropertiesFromSample:
     @property
     def input_bams(self):
         """BAM file input."""
-        return [self.get_processed_files_for_file_format(self.BAM_FORMAT)]
+        bams = self.get_processed_files_for_file_format(self.BAM_FORMAT)
+        return [keep_last_item(bams)]
 
     @property
     def rcktar_file_names(self):
