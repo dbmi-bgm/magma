@@ -13,7 +13,6 @@ from dcicutils import ff_utils
 from magma_ff.metawfl_handler import MetaWorkflowHandler
 from magma_ff.metawflrun_handler import MetaWorkflowRunHandler
 from magma_ff.utils import make_embed_request
-from magma_ff.create_metawfr import create_meta_workflow_run, MetaWorkflowRunCreationError
 
 ################################################
 #   Constants
@@ -188,7 +187,8 @@ class MetaWorkflowRunHandlerFromItem:
         meta_workflow_runs_array = self.create_meta_workflow_runs_array()
 
         meta_workflow_run_handler[self.META_WORKFLOW_RUNS] = meta_workflow_runs_array
-        #TODO: check for whether this is empty or nah?
+        #TODO: check for whether this is empty or nah? no for now
+        # putting the burden of this error on the user
 
         # return the completed MWFR Handler dictionary, which follows the CGAP schema
         return meta_workflow_run_handler

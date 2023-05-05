@@ -112,10 +112,8 @@ class MetaWorkflowHandler(ValidatedDictionary):
         super()._validate_basic_attributes(self.UUID_ATTR)
 
         ### Calculated attributes ###
-        # set meta_workflows attribute
-        # TODO: is this redefinition into a dictionary allowed?
-        # or should I just make a new attribute? I dunno how this would affect json in portal
-        # except maybe in patching
+        # set meta_workflows attribute -- the following used to create ordered step list
+        # and creates step objects
         self._set_meta_workflows_dict()
 
         # order the meta_workflows list based on dependencies

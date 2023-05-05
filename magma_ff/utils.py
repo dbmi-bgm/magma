@@ -81,25 +81,26 @@ def chunk_ids(ids):
         result.append(ids[idx : idx + chunk_size])
     return result
 
+#TODO: add to tests for the handler too, and add constants
+def check_status(portal_json, valid_final_status=None):
+    """
+    Check if MetaWorkflowRun.status or MetaWorkflowRunHandler.status is valid.
 
-def check_status(meta_workflow_run, valid_final_status=None):
-    """Check if MetaWorkflowRun.status is valid.
-
-    If given valid final status, check MetaWorkflowRun.final_status
+    If given valid status, check MetaWorkflowRu(Handler).final_status
     as well.
 
-    :param meta_workflow_run: MetaWorkflowRun[json]
-    :type meta_workflow_run: dict
+    :param portal_json: MetaWorkflowRun(Handler)[json]
+    :type portal_json: dict
     :param valid_status: Final status considered valid
     :type valid_status: list
-    :return: Whether MetaWorkflowRun final_status is valid
+    :return: Whether MetaWorkflowRun (Handler) status & final_status are valid
     :rtype: bool
     """
-    item_status = meta_workflow_run.get("status", "deleted")
+    item_status = portal_json.get("status", "deleted")
     if item_status not in ["obsolete", "deleted"]:
         result = True
         if valid_final_status:
-            final_status = meta_workflow_run.get("final_status")
+            final_status = portal_json.get("final_status")
             if final_status not in valid_final_status:
                 result = False
     else:
