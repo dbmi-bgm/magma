@@ -55,7 +55,7 @@ class MetaWorkflowRunHandlerFromItem:
     FINAL_STATUS = "final_status"
     META_WORKFLOW_RUNS = "meta_workflow_runs"
     
-    # specific to a mwf run step #TODO: called later on in this class, right? right.
+    # specific to a mwf run step
     META_WORKFLOW_RUN = "meta_workflow_run"
     NAME = "name"
     MWFR_STATUS = "status"
@@ -137,7 +137,7 @@ class MetaWorkflowRunHandlerFromItem:
         self.meta_workflow_handler_json = ff_utils.get_metadata(
             meta_workflow_handler_identifier, 
             key=self.auth_key, 
-            add_on="frame=raw"
+            add_on="frame=raw" #TODO: or request object view
         )
         if not self.meta_workflow_handler_json:
             raise MetaWorkflowRunHandlerCreationError(
@@ -151,18 +151,6 @@ class MetaWorkflowRunHandlerFromItem:
         self.associated_item_id = self.associated_item_attributes.get(self.UUID) # get uuid of associated item
         self.meta_workflow_handler_id = self.meta_workflow_handler_json.get(self.UUID) # get uuid of the template mwf handler
         self.meta_workflow_run_handler_uuid = str(uuid.uuid4()) #TODO: put exception to catch duplicates? i think the portal handles this
-
-        #TODO: this is to check for duplicating metaworkflows
-        existing_meta_workflow_runs_on_assoc_item = self.associated_item_attributes.get(self.META_WORKFLOW_RUNS, [])
-        # above returns [] if no existing mwfr, else returns list of linktos
-        existing_mwfs = {}
-        existing_mwfrs = {}
-        for mwfr in existing_meta_workflow_runs_on_assoc_item:
-            existing_mwfs[mwfr["meta_workflow"]] = mwfr["uuid"]
-            existing_mwfrs[mwfr["uuid"]] = mwfr["final_status"]
-
-        self.existing_meta_workflows_on_assoc_item = existing_mwfs
-        self.statuses_of_existing_mwfrs = existing_mwfrs
 
         # and now create the actual MetaWorkflow Run Handler
         # this returns the dict itself, not just an ID
@@ -235,32 +223,10 @@ class MetaWorkflowRunHandlerFromItem:
                         [item_prop_trace],
                         self.auth_key,
                         single_item=True
-                    )
+                    ) #TODO: add check
                     items_for_creation_uuids.append(item_uuid)
                 meta_workflow_run_step_obj[self.ITEMS_FOR_CREATION] = items_for_creation_uuids
 
-            # now handle duplication flag (TODO: todo at the end --> rename -- make new if exists)
-            try:
-                meta_workflow_linkto = generated_mwfr_obj[self.UUID]
-                # if False and a mwfr for that mwf template exists, use existing one regardless of status
-                # i.e. do not duplicate the existing mwfr and linkTo the existing one
-                # TODO: copy over the status, right?
-                if (meta_workflow_step_obj[self.DUP_FLAG] == False) \
-                    and (meta_workflow_linkto in self.existing_meta_workflows_on_assoc_item.keys()):
-                    meta_workflow_run_step_obj[self.META_WORKFLOW_RUN] =  self.existing_meta_workflows_on_assoc_item[meta_workflow_linkto] # the linkTo
-                    curr_mwfr_uuid = meta_workflow_run_step_obj[self.META_WORKFLOW_RUN]
-                    meta_workflow_run_step_obj[self.MWFR_STATUS] = MWFR_TO_HANDLER_STEP_STATUS_DICT[self.statuses_of_existing_mwfrs[curr_mwfr_uuid]]  # copy over its status
-                else: # if True, make a new MWFR for the MWF template regardless of if one exists
-                    # or it could be False, but if there's no existing mwfr for this mwf, make new one
-                    generated_mwfr_obj = create_meta_workflow_run(self.associated_item_id, meta_workflow_step_obj[self.MWF_UUID], self.auth_key)
-                    meta_workflow_run_step_obj[self.META_WORKFLOW_RUN] = meta_workflow_linkto # the linkTo
-                    meta_workflow_run_step_obj[self.MWFR_STATUS] = self.PENDING
-            except MetaWorkflowRunCreationError as err:
-                # here the error attribute is handled, if applicable
-                #TODO: not saving full traceback here
-                # also TODO: catching and not reraising the error. is this correct?
-                meta_workflow_run_step_obj[self.MWFR_STATUS] = self.FAILED
-                meta_workflow_run_step_obj[self.ERROR] = err
 
             ordered_meta_workflow_runs.append(meta_workflow_run_step_obj)
 

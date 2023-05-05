@@ -13,7 +13,7 @@ from magma.metawfl_handler import MetaWorkflowRunHandler as MetaWorkflowRunHandl
 ################################################
 #   MetaWorkflow Handler, Fourfront
 ################################################
-class MetaWorkflowHandler(MetaWorkflowRunHandlerFromMagma):
+class MetaWorkflowRunHandler(MetaWorkflowRunHandlerFromMagma):
 
     def __init__(self, input_dict):
         """
@@ -24,4 +24,4 @@ class MetaWorkflowHandler(MetaWorkflowRunHandlerFromMagma):
         """
         super().__init__(input_dict)
 
-    #TODO: update cost ---- embed jobid ...
+    #TODO: update cost
