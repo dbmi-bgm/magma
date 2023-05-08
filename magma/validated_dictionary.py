@@ -32,7 +32,10 @@ class ValidatedDictionary(object):
         """
         for attribute in attributes_to_check:
             try:
-                getattr(self, attribute)
+                retrieved_attr = getattr(self, attribute)
+                if retrieved_attr is None:
+                    raise AttributeError("attribute %s cannot have value 'None'." % attribute)
+                    # TODO: add this to the pytests
             except AttributeError as e:
                 raise AttributeError("Object validation error, {0}\n"
                                     .format(e.args[0]))

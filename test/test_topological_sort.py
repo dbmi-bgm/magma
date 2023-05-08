@@ -90,7 +90,6 @@ def meta_workflow_dict(simple_meta_workflow_metadata_list):
 
     # just to be able to create MetaWorkflowStep objects without error
     meta_workflow_dict[ITEMS_FOR_CREATION_UUID] = "foo"
-    meta_workflow_dict[DUP_FLAG] = False 
     return meta_workflow_dict
 
 def create_input_meta_workflows_dict(array_of_meta_workflows):
