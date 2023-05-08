@@ -149,7 +149,7 @@ class MetaWorkflowHandler(ValidatedDictionary):
                 # then add to the meta_workflows dictionary
                 # of the form {meta_workflow["name"]: MetaWorkflowStep(meta_workflow)}
                 if temp_meta_workflow_step_dict.setdefault(meta_workflow["name"], meta_workflow_step) != meta_workflow_step:
-                    raise MetaWorkflowStepDuplicateError(f'"{meta_workflow["name"]}" is a duplicate MetaWorkflow, \
+                  raise MetaWorkflowStepDuplicateError(f'"{meta_workflow["name"]}" is a duplicate MetaWorkflow, \
                         all MetaWorkflow names must be unique.')
 
             # redefine the "meta_workflows" attribute to this generated dictionary of MetaWorkflowStep objects

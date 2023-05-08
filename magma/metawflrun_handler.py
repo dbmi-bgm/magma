@@ -4,6 +4,7 @@
 #   Libraries
 ################################################
 from magma.validated_dictionary import ValidatedDictionary
+from magma.magma_constants import *
 
 ################################################
 #   MetaWorkflowRunStep
@@ -12,32 +13,27 @@ class MetaWorkflowRunStep(ValidatedDictionary):
     """
     Class to represent a MetaWorkflow Run object,
     as a step within a MetaWorkflow Run Handler object.
-    Assumption that this is based on ordered_meta_workflows list
-    from a MetaWorfklow Handler.
+    Assumption that this is based on ordered_meta_workflows (name) list
+    from a MetaWorkflow Handler.
     """
-
-    NAME_ATTR = "name" # name of metaworkflow corresponding to the metaworkflow run
-    STATUS_ATTR = "status"
-    DEP_ATTR = "dependencies"
-    MWF_RUN_ATTR = "meta_workflow_run" #TODO: used within the handler itself
-    # ITEMS_CREATION_ATTR = "items_for_creation" #TODO: do this embedding in ff. BUT. make req in schema?
-    # this above TODO: is very important (unless checked elsewhere)
 
     def __init__(self, input_dict):
         """
         Constructor method, initialize object and attributes.
 
-        :param input_dict: a MetaWorkflow step (object) and accompanying info within handler, defined by json file
+        :param input_dict: dictionary representing a MetaWorkflow step (object) and accompanying info within handler
         :type input_dict: dict
         """
         super().__init__(input_dict)
 
         # for automatically setting initial status to "pending", unless explicitly defined not to
-        if not hasattr(self, self.STATUS_ATTR):
-            setattr(self, self.STATUS_ATTR, "pending")
+        if not hasattr(self, STATUS):
+            setattr(self, STATUS, PENDING)
 
         # Validate presence of basic attributes of this MetaWorkflow step
-        self._validate_basic_attributes(self.NAME_ATTR, self.DEP_ATTR)
+        # TODO: make items_for_creation a required attr?
+        # !!!AND!!! meta_workflow_run --> not necessarily, not defined until creation of mwfr
+        self._validate_basic_attributes(NAME, DEPENDENCIES)
 
 ################################################
 #   MetaWorkflowRunHandler
@@ -46,13 +42,8 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
     """
     Class representing a MetaWorkflowRun Handler object,
     a list of MetaWorkflowsRuns with specified dependencies,
-    and their status
+    and their status.
     """
-
-    UUID_ATTR = "uuid"
-    ASSOCIATED_METAWORKFLOW_HANDLER_ATTR = "meta_workflow_handler"
-    META_WORKFLOW_RUNS_ATTR = "meta_workflow_runs"
-    FINAL_STATUS_ATTR = "final_status"
 
     def __init__(self, input_dict):
         """
@@ -66,159 +57,197 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
 
         super().__init__(input_dict)
         
-        self._validate_basic_attributes(self.UUID_ATTR, self.ASSOCIATED_METAWORKFLOW_HANDLER_ATTR, self.META_WORKFLOW_RUNS_ATTR)
+        self._validate_basic_attributes(UUID, ASSOCIATED_META_WORKFLOW_HANDLER, META_WORKFLOW_RUNS)
 
-        # initial final status attribute upon creation
-        setattr(self, self.FINAL_STATUS_ATTR, "pending")
+        # initial final_status attribute upon creation should be "pending"
+        setattr(self, FINAL_STATUS, PENDING)
 
         ### Calculated attributes ###
 
         # by nature of how a MetaWorkflowRun Handler is created from the MetaWorkflow Handler,
         # the array "meta_workflow_runs" will already be in some valid topologically sorted order
-        #(based on topologically sorted list "meta_workflows" in the regular handler)
-        # here, though, we create a dictionary of the form {mwf_name: MetaWorkflowRunStep_object,...}
+        # here, though, we create a dictionary of the form {mwfr_name: MetaWorkflowRunStep_object,...}
         # for faster lookup and updating of steps
-        self.meta_workflow_run_step_dict = self._create_meta_workflow_run_step_objects()
+        self.meta_workflow_run_steps_dict = self._set_meta_workflow_runs_dict()
 
 
-    def _create_meta_workflow_run_step_objects(self):
-        # creates dict: {name_1: step_obj_1, name_2: step_obj_2,...}
+    def _set_meta_workflow_runs_dict(self):
+        """
+        Using meta_workflow_runs attribute (an array of MetaWorkflow Runs and their metadata),
+        create a dictionary of the form {meta_workflow_run_name_a: meta_workflow_run_step_obj_a, ...},
+        allowing for quicker lookup and updating of MetaWorkflowRunStep objects.
+
+        :return: dictionary containing {MetaWorkflowRun name: MetaWorkflowRunStep object} key-value pairs
+        """
         meta_workflow_run_step_dict = {}
         for meta_workflow_run in self.meta_workflow_runs:
             meta_workflow_run_step_object = MetaWorkflowRunStep(meta_workflow_run)
-            step_name = meta_workflow_run["name"]
+            step_name = meta_workflow_run[NAME]
             meta_workflow_run_step_dict[step_name] = meta_workflow_run_step_object
         return meta_workflow_run_step_dict
 
-    # to update final_status attribute of the handler
+
     def update_final_status(self):
         """
-        Check status for all MetaWorkflowRunStep objects.
-        Initial final status = pending
-        If a step is running and none others have failed or stopped, final_status = running
-        If all steps are completed, final_status = completed
-        If a step has failed, final_status = failed
-        If a step has been stopped, final_status = stopped
+        Update final_status of handler based on combined statuses of
+        all MetaWorkflowRunStep objects.
 
-        :return: final_status
+        If all steps are pending, final_status = pending.
+        If a step is running and none others have failed or stopped, final_status = running.
+        If all steps are completed, final_status = completed.
+        If a step has failed, final_status = failed.
+        If a step has been stopped, final_status = stopped.
+
+        :return: final_status of the MetaWorkflow Run Handler
         :rtype: str
         """
-        # options for mwf runs: pending, running, completed, failed, stopped
-        # TODO: additional final_status possibilities from mwf run schema --> inactive, quality metric failed (how to handle these??)
-        # TODO: use setattr method consistently
-
         all_steps_completed = True
+        all_steps_pending = True
 
-        for meta_workflow_run_step in self.meta_workflow_run_step_dict.values():
-            if meta_workflow_run_step.status != "completed":
+        for meta_workflow_run_step in self.meta_workflow_run_steps_dict.values():
+            current_step_status = getattr(meta_workflow_run_step, STATUS)
+
+            # checking if all steps are "completed" or "pending" and toggling corresponding flags
+            if current_step_status != COMPLETED:
                 all_steps_completed = False
-                if meta_workflow_run_step.status == "running":
-                    setattr(self, self.FINAL_STATUS_ATTR, "running")
-                elif meta_workflow_run_step.status == "failed":
-                    setattr(self, self.FINAL_STATUS_ATTR, "failed")
-                    break
-                elif meta_workflow_run_step.status == "stopped":
-                    setattr(self, self.FINAL_STATUS_ATTR, "stopped")
-                    break
+            if current_step_status != PENDING:
+                all_steps_pending = False
+
+            # if step neither "completed" or "pending", update final_status accordingly
+            if current_step_status == RUNNING:
+                setattr(self, FINAL_STATUS, RUNNING)
+            elif current_step_status == FAILED:
+                setattr(self, FINAL_STATUS, FAILED)
+                break
+            elif current_step_status == STOPPED:
+                setattr(self, FINAL_STATUS, STOPPED)
+                break
                     
         # if all the steps were successfully completed
         if all_steps_completed:
-            setattr(self, self.FINAL_STATUS_ATTR, "completed")
+            setattr(self, FINAL_STATUS, COMPLETED)
 
-        #TODO: update pytests here
-        return self.FINAL_STATUS_ATTR
+        # if all the steps were pending
+        if all_steps_pending:
+            setattr(self, FINAL_STATUS, PENDING)
 
-    #TODO: add this to pytests
-    def retrieve_meta_workflow_run_step_by_name(self, meta_workflow_run_name):
-        step_obj = self.meta_workflow_run_step_dict[meta_workflow_run_name]
-        return step_obj
+        return getattr(self, FINAL_STATUS)
 
-    # the following allows for resetting a MetaWorkflow Run Step
-    # this can happen only when the duplication flag is set to True
-    def reset_meta_workflow_run_step(self, meta_workflow_run_name):
+
+    def _retrieve_meta_workflow_run_step_obj_by_name(self, meta_workflow_run_name):
         """
-        Resets status and meta_workflow_run attributes of a MetaWorkflowRunStep, given its name
+        Given a MetaWorkflow Run name,
+        retrieve its corresponding MetaWorkflowRunStep object.
 
-        :param meta_workflow_run_name: name attribute of a MetaWorkflowRunStep
+        :param meta_workflow_run_name: name of MetaWorkflow Run to be retrieved
         :type meta_workflow_run_name: str
+        :return: MetaWorkflowRunStep object corresponding to the given name
+        :raises: KeyError if the MetaWorkflow Run name is invalid
         """
         try:
-            step_obj = self.retrieve_meta_workflow_run_step_by_name(meta_workflow_run_name)
-            # Reset the status of the MetaWorkflow Run 
-            setattr(step_obj, step_obj.STATUS_ATTR, "pending")
-            # Remove and reset the attribute for the LinkTo to the corresponding MetaWorkflow Run
-            setattr(step_obj, step_obj.MWF_RUN_ATTR, None)
+            step_obj = self.meta_workflow_run_steps_dict[meta_workflow_run_name]
+            return step_obj
         except KeyError as key_err:
             raise KeyError("{0} is not a valid MetaWorkflowRun Step name.\n"
                                 .format(key_err.args[0]))
+        #TODO: sharding of mwfrs....
+        
 
-    # this is a more generalized version of the above
-    # this is for redefining any attribute of a MetaWorkflow Run Step
-    def update_meta_workflow_run_step(self, meta_workflow_run_name, attribute, value):
-        try:
-            step_obj = self.retrieve_meta_workflow_run_step_by_name(meta_workflow_run_name)
-            # Reset the given attribute
-            setattr(step_obj, attribute, value)
-        except KeyError as key_err:
-            raise KeyError("{0} is not a valid MetaWorkflowRun Step name.\n"
-                                .format(key_err.args[0]))
+    def get_meta_workflow_run_step_attr(self, meta_workflow_run_name, attribute_to_fetch):
+        """
+        Given a MetaWorkflow Run name and an attribute to fetch,
+        retrieve this attribute from the corresponding MetaWorkflowRunStep object,
+        or None if the attribute to fetch doesn't exist on the MetaWorkflowRunStep object.
 
-    # TODO: also have to add this to pytests -- nonexistent attr? check w other fxn too
-    def get_step_attr(self, meta_workflow_run_name, attribute_to_fetch):
-        try:
-            step_obj = self.retrieve_meta_workflow_run_step_by_name(meta_workflow_run_name)
-            # Return the status
-            return getattr(step_obj, attribute_to_fetch, None)
-        except KeyError as key_err:
-            raise KeyError("{0} is not a valid MetaWorkflowRun Step name.\n"
-                                .format(key_err.args[0]))
+        :param meta_workflow_run_name: name of MetaWorkflow Run to be accessed
+        :type meta_workflow_run_name: str
+        :return: attribute_to_fetch's value from the MetaWorkflowRunStep object specified
+        :rtype: varied, or None if not an existing attribute on the given Run Step
+        :raises: KeyError if the MetaWorkflow Run name is invalid
+        """
+        step_obj = self._retrieve_meta_workflow_run_step_obj_by_name(meta_workflow_run_name)
+        # Return the attribute_to_fetch
+        return getattr(step_obj, attribute_to_fetch, None)
+
+
+    def update_meta_workflow_run_step_obj(self, meta_workflow_run_name, attribute, value):
+        """
+        Given a MetaWorkflow Run name, an attribute to update, and value to update it to,
+        retrieve its corresponding MetaWorkflowRunStep object by name
+        and redefine the given attribute with the provided new value.
+
+        :param meta_workflow_run_name: name of MetaWorkflow Run to be retrieved and updated
+        :type meta_workflow_run_name: str
+        :param attribute: attribute to update
+        :type attribute: str
+        :param value: new value of the updated attribute
+        :type value: varies
+        :raises: KeyError if the MetaWorkflow Run name is invalid
+        """
+        # Retrieve the specified step object
+        step_obj = self._retrieve_meta_workflow_run_step_obj_by_name(meta_workflow_run_name)
+        # Reset the given attribute
+        setattr(step_obj, attribute, value)
+
 
     def pending_steps(self):
         """
-        returns a list of pending steps (by name)
-        if no more pending, return empty list
+        Returns a list of names of MetaWorkflowRunStep objects whose status is "pending".
+        Returns empty list if none are pending.
+        
+        :returns: list of pending steps, by name
+        :rtype: list[str]
         """
         pending_steps_list = []
 
         for meta_workflow_run_step in self.meta_workflow_runs:
-            step_name = meta_workflow_run_step["name"]
-            #TODO: make pending a global var
-            if self.get_step_attr(step_name, "status") == "pending":
+            step_name = meta_workflow_run_step[NAME]
+            if self.get_meta_workflow_run_step_attr(step_name, STATUS) == PENDING:
                 pending_steps_list.append(step_name)
         
         return pending_steps_list
 
     def running_steps(self):
         """
-        returns a list of running steps (by name)
-        if no more running, return empty list
+        Returns a list of names of MetaWorkflowRunStep objects whose status is "running".
+        Returns empty list if none are running.
+
+        :returns: list of running steps, by name
+        :rtype: list[str]
         """
         running_steps_list = []
         for meta_workflow_run in self.meta_workflow_runs:
-            associated_meta_workflow_name = meta_workflow_run["name"]
-            if self.get_step_attr(associated_meta_workflow_name, "status") == "running":
+            associated_meta_workflow_name = meta_workflow_run[NAME]
+            if self.get_meta_workflow_run_step_attr(associated_meta_workflow_name, STATUS) == RUNNING:
                 running_steps_list.append(associated_meta_workflow_name)
         
         return running_steps_list
 
     # TODO: move to ff because portal specific
-    # and test out
-    def update_meta_workflows_array(self):
+    def update_meta_workflow_runs_array(self):
         """
-        updates run_uuid, status, error attrs
-        for mwfr dicts for patching mwfr steps array
-        """
-        for meta_workflow_run_dict in self.meta_workflow_runs:
-            associated_meta_workflow_name = meta_workflow_run_dict["name"]
-            meta_workflow_run_uuid = self.get_step_attr(associated_meta_workflow_name, "run_uuid")
-            status = self.get_step_attr(associated_meta_workflow_name, "status")
-            error = self.get_step_attr(associated_meta_workflow_name, "error")
+        Following any updates to MetaWorkflowRunStep objects in meta_workflow_run_steps_dict,
+        this method is called in order to update the original meta_workflow_runs array of dicts.
+        Possible attributes that are updated are meta_workflow_run (a linkTo),
+        status, and error.
 
-            if meta_workflow_run_uuid:
-                meta_workflow_run_dict["run_uuid"] = meta_workflow_run_uuid
+        This allows for future PATCHing of a meta_workflow_runs array on the CGAP portal,
+        by providing the updated meta_workflow_runs.
+
+        :returns: updated meta_workflow_runs array
+        """
+        #TODO: make sure this works with sharding
+        for meta_workflow_run_dict in self.meta_workflow_runs:
+            meta_workflow_run_name = meta_workflow_run_dict[NAME]
+            meta_workflow_run_linkto = self.get_meta_workflow_run_step_attr(meta_workflow_run_name, META_WORKFLOW_RUN)
+            status = self.get_meta_workflow_run_step_attr(meta_workflow_run_name, STATUS)
+            error = self.get_meta_workflow_run_step_attr(meta_workflow_run_name, ERROR)
+
+            if meta_workflow_run_linkto:
+                meta_workflow_run_dict[META_WORKFLOW_RUN] = meta_workflow_run_linkto
             if status:
-                meta_workflow_run_dict["status"] = status
+                meta_workflow_run_dict[STATUS] = status
             if error:
-                meta_workflow_run_dict["error"] = error
+                meta_workflow_run_dict[ERROR] = error
 
         return self.meta_workflow_runs
