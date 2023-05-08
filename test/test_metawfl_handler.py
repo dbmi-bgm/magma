@@ -287,8 +287,7 @@ class TestMetaWorkflowHandler:
         Tests the topological sorting of MetaWorkflow steps.
         """
         meta_workflow_handler = MetaWorkflowHandler(mwf_handler_dict)
-        assert getattr(meta_workflow_handler, "ordered_meta_workflows") in possible_reordered_mwf_lists
-        # TODO: add to constants file?
+        assert getattr(meta_workflow_handler, ORDERED_META_WORKFLOWS) in possible_reordered_mwf_lists
 
 
     @pytest.mark.parametrize(

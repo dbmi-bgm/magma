@@ -13,27 +13,14 @@ from dcicutils import ff_utils
 from magma_ff.metawfl_handler import MetaWorkflowHandler
 from magma_ff.metawflrun_handler import MetaWorkflowRunHandler
 from magma_ff.utils import make_embed_request
+from magma.magma_constants import *
 
-################################################
-#   Constants
-################################################
-# UUID = "uuid"
-#TODO: make a file of these
-
-MWFR_TO_HANDLER_STEP_STATUS_DICT = {
-    "pending": "pending",
-    "running": "running",
-    "completed": "completed",
-    "failed": "failed",
-    "inactive": "pending",
-    "stopped": "stopped",
-    "quality metric failed": "failed"
-}
 
 ################################################
 #   Custom Exception class(es)
 ################################################
 class MetaWorkflowRunHandlerCreationError(Exception):
+    """Custom Exception when MetaWorkflow Run Handler encounters error during creation."""
     pass
 
 ################################################
@@ -44,51 +31,24 @@ class MetaWorkflowRunHandlerFromItem:
     Base class to hold common methods required to create and POST a
     MetaWorkflowRun Handler, and PATCH the Item used to create it (the "associated item").
     """
-    # Schema constants
-    PROJECT = "project"
-    INSTITUTION = "institution"
-    UUID = "uuid"
-    TITLE = "title"
-    ASSOCIATED_META_WORKFLOW_HANDLER = "meta_workflow_handler"
-    ASSOCIATED_ITEM = "associated_item"
-    FINAL_STATUS = "final_status"
-    META_WORKFLOW_RUNS = "meta_workflow_runs"
-    
-    # specific to a mwf run step
-    META_WORKFLOW_RUN = "meta_workflow_run"
-    NAME = "name"
-    MWFR_STATUS = "status"
-    DEPENDENCIES = "dependencies"
-    ITEMS_FOR_CREATION = "items_for_creation"
-    ERROR = "error"
-    DUP_FLAG = "duplication_flag"
-
-    # mwf step (from template mwf handler)
-    MWF_UUID = "meta_workflow"
-    ITEMS_FOR_CREATION_UUID = "items_for_creation_uuid"
-    ITEMS_FOR_CREATION_PROP_TRACE = "items_for_creation_property_trace"
-    
-    PENDING = "pending"
-    FAILED = "failed"
 
     # for embed requests
-    #TODO: use from constants file plz
-    ASSOC_ITEM_FIELDS = [
+    ASSOCIATED_ITEM_FIELDS = [
         "project",
         "institution",
         "uuid",
-        "meta_workflow_runs.uuid",
-        "meta_workflow_runs.meta_workflow", #TODO: this is sometimes an @id??
-        "meta_workflow_runs.final_status"
+        # "meta_workflow_runs.uuid",
+        # "meta_workflow_runs.meta_workflow", 
+        # "meta_workflow_runs.final_status"
+        # TODO: these last three are for the case of reintegrating duplication flag
     ]
 
-    # MWFH_FIELDS = [
-    #     "uuid",
-    #     "meta_workflows",
-    #     "meta_workflows.items_for_creation_property_trace", #TODO: same as above??
-    #     "meta_workflows.items_for_creation_uuid"
-    # ]
-
+    META_WORKFLOW_HANDLER_FIELDS = [
+        "uuid",
+        "title",
+        "meta_workflows",
+        "meta_workflows.*"
+    ]
 
     # TODO: is this correct?? also, will we end up patching on assoc item??
     # TODO: if so, create a schema mixin (seems unnecessary, for now)
@@ -102,7 +62,7 @@ class MetaWorkflowRunHandlerFromItem:
             on which this MetaWorkflow Run Handler is being created
         :type associated_item_identifier: str
         :param meta_workflow_handler_identifier: Associated MetaWorkflow Handler identifier
-            (UUID, @id, or accession) -- TODO: does embed request work with an accession
+            (UUID, @id, or accession) -- TODO: does embed request work with an accession (yes)
         :type meta_workflow_handler_identifier: str
         :param auth_key: Portal authorization key
         :type auth_key: dict
@@ -111,129 +71,166 @@ class MetaWorkflowRunHandlerFromItem:
         """
         self.auth_key = auth_key
 
-        self.associated_item_attributes = make_embed_request(
+        # Acquire associated item fields needed to create the Run Handler
+        self.associated_item_dict = make_embed_request(
             associated_item_identifier,
-            self.ASSOC_ITEM_FIELDS,
+            self.ASSOCIATED_ITEM_FIELDS,
             self.auth_key,
             single_item=True
         )
-        if not self.associated_item_attributes:
+        if not self.associated_item_dict:
             raise MetaWorkflowRunHandlerCreationError(
-                "No Item found for given 'associated item' identifier: %s" % associated_item_identifier
+                "No Item found for given 'associated_item' identifier: %s" % associated_item_identifier
             )
 
-        # check that the specified identifier for the associated MWF Handler does indeed exist on portal
+        # Acquired fields from associated MetaWorkflow Handler needed to create the Run Handler
         # TODO: a check to make sure it is indeed of mwf handler type? does this function exist on ff_utils?
         # same for above associated item request
-        #TODO: is this even necessary?? is it too complicated of a call to
-        # just check it exists? what about just a get request?
-        # self.meta_workflow_handler_json = make_embed_request(
-        #     meta_workflow_handler_identifier,
-        #     self.MWFH_FIELDS,
-        #     self.auth_key,
-        #     single_item=True
-        # )
-        self.meta_workflow_handler_json = ff_utils.get_metadata(
-            meta_workflow_handler_identifier, 
-            key=self.auth_key, 
-            add_on="frame=raw" #TODO: or request object view
+        self.meta_workflow_handler_dict = make_embed_request(
+            meta_workflow_handler_identifier,
+            self.META_WORKFLOW_HANDLER_FIELDS,
+            self.auth_key,
+            single_item=True
         )
-        if not self.meta_workflow_handler_json:
+        if not self.meta_workflow_handler_dict:
             raise MetaWorkflowRunHandlerCreationError(
-                "No MetaWorkflow Handler found for given identifier: %s"
+                "No MetaWorkflow Handler found for given 'meta_workflow_handler' identifier: %s"
                 % meta_workflow_handler_identifier
             ) 
 
-        # now fill in the rest of the attributes of this MWF Run Handler
-        self.project = self.associated_item_attributes.get(self.PROJECT) # project is same as associated item
-        self.institution = self.associated_item_attributes.get(self.INSTITUTION) # institution is same as associated item
-        self.associated_item_id = self.associated_item_attributes.get(self.UUID) # get uuid of associated item
-        self.meta_workflow_handler_id = self.meta_workflow_handler_json.get(self.UUID) # get uuid of the template mwf handler
-        self.meta_workflow_run_handler_uuid = str(uuid.uuid4()) #TODO: put exception to catch duplicates? i think the portal handles this
+        # Using associated item and associated MetaWorkflow Handler fields acquired, 
+        # define some basic attrs for the Run Handler: project, institution, associated_item, meta_workflow_handler
+        self.project = self.associated_item_dict.get(PROJECT) # project is same as associated item
+        self.institution = self.associated_item_dict.get(INSTITUTION) # institution is same as associated item
+        self.associated_item_id = self.associated_item_dict.get(UUID) # get uuid of associated_item
+        self.meta_workflow_handler_id = self.meta_workflow_handler_dict.get(UUID) # get uuid of the template mwf handler
 
-        # and now create the actual MetaWorkflow Run Handler
-        # this returns the dict itself, not just an ID
-        # this attribute is later used to run the thang
+        self.meta_workflow_run_handler_uuid = str(uuid.uuid4())
+
+        # And now create the actual MetaWorkflow Run Handler using the instance vars defined above
+        # This returns the complete, populated MetaWorkflow Run Handler dictionary that can be POSTed
         self.meta_workflow_run_handler = self.create_meta_workflow_run_handler()
 
 
     def create_meta_workflow_run_handler(self):
         """
-        Create MetaWorkflowRun Handler, which will later be POSTed to the CGAP portal.
+        Create MetaWorkflowRun Handler dictionary, which can later be POSTed to the CGAP portal.
 
         :return: MetaWorkflowRun Handler dictionary (for the portal JSON object)
         :rtype: dict
         """
 
-        #TODO: check Doug's prior comments on title
-        meta_workflow_handler_title = self.meta_workflow_handler_json.get(self.TITLE)
-        creation_date = datetime.date.today().isoformat()
-        title = "MetaWorkflowRun Handler %s created %s" % (
-            meta_workflow_handler_title,
-            creation_date
-        )
-
+        # Create basic MetaWorkflow Run Handler dictionary, using instance variables
         meta_workflow_run_handler = {
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
-            self.UUID: self.meta_workflow_run_handler_uuid,
-            self.TITLE: title,
-            self.ASSOCIATED_META_WORKFLOW_HANDLER: self.meta_workflow_handler_id,
-            self.ASSOCIATED_ITEM: self.associated_item_id,
-            self.FINAL_STATUS: self.PENDING
+            PROJECT: self.project,
+            INSTITUTION: self.institution,
+            UUID: self.meta_workflow_run_handler_uuid,
+            ASSOCIATED_META_WORKFLOW_HANDLER: self.meta_workflow_handler_id,
+            ASSOCIATED_ITEM: self.associated_item_id,
+            FINAL_STATUS: PENDING
         }
+        # Create  the title of the Run Handler, based on associated MetaWorkflow Handler's title
+        # and the timestamp at the time of creation of this class instance
+        meta_workflow_handler_title = self.meta_workflow_handler_dict.get(TITLE)
+        if meta_workflow_handler_title:
+            creation_date = datetime.date.today().isoformat()
+            title = "MetaWorkflowRun Handler %s created %s" % (
+                meta_workflow_handler_title,
+                creation_date
+            )
+            meta_workflow_run_handler[TITLE] = title
 
-        # now call helper function to populate and create the MetaWorkflow Runs
+
+        # now call helper method to populate and create the meta_workflow_runs array
         meta_workflow_runs_array = self.create_meta_workflow_runs_array()
 
-        meta_workflow_run_handler[self.META_WORKFLOW_RUNS] = meta_workflow_runs_array
+        meta_workflow_run_handler[META_WORKFLOW_RUNS] = meta_workflow_runs_array
         #TODO: check for whether this is empty or nah? no for now
         # putting the burden of this error on the user
 
-        # return the completed MWFR Handler dictionary, which follows the CGAP schema
+        # return the completed MetaWorkflow Run Handler dictionary, which follows the CGAP schema
         return meta_workflow_run_handler
 
     def create_meta_workflow_runs_array(self):
-        # create MetaWorkflowHandler object
-        associated_meta_workflow_handler_object = MetaWorkflowHandler(self.meta_workflow_handler_json)
-        # this'll make sure all necessary attrs are present in the following run handler creation
+        """
+        Creates meta_workflow_runs array for a MetaWorkflowRun Handler dictionary.
+        These objects are in correct order due to topological sorting in
+        the MetaWorkflowHandler class, and uses the associated MetaWorkflow Handler's
+        ordered_meta_workflows array as a template.
 
-        # then extract the ordered list of metaworkflows
-        #TODO: add ordered_meta_workflows to constants file
-        # and error catching with this call
-        ordered_meta_workflows = getattr(associated_meta_workflow_handler_object, "ordered_meta_workflows")
+        :return: array of meta_workflow_runs metadata, following CGAP schema
+        :rtype: list[dict]
+        """
+
+        # Create MetaWorkflowHandler object
+        # This ensures all necessary attrs are present in the following Run Handler creation
+        # and that MetaWorkflow Steps are topologically sorted
+        associated_meta_workflow_handler_object = MetaWorkflowHandler(self.meta_workflow_handler_dict)
         
-        ordered_meta_workflow_runs = [] # will eventually be the completed pending MWFRs array, in order
+
+        # Extract the ordered list of MetaWorkflows
+        try:
+            ordered_meta_workflows = getattr(associated_meta_workflow_handler_object, ORDERED_META_WORKFLOWS)
+        except AttributeError as attr_err:
+            raise MetaWorkflowRunHandlerCreationError(
+                "MetaWorkflow Handler does not contain ordered MetaWorkflow steps: \n%s" % str(attr_err)
+            )
+        else: # edge case: ordered_meta_workflows is of NoneType
+            if ordered_meta_workflows is None:
+                raise MetaWorkflowRunHandlerCreationError(
+                "MetaWorkflow Handler 'ordered_meta_workflows' attribute is of NoneType \n%s"
+            )
+        
+        
+        # Will eventually be the completed pending meta_workflow_runs array, in order
+        ordered_meta_workflow_runs = [] 
+
+        # Go through the ordered MetaWorkflow steps to populate basic MetaWorkflow Runs
         for meta_workflow_step_obj in ordered_meta_workflows:
-            meta_workflow_run_step_obj = {} # will become the populated MWFR step object
+            # will become the populated MetaWorkflowRun step object
+            meta_workflow_run_step_obj = {}
 
-            # mwfr attrs: meta_workflow_run
-            # attrs that stay the same and are passed in: name, dependencies
-            meta_workflow_run_step_obj[self.NAME] = meta_workflow_step_obj[self.NAME]
-            meta_workflow_run_step_obj[self.DEPENDENCIES] = meta_workflow_step_obj[self.DEPENDENCIES]
+            # Attrs that stay the same and are passed in: name, dependencies
+            meta_workflow_run_step_obj[NAME] = meta_workflow_step_obj[NAME]
+            meta_workflow_run_step_obj[DEPENDENCIES] = meta_workflow_step_obj[DEPENDENCIES]
 
-            # handle items_for_creation attribute
-            if self.ITEMS_FOR_CREATION_UUID in meta_workflow_step_obj.keys():
-                meta_workflow_run_step_obj[self.ITEMS_FOR_CREATION] = meta_workflow_step_obj[self.ITEMS_FOR_CREATION_UUID]
-            else: # make embed requests as necessary
+            ## Handle conversion of MetaWorkflow items_for_creation_(uuid/prop_trace)
+            ## to items_for_creation (just LinkTos)
+
+            # if items_for_creation_uuid, just copy over
+            if ITEMS_FOR_CREATION_UUID in meta_workflow_step_obj.keys():
+                meta_workflow_run_step_obj[ITEMS_FOR_CREATION] = meta_workflow_step_obj[ITEMS_FOR_CREATION_UUID]
+            # otherwise, dealing with property traces. Make necessary embed requests
+            # and convert property trace(s) to uuid(s)
+            else:
                 items_for_creation_uuids = []
-                for item_prop_trace in meta_workflow_step_obj[self.ITEMS_FOR_CREATION_PROP_TRACE]:
+                for item_prop_trace in meta_workflow_step_obj[ITEMS_FOR_CREATION_PROP_TRACE]:
                     item_uuid = make_embed_request(
                         self.associated_item_id,
-                        [item_prop_trace],
+                        [item_prop_trace.uuid], # TODO: will this actually work -- test manually
                         self.auth_key,
                         single_item=True
-                    ) #TODO: add check
+                    )
+                    if not item_uuid:
+                        raise MetaWorkflowRunHandlerCreationError(
+                            "Invalid property trace '%s' on item with the following ID: %s"
+                            % (item_prop_trace, associated_item_id)
+                        ) 
                     items_for_creation_uuids.append(item_uuid)
-                meta_workflow_run_step_obj[self.ITEMS_FOR_CREATION] = items_for_creation_uuids
+                meta_workflow_run_step_obj[ITEMS_FOR_CREATION] = items_for_creation_uuids
 
-
+            # Basic dict for current MetaWorkflow Run step complete. Now append.
             ordered_meta_workflow_runs.append(meta_workflow_run_step_obj)
 
         return ordered_meta_workflow_runs
 
 
     def post_meta_workflow_run_handler(self):
+        """
+        Posts meta_workflow_run_handler dict to CGAP portal.
+
+        :raises: Exception when the dict cannot be POSTed. Could be due to schema incongruencies, for example.
+        """
         try:
             ff_utils.post_metadata(
                 self.meta_workflow_run_handler,

@@ -120,7 +120,7 @@ class MetaWorkflowHandler(ValidatedDictionary):
 
         # Create ordered MetaWorkflows name list based on dependencies
         # This ordered list is what's used to create the array of MetaWorkflow Runs in Run handler
-        self.ordered_meta_workflows = self._create_ordered_meta_workflows_list()
+        setattr(self, ORDERED_META_WORKFLOWS, self._create_ordered_meta_workflows_list())
 
     def _set_meta_workflows_dict(self):
         """
