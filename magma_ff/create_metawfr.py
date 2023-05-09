@@ -655,9 +655,12 @@ class MetaWorkflowRunInput:
     ) -> List[JsonObject]:
         """Create one structured file input for MetaWorkflowRun[json].
 
-        File inputs arrive as lists of lists of UUIDs. For dimension 1,
-        each sub-list should contain <= 1 UUID. For dimension 2, any
-        number of UUIDs can be in each sub-list.
+        File inputs arrive as lists of lists of UUIDs for now. For
+        dimension 1, each sub-list should contain <= 1 UUID. For
+        dimension 2, any number of UUIDs can be in each sub-list.
+
+        To add more dimensions, will need to refactor inputs and this
+        method.
 
         :param file_parameter: Name of file input argument
         :param file_input_value: File input values
