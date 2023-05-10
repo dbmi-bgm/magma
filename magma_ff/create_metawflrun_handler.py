@@ -17,7 +17,7 @@ from magma.magma_constants import *
 
 
 ################################################
-#   Custom Exception class(es)
+#   Custom Exception class
 ################################################
 class MetaWorkflowRunHandlerCreationError(Exception):
     """Custom Exception when MetaWorkflow Run Handler encounters error during creation."""
@@ -52,7 +52,7 @@ class MetaWorkflowRunHandlerFromItem:
 
     # TODO: is this correct?? also, will we end up patching on assoc item??
     # TODO: if so, create a schema mixin (seems unnecessary, for now)
-    self.META_WORKFLOW_RUN_HANDLER_ENDPOINT = "meta-workflow-run-handlers"
+    META_WORKFLOW_RUN_HANDLER_ENDPOINT = "meta-workflow-run-handlers"
 
     def __init__(self, associated_item_identifier, meta_workflow_handler_identifier, auth_key):
         """
@@ -72,32 +72,16 @@ class MetaWorkflowRunHandlerFromItem:
         self.auth_key = auth_key
 
         # Acquire associated item fields needed to create the Run Handler
-        self.associated_item_dict = make_embed_request(
-            associated_item_identifier,
-            self.ASSOCIATED_ITEM_FIELDS,
-            self.auth_key,
-            single_item=True
-        )
-        if not self.associated_item_dict:
-            raise MetaWorkflowRunHandlerCreationError(
-                "No Item found for given 'associated_item' identifier: %s" % associated_item_identifier
-            )
+        self.associated_item_dict = self._retrieve_associated_item_dict(associated_item_identifier)
 
         # Acquired fields from associated MetaWorkflow Handler needed to create the Run Handler
         # TODO: a check to make sure it is indeed of mwf handler type? does this function exist on ff_utils?
         # same for above associated item request
-        self.meta_workflow_handler_dict = make_embed_request(
-            meta_workflow_handler_identifier,
-            self.META_WORKFLOW_HANDLER_FIELDS,
-            self.auth_key,
-            single_item=True
-        )
-        if not self.meta_workflow_handler_dict:
-            raise MetaWorkflowRunHandlerCreationError(
-                "No MetaWorkflow Handler found for given 'meta_workflow_handler' identifier: %s"
-                % meta_workflow_handler_identifier
-            ) 
+        self.meta_workflow_handler_dict = self._retrieve_meta_workflow_handler_dict(meta_workflow_handler_identifier)
 
+
+        # TODO: use @ property, cached property for the two embeds above
+        # static methods?
         # Using associated item and associated MetaWorkflow Handler fields acquired, 
         # define some basic attrs for the Run Handler: project, institution, associated_item, meta_workflow_handler
         self.project = self.associated_item_dict.get(PROJECT) # project is same as associated item
@@ -109,10 +93,37 @@ class MetaWorkflowRunHandlerFromItem:
 
         # And now create the actual MetaWorkflow Run Handler using the instance vars defined above
         # This returns the complete, populated MetaWorkflow Run Handler dictionary that can be POSTed
-        self.meta_workflow_run_handler = self.create_meta_workflow_run_handler()
+        self.meta_workflow_run_handler = self._create_meta_workflow_run_handler()
+
+    def _retrieve_associated_item_dict(self, associated_item_identifier):
+        associated_item = make_embed_request(
+            associated_item_identifier,
+            self.ASSOCIATED_ITEM_FIELDS,
+            self.auth_key,
+            single_item=True
+        )
+        if not associated_item:
+            raise MetaWorkflowRunHandlerCreationError(
+                "No Item found for given 'associated_item' identifier: %s" % associated_item_identifier
+            )
+        return associated_item
+
+    def _retrieve_meta_workflow_handler_dict(self, meta_workflow_handler_identifier):
+        meta_workflow_handler = make_embed_request(
+            meta_workflow_handler_identifier,
+            self.META_WORKFLOW_HANDLER_FIELDS,
+            self.auth_key,
+            single_item=True
+        )
+        if meta_workflow_handler:
+            raise MetaWorkflowRunHandlerCreationError(
+                "No MetaWorkflow Handler found for given 'meta_workflow_handler' identifier: %s"
+                % meta_workflow_handler_identifier
+            )
+        return meta_workflow_handler
 
 
-    def create_meta_workflow_run_handler(self):
+    def _create_meta_workflow_run_handler(self):
         """
         Create MetaWorkflowRun Handler dictionary, which can later be POSTed to the CGAP portal.
 
@@ -141,17 +152,18 @@ class MetaWorkflowRunHandlerFromItem:
             meta_workflow_run_handler[TITLE] = title
 
 
-        # now call helper method to populate and create the meta_workflow_runs array
-        meta_workflow_runs_array = self.create_meta_workflow_runs_array()
+        # now call helper method to create and populate the meta_workflow_runs array
+        meta_workflow_runs_array = self._create_meta_workflow_runs_array(self.meta_workflow_handler_dict)
 
         meta_workflow_run_handler[META_WORKFLOW_RUNS] = meta_workflow_runs_array
-        #TODO: check for whether this is empty or nah? no for now
+        #TODO: check for whether this is empty or nah? I'm not for now
         # putting the burden of this error on the user
+        # see my note in magma/metawfl_handler.py regarding this
 
         # return the completed MetaWorkflow Run Handler dictionary, which follows the CGAP schema
         return meta_workflow_run_handler
 
-    def create_meta_workflow_runs_array(self):
+    def _create_meta_workflow_runs_array(self, meta_workflow_handler_dict):
         """
         Creates meta_workflow_runs array for a MetaWorkflowRun Handler dictionary.
         These objects are in correct order due to topological sorting in
@@ -165,7 +177,7 @@ class MetaWorkflowRunHandlerFromItem:
         # Create MetaWorkflowHandler object
         # This ensures all necessary attrs are present in the following Run Handler creation
         # and that MetaWorkflow Steps are topologically sorted
-        associated_meta_workflow_handler_object = MetaWorkflowHandler(self.meta_workflow_handler_dict)
+        associated_meta_workflow_handler_object = MetaWorkflowHandler(meta_workflow_handler_dict)
         
 
         # Extract the ordered list of MetaWorkflows
@@ -241,3 +253,7 @@ class MetaWorkflowRunHandlerFromItem:
             raise MetaWorkflowRunHandlerCreationError(
                 "MetaWorkflowRunHandler not POSTed: \n%s" % str(error_msg)
             )
+
+
+    # TODO: PATCH associated item's meta_workflow_runs array?
+    # I've chosen to do this in the running function instead

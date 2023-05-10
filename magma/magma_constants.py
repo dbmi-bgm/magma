@@ -34,13 +34,13 @@ FAILED = "failed"
 STOPPED = "stopped"
 
 
-#
-MWFR_TO_HANDLER_STEP_STATUS_DICT = {
-    "pending": "pending",
-    "running": "running",
-    "completed": "completed",
-    "failed": "failed",
-    "inactive": "pending",
-    "stopped": "stopped",
-    "quality metric failed": "failed"
-}
+#TODO: the following is here in case dup flag is added in the future
+# MWFR_TO_HANDLER_STEP_STATUS_DICT = {
+#     "pending": "pending",
+#     "running": "running",
+#     "completed": "completed",
+#     "failed": "failed",
+#     "inactive": "pending",
+#     "stopped": "stopped",
+#     "quality metric failed": "failed"
+# }

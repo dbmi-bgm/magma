@@ -5,7 +5,7 @@
 ################################################
 
 # magma
-from magma.metawfl_handler import MetaWorkflowRunHandler as MetaWorkflowRunHandlerFromMagma
+from magma.metawflrun_handler import MetaWorkflowRunHandler as MetaWorkflowRunHandlerFromMagma
 
 # from magma import metawfl #TODO: do this in FF
 # from magma_ff.utils import make_embed_request #check_status, chunk_ids

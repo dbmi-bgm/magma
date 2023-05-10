@@ -117,6 +117,11 @@ class MetaWorkflowHandler(ValidatedDictionary):
         # Using meta_workflows array of dicts from CGAP MetaWorkflow Handler
         # create dict of the form {meta_workflow_name: MetaWorkflow Step object}
         self._set_meta_workflows_dict()
+        # TODO: NOTE: nowhere in magma is there a check that meta_workflows
+        # is an empty list. I am putting the burden of that on the user
+        # would y'all like me to add a check for an empty list? or NoneType?
+        # right now I only catch instances where meta_workflows doesn't exist,
+        # and I create an empty dict
 
         # Create ordered MetaWorkflows name list based on dependencies
         # This ordered list is what's used to create the array of MetaWorkflow Runs in Run handler
