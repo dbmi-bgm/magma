@@ -10,7 +10,7 @@ from __future__ import annotations
 import datetime
 import json
 import uuid
-from typing import List
+from typing import Any, List
 
 from dcicutils import ff_utils
 
@@ -19,6 +19,7 @@ from magma_ff.metawflrun import MetaWorkflowRun
 from magma_ff.utils import JsonObject, keep_last_item, make_embed_request
 
 
+COHORT_ANALYSIS_TYPE = "CohortAnalysis"
 FILE_FORMAT = "file_format"
 SAMPLE_PROCESSING_TYPE = "SampleProcessing"
 SAMPLE_TYPE = "Sample"
@@ -56,6 +57,10 @@ def create_meta_workflow_run(
         return create_meta_workflow_run_from_sample_processing(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
+    if _is_item_of_type(COHORT_ANALYSIS_TYPE, item):
+        return create_meta_workflow_run_from_cohort_analysis(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
     raise MetaWorkflowRunCreationError(
         f"No methods available to create MetaWorkflowRun for item of type(s):"
         f" {_get_item_types(item)}"
@@ -80,7 +85,7 @@ def create_meta_workflow_run_from_sample(
     post: bool = True,
     patch: bool = True,
 ) -> JsonObject:
-    return _create_meta_workflow_run(
+    return _create_meta_workflow_run_for_item_type(
         MetaWorkflowRunFromSample,
         sample_identifier,
         meta_workflow_identifier,
@@ -97,7 +102,7 @@ def create_meta_workflow_run_from_sample_processing(
     post: bool = True,
     patch: bool = True,
 ) -> JsonObject:
-    return _create_meta_workflow_run(
+    return _create_meta_workflow_run_for_item_type(
         MetaWorkflowRunFromSampleProcessing,
         sample_processing_identifier,
         meta_workflow_identifier,
@@ -107,7 +112,24 @@ def create_meta_workflow_run_from_sample_processing(
     )
 
 
-def _create_meta_workflow_run(
+def create_meta_workflow_run_from_cohort_analysis(
+    cohort_analysis_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    return _create_meta_workflow_run_for_item_type(
+        MetaWorkflowRunFromCohortAnalysis,
+        cohort_analysis_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
+    )
+
+
+def _create_meta_workflow_run_for_item_type(
     meta_workflow_run_creator_class: MetaWorkflowRunFromItem,
     item_identifier: str,
     meta_workflow_identifier: str,
@@ -286,6 +308,18 @@ class MetaWorkflowRunFromItem:
                 "Item could not be PATCHed: \n%s" % str(error_msg)
             )
 
+    def _get_meta_workflow_run_title(self) -> str:
+        meta_workflow_title = self.meta_workflow.get(self.TITLE)
+        today = datetime.date.today().isoformat()
+        return f"MetaWorkflowRun {meta_workflow_title} from {today}"
+
+    def _get_meta_workflow_run_common_fields(self) -> JsonObject:
+        return {
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
+        }
+
 
 ################################################
 #   MetaWorkflowRunFromSampleProcessing
@@ -361,25 +395,15 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         :return: MetaWorkflowRun[json]
         :rtype: dict
         """
-        meta_workflow_title = self.meta_workflow.get(self.TITLE)
-        creation_date = datetime.date.today().isoformat()
-        title = "MetaWorkflowRun %s from %s" % (
-            meta_workflow_title,
-            creation_date,
-        )
         meta_workflow_run = {
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
-            self.TITLE: title,
+            self.TITLE: self._get_meta_workflow_run_title(),
             self.PROJECT: self.project,
             self.INSTITUTION: self.institution,
             self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
             self.ASSOCIATED_SAMPLE_PROCESSING: self.input_item_uuid,
-            self.COMMON_FIELDS: {
-                self.PROJECT: self.project,
-                self.INSTITUTION: self.institution,
-                self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
-            },
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
             self.UUID: self.meta_workflow_run_uuid,
@@ -438,24 +462,78 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         :return: MetaWorkflowRun[json]
         :rtype: dict
         """
-        meta_workflow_title = self.meta_workflow.get(self.TITLE)
-        creation_date = datetime.date.today().isoformat()
-        title = "MetaWorkflowRun %s from %s" % (
-            meta_workflow_title,
-            creation_date,
-        )
         meta_workflow_run = {
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
-            self.TITLE: title,
+            self.TITLE: self._get_meta_workflow_run_title(),
             self.PROJECT: self.project,
             self.INSTITUTION: self.institution,
             self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
-            self.COMMON_FIELDS: {
-                self.PROJECT: self.project,
-                self.INSTITUTION: self.institution,
-                self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
-            },
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
+            self.FINAL_STATUS: self.PENDING,
+            self.WORKFLOW_RUNS: [],
+            self.UUID: self.meta_workflow_run_uuid,
+        }
+        self.create_workflow_runs(meta_workflow_run)
+        return meta_workflow_run
+
+
+def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
+    sample_fields_to_get = [
+        "bam_sample_id",
+        "uuid",
+        "files.uuid",
+        "files.file_format.file_format",
+        "processed_files.uuid",
+        "processed_files.file_format.file_format",
+    ]
+    return [f"{sample_prefix}.{field}" for field in sample_fields_to_get]
+
+
+class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
+    FIELDS_TO_GET = (
+        [
+            "project",
+            "institution",
+            "uuid",
+        ]
+        + _get_sample_fields_to_embed("case_samples")
+        + _get_sample_fields_to_embed("control_samples")
+    )
+
+    def __init__(
+        self,
+        cohort_analysis_identifier: str,
+        meta_workflow_identifier: str,
+        auth_key: JsonObject,
+    ):
+        """Initialize the object and set all attributes.
+        :param cohort_analysis_identifier: cohort_analysis UUID or @id
+        :param meta_workflow_identifier: MetaWorkflow[portal] UUID,
+            @id, or accession
+        :param auth_key: Portal authorization key
+        :raises MetaWorkflowRunCreationError: If required item cannot
+            be found on environment of authorization key
+        """
+        super().__init__(cohort_analysis_identifier, meta_workflow_identifier, auth_key)
+        self.input_properties = InputPropertiesFromCohortAnalysis(self.input_item)
+        self.meta_workflow_run_input = MetaWorkflowRunInput(
+            self.meta_workflow, self.input_properties
+        ).create_input()
+        self.meta_workflow_run = self.create_meta_workflow_run()
+
+    def create_meta_workflow_run(self) -> JsonObject:
+        """Create MetaWorkflowRun[json] to later POST to portal.
+
+        :return: MetaWorkflowRun[json]
+        """
+        meta_workflow_run = {
+            self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
+            self.INPUT: self.meta_workflow_run_input,
+            self.TITLE: self._get_meta_workflow_run_title(),
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
             self.UUID: self.meta_workflow_run_uuid,
@@ -570,59 +648,61 @@ class MetaWorkflowRunInput:
         return result
 
     def format_file_input_value(
-        self, file_parameter, file_input_value, input_dimensions
-    ):
+        self,
+        file_parameter: str,
+        file_input_value: List[List[str]],
+        input_dimensions: int,
+    ) -> List[JsonObject]:
         """Create one structured file input for MetaWorkflowRun[json].
 
+        File inputs arrive as lists of lists of UUIDs for now. For
+        dimension 1, each sub-list should contain <= 1 UUID. For
+        dimension 2, any number of UUIDs can be in each sub-list.
+
+        To add more dimensions, will need to refactor inputs and this
+        method.
+
         :param file_parameter: Name of file input argument
-        :type file_parameter: str
         :param file_input_value: File input values
-        :type file_value: list
         :param input_dimensions: The number of dimensions to use for
             the given file parameter
-        :type input_dimensions: int
         :return: Structured file argument input
-        :rtype: dict
         :raises MetaWorkflowRunCreationError: If expected dimensions
             could not be handled or an input of dimension 1 has more
             than 1 entry per sample (i.e. is 2 dimensional)
         """
         result = []
-        if input_dimensions == 1:  # List of <= 1 list expected
-            if len(file_input_value) > 1:
+        for input_idx, file_input in enumerate(file_input_value):
+            if not file_input:
                 raise MetaWorkflowRunCreationError(
-                    f"Input file dimensions were greater than expected for"
-                    f" parameter {file_parameter}. Expected input dimension"
-                    f" {input_dimensions} but received input: {file_input_value}."
+                    f"Found an empty list of input files for parameter {file_parameter}"
                 )
-            for file_input_item in file_input_value:
-                for file_idx, file_uuid in enumerate(file_input_item):
+            if input_dimensions == 1:
+                if len(file_input) > 1:
+                    raise MetaWorkflowRunCreationError(
+                        f"Found multiple input files when only 1 was expected for"
+                        f" parameter {file_parameter}: {file_input}"
+                    )
+                for file_uuid in file_input:
                     if not isinstance(file_uuid, str):
                         raise MetaWorkflowRunCreationError(
                             f"File input for parameter {file_parameter} was unexpected."
                             f" Exected input file dimension {input_dimensions} but"
                             f" received the following: {file_input_value}."
                         )
-                    dimension = str(file_idx)
+                    dimension = str(input_idx)
                     formatted_file_result = {
                         self.FILE: file_uuid,
                         self.DIMENSION: dimension,
                     }
                     result.append(formatted_file_result)
-        elif input_dimensions == 2:
-            for input_idx, file_input_item in enumerate(file_input_value):
-                if not isinstance(file_input_item, list):  # List of lists expected
-                    raise MetaWorkflowRunCreationError(
-                        f"Input file dimensions were greater than expected for"
-                        f" parameter {file_parameter}. Expected input dimension"
-                        f" {input_dimensions} but received input: {file_input_value}."
-                    )
-                for file_uuid_idx, file_uuid in enumerate(file_input_item):
+            elif input_dimensions == 2:
+                for file_uuid_idx, file_uuid in enumerate(file_input):
                     if not isinstance(file_uuid, str):
                         raise MetaWorkflowRunCreationError(
                             f"File input for parameter {file_parameter} was unexpected."
-                            f" Exected input file dimension {input_dimensions} but received"
-                            f" the following: {file_input_value}."
+                            f" Exected input file dimension {input_dimensions} but"
+                            f" received the following: {file_input_value}."
                         )
                     dimension = f"{input_idx},{file_uuid_idx}"
                     formatted_file_result = {
@@ -630,6 +710,11 @@ class MetaWorkflowRunInput:
                         self.DIMENSION: dimension,
                     }
                     result.append(formatted_file_result)
+            else:
+                raise MetaWorkflowRunCreationError(
+                    f"Received an unexpected dimension number for parameter"
+                    f" {file_parameter}: {input_dimensions}"
+                )
         return result
 
     def fetch_parameters(self, parameters_to_fetch):
@@ -1286,3 +1371,54 @@ class InputPropertiesFromSample:
     def input_sample_uuids(self):
         """Sample UUID"""
         return [self.sample[self.UUID]]
+
+
+class InputPropertiesFromCohortAnalysis:
+
+    # Schema constants
+    CASE_SAMPLES = "case_samples"
+    CONTROL_SAMPLES = "control_samples"
+
+    def __init__(self, cohort_analysis: JsonObject) -> None:
+        """Initialize the object and set attributes.
+
+        :param sample: Sample metadata
+        :type sample: dict
+        """
+        self.cohort_analysis = cohort_analysis
+        case_samples = cohort_analysis.get(self.CASE_SAMPLES, [])
+        self.case_sample_inputs = [
+            InputPropertiesFromSample(sample) for sample in case_samples
+        ]
+        control_samples = cohort_analysis.get(self.CONTROL_SAMPLES, [])
+        self.control_sample_inputs = [
+            InputPropertiesFromSample(sample) for sample in control_samples
+        ]
+
+    def _get_input_property_from_all_samples(
+        self, input_property_name: str
+    ) -> List[Any]:
+        result = []
+        result += self._get_input_property_from_case_samples(input_property_name)
+        result += self._get_input_property_from_control_samples(input_property_name)
+        return result
+
+    def _get_input_property_from_case_samples(
+        self, input_property_name: str
+    ) -> List[Any]:
+        result = []
+        for case_sample_input in self.case_sample_inputs:
+            result += getattr(case_sample_input, input_property_name)
+        return result
+
+    def _get_input_property_from_control_samples(
+        self, input_property_name: str
+    ) -> List[Any]:
+        result = []
+        for control_sample_input in self.control_sample_inputs:
+            result += getattr(control_sample_input, input_property_name)
+        return result
+
+    @property
+    def input_gvcfs(self) -> List[List[str]]:
+        return self._get_input_property_from_all_samples("input_gvcfs")
