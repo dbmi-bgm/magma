@@ -614,6 +614,7 @@ class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
             self.UUID: self.meta_workflow_run_uuid,
         }
         self.create_workflow_runs(meta_workflow_run)
+        import pdb; pdb.set_trace()
         return meta_workflow_run
 
 
@@ -1595,14 +1596,14 @@ class InputPropertiesFromSomaticAnalysis:
         return self.tumor_sample_inputs + self.normal_sample_inputs
 
     @property
-    def normal_input_bam(self) -> List[List[str]]:
+    def input_normal_bam(self) -> List[List[str]]:
         normal_bams = self._get_input_properties_from_normal_samples("input_bams")
         if len(normal_bams) != 1:
             raise MetaWorkflowRunCreationError
         return [normal_bams]
 
     @property
-    def tumor_input_bam(self) -> List[List[str]]:
+    def input_tumor_bam(self) -> List[List[str]]:
         tumor_bams = self._get_input_properties_from_tumor_samples("input_bams")
         if len(tumor_bams) != 1:
             raise MetaWorkflowRunCreationError
