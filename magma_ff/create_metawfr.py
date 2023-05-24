@@ -510,6 +510,7 @@ def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
         "files.file_format.file_format",
         "processed_files.uuid",
         "processed_files.file_format.file_format",
+        "tissue_type",
     ]
     return [f"{sample_prefix}.{field}" for field in sample_fields_to_get]
 
@@ -614,7 +615,6 @@ class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
             self.UUID: self.meta_workflow_run_uuid,
         }
         self.create_workflow_runs(meta_workflow_run)
-        import pdb; pdb.set_trace()
         return meta_workflow_run
 
 
@@ -1532,7 +1532,7 @@ class InputPropertiesFromSomaticAnalysis:
             )
 
     def _get_sample_type(self, sample: JsonObject) -> str:
-        return self.sample.get(self.TISSUE_TYPE, "")
+        return sample.get(self.TISSUE_TYPE, "")
 
     def _is_normal_sample(self, sample: JsonObject) -> bool:
         return self._get_sample_type(sample) == self.TISSUE_TYPE_NORMAL
@@ -1543,9 +1543,10 @@ class InputPropertiesFromSomaticAnalysis:
     def _get_input_properties_from_sample_inputs(
         self, sample_inputs: List[InputPropertiesFromSample], input_property_name: str
     ) -> List[Any]:
-        return [
-            getattr(sample_input, input_property_name) for sample_input in sample_inputs
-        ]
+        result = []
+        for sample_input in sample_inputs:
+            result += getattr(sample_input, input_property_name)
+        return result
 
     def _get_input_properties_from_all_samples(
         self, input_property_name: str
@@ -1580,18 +1581,18 @@ class InputPropertiesFromSomaticAnalysis:
     def normal_samples(self) -> List[JsonObject]:
         return [sample for sample in self.samples if self._is_normal_sample(sample)]
 
-    @lru_cache()
     @property
+    @lru_cache()
     def tumor_sample_inputs(self) -> List[InputPropertiesFromSample]:
         return [InputPropertiesFromSample(sample) for sample in self.tumor_samples]
 
-    @lru_cache()
     @property
+    @lru_cache()
     def normal_sample_inputs(self) -> List[InputPropertiesFromSample]:
         return [InputPropertiesFromSample(sample) for sample in self.normal_samples]
 
-    @lru_cache()
     @property
+    @lru_cache()
     def all_sample_inputs(self) -> List[InputPropertiesFromSample]:
         return self.tumor_sample_inputs + self.normal_sample_inputs
 
@@ -1600,14 +1601,14 @@ class InputPropertiesFromSomaticAnalysis:
         normal_bams = self._get_input_properties_from_normal_samples("input_bams")
         if len(normal_bams) != 1:
             raise MetaWorkflowRunCreationError
-        return [normal_bams]
+        return normal_bams
 
     @property
     def input_tumor_bam(self) -> List[List[str]]:
         tumor_bams = self._get_input_properties_from_tumor_samples("input_bams")
         if len(tumor_bams) != 1:
             raise MetaWorkflowRunCreationError
-        return [tumor_bams]
+        return tumor_bams
 
     @property
     def sex(self) -> str:
