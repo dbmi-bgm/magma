@@ -1511,6 +1511,7 @@ class InputPropertiesFromCohortAnalysis:
 class InputPropertiesFromSomaticAnalysis:
 
     # Schema constants
+    PROCESSED_FILES = "processed_files"
     SAMPLES = "samples"
     TISSUE_TYPE = "tissue_type"
     TISSUE_TYPE_NORMAL = "Normal"
@@ -1639,13 +1640,13 @@ class InputPropertiesFromSomaticAnalysis:
     @property
     def input_somatic_vcf(self) -> List[List[str]]:
         requirements = {"file_type": "TNscope VCF"}
-        submitted_files = self.somatic_analysis.get(self.FILES, [])
+        submitted_files = self.somatic_analysis.get(self.PROCESSED_FILES, [])
         result = get_files_for_file_formats(
             submitted_files, "vcf_gz", requirements=requirements
         )
         if not result:
             raise MetaWorkflowRunCreationError(
                 f"No file with acceptable VCF file format meeting requirements found on"
-                f" SomaticAnalysis: {self.sample_processing}"
+                f" SomaticAnalysis: {self.somatic_analysis}"
             )
         return [result]
