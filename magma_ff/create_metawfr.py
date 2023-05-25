@@ -573,6 +573,7 @@ class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
             "project",
             "institution",
             "uuid",
+            "processed_files.*",
         ]
         + _get_sample_fields_to_embed("samples")
     )
