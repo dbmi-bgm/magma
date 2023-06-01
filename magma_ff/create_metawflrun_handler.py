@@ -184,6 +184,7 @@ class MetaWorkflowRunHandlerFromItem:
         # if ITEMS_FOR_CREATION_UUID in meta_workflow_step.keys():
         if getattr(meta_workflow_step, ITEMS_FOR_CREATION_UUID, None):
             return getattr(meta_workflow_step, ITEMS_FOR_CREATION_UUID)
+            #TODO: have to do embed calls to check these actually exist?
         # otherwise, dealing with property traces. Make necessary embed requests
         # and convert property trace(s) to uuid(s)
         else:

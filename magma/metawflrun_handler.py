@@ -59,9 +59,6 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
         
         self._validate_basic_attributes(UUID, ASSOCIATED_META_WORKFLOW_HANDLER, META_WORKFLOW_RUNS)
 
-        # initial final_status attribute upon creation should be "pending"
-        setattr(self, FINAL_STATUS, PENDING)
-
         ### Calculated attributes ###
 
         # by nature of how a MetaWorkflowRun Handler is created from the MetaWorkflow Handler,
@@ -69,6 +66,10 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
         # here, though, we create a dictionary of the form {mwfr_name: MetaWorkflowRunStep_object,...}
         # for faster lookup and updating of steps
         self.meta_workflow_run_steps_dict = self._set_meta_workflow_runs_dict()
+
+        # initial final_status attribute upon creation should be "pending"
+        # setattr(self, FINAL_STATUS, PENDING)
+        self.update_final_status()
 
 
     def _set_meta_workflow_runs_dict(self):
@@ -101,6 +102,8 @@ class MetaWorkflowRunHandler(ValidatedDictionary):
         :return: final_status of the MetaWorkflow Run Handler
         :rtype: str
         """
+        setattr(self, FINAL_STATUS, PENDING)
+
         all_steps_completed = True
         all_steps_pending = True
 
