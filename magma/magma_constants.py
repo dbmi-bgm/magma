@@ -18,6 +18,7 @@ ITEMS_FOR_CREATION_PROP_TRACE = "items_for_creation_property_trace"
 ITEMS_FOR_CREATION_UUID = "items_for_creation_uuid"
 
 # MetaWorkflow Run Handler attributes
+COST = "cost"
 STATUS = "status"
 FINAL_STATUS = "final_status"
 ASSOCIATED_META_WORKFLOW_HANDLER = "meta_workflow_handler"
