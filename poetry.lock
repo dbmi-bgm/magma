@@ -871,7 +871,6 @@ files = [
 [package.dependencies]
 boto3 = ">=1.9.0,<2.0.0"
 botocore = ">=1.12.1,<2.0.0"
-dcicutils = ">=7.0.0,<8.0.0"
 requests = "2.27.1"
 tibanna = ">=3.3.1,<4.0.0"
 tomlkit = ">=0.11.0,<0.12.0"
