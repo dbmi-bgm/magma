@@ -23,6 +23,10 @@ publish:
 	poetry run publish-to-pypi
 
 publish-for-ga:
+	# Need this poetry install first for some reason in GitHub Actions, otherwise getting this:
+	# Warning: 'publish-to-pypi' is an entry point defined in pyproject.toml, but it's not installed as a script. You may get improper `sys.argv[0]`.
+	# And then it does not find dcicutils
+	pip install dcicutils==7.5.0
 	poetry run publish-to-pypi --noconfirm
 
 info:
