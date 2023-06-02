@@ -19,6 +19,12 @@ help:
 clean:
 	rm -rf *.egg-info
 
+publish:
+	poetry run publish-to-pypi
+
+publish-for-ga:
+	poetry run publish-to-pypi --noconfirm
+
 info:
 	@: $(info Here are some 'make' options:)
 	   $(info - Use 'make configure' to configure the repo by installing poetry.)

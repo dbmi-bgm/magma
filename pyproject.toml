@@ -21,7 +21,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.9"
-dcicutils = "^7.0.0"
+dcicutils = "^7.5.0"
 tibanna-ff = "^1.3.3"
 
 
@@ -32,6 +32,7 @@ pytest = "*"
 
 [tool.poetry.scripts]
 create-meta-workflow-run = "magma_ff.commands.create_meta_workflow_run:main"
+publish-to-pypi = "dcicutils.scripts.publish_to_pypi:main"
 
 
 [build-system]
