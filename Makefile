@@ -23,7 +23,6 @@ publish:
 	poetry run publish-to-pypi
 
 publish-for-ga:
-	poetry install
 	poetry run publish-to-pypi --noconfirm
 
 info:
