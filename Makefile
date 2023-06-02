@@ -23,6 +23,7 @@ publish:
 	poetry run publish-to-pypi
 
 publish-for-ga:
+	python -m pip install dcicutils==7.5.0
 	poetry run publish-to-pypi --noconfirm
 
 info:
