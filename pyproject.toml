@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "magma-suite"
-version = "1.5.0.1b11"  # to become 1.5.0
+version = "1.5.0.1b12"  # to become 1.5.0
 description = "Collection of tools to manage meta-workflows automation."
 authors = ["Michele Berselli <berselli.michele@gmail.com>", "Doug Rioux", "Soo Lee", "CGAP team"]
 license = "MIT"
