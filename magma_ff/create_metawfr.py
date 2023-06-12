@@ -565,14 +565,11 @@ class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
 
 
 class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
-    FIELDS_TO_GET = (
-        [
-            "*",
-            "processed_files.*",
-            "individual.*",
-        ]
-        + _get_sample_fields_to_embed("samples")
-    )
+    FIELDS_TO_GET = [
+        "*",
+        "processed_files.*",
+        "individual.*",
+    ] + _get_sample_fields_to_embed("samples")
 
     def __init__(
         self,
@@ -588,7 +585,9 @@ class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
         :raises MetaWorkflowRunCreationError: If required item cannot
             be found on environment of authorization key
         """
-        super().__init__(somatic_analysis_identifier, meta_workflow_identifier, auth_key)
+        super().__init__(
+            somatic_analysis_identifier, meta_workflow_identifier, auth_key
+        )
         self.input_properties = InputPropertiesFromSomaticAnalysis(self.input_item)
         self.meta_workflow_run_input = MetaWorkflowRunInput(
             self.meta_workflow, self.input_properties
@@ -1624,7 +1623,9 @@ class InputPropertiesFromSomaticAnalysis:
 
     @property
     def tumor_sample_name(self) -> str:
-        tumor_sample_names = self._get_input_properties_from_tumor_samples("sample_names")
+        tumor_sample_names = self._get_input_properties_from_tumor_samples(
+            "sample_names"
+        )
         unique_sample_names = [name for name in set(tumor_sample_names) if name]
         if len(unique_sample_names) != 1:
             raise MetaWorkflowRunCreationError(
@@ -1634,7 +1635,9 @@ class InputPropertiesFromSomaticAnalysis:
 
     @property
     def normal_sample_name(self) -> str:
-        normal_sample_names = self._get_input_properties_from_normal_samples("sample_names")
+        normal_sample_names = self._get_input_properties_from_normal_samples(
+            "sample_names"
+        )
         unique_sample_names = [name for name in set(normal_sample_names) if name]
         if len(unique_sample_names) != 1:
             raise MetaWorkflowRunCreationError(

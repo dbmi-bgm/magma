@@ -1600,7 +1600,9 @@ class TestInputPropertiesFromSomaticAnalysis:
         ],
     )
     def test_attributes(
-        self, attribute: str, expected: Any,
+        self,
+        attribute: str,
+        expected: Any,
         inputs_from_somatic_analysis: InputPropertiesFromSomaticAnalysis,
     ) -> None:
         result = getattr(inputs_from_somatic_analysis, attribute)
