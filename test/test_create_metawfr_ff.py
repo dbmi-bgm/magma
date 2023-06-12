@@ -12,11 +12,13 @@ from magma_ff.create_metawfr import (
     InputPropertiesFromCohortAnalysis,
     InputPropertiesFromSample,
     InputPropertiesFromSampleProcessing,
+    InputPropertiesFromSomaticAnalysis,
     MetaWorkflowRunCreationError,
     MetaWorkflowRunFromCohortAnalysis,
     MetaWorkflowRunFromItem,
     MetaWorkflowRunFromSample,
     MetaWorkflowRunFromSampleProcessing,
+    MetaWorkflowRunFromSomaticAnalysis,
     MetaWorkflowRunInput,
     create_meta_workflow_run,
     get_files_for_file_formats,
@@ -107,6 +109,7 @@ SAMPLE_1 = {
             "file_format": {"file_format": "fastq"},
         },
     ],
+    "tissue_type": "Tumor",
     "@type": ["Sample", "Item"],
 }
 SAMPLE_2 = {
@@ -193,6 +196,7 @@ SAMPLE_3 = {
         {"uuid": GVCF_UUID_1, "file_format": {"file_format": "gvcf_gz"}},
         {"uuid": GVCF_UUID_3, "file_format": {"file_format": "gvcf_gz"}},
     ],
+    "tissue_type": "Normal",
 }
 SAMPLE_4 = {
     "uuid": SAMPLE_UUID_4,
@@ -245,6 +249,7 @@ SAMPLE_3_BAMS = [[BAM_UUID_3]]
 SAMPLE_3_RCKTARS = [SAMPLE_NAME_3 + ".rck.gz"]
 SAMPLE_3_NAMES = [SAMPLE_NAME_3]
 SAMPLE_3_UUIDS = [SAMPLE_UUID_3]
+
 SAMPLE_PROCESSING_FAMILY_SIZE = 4
 PEDIGREE_1 = {
     "individual": "GAPID000001",
@@ -359,6 +364,7 @@ SAMPLE_PROCESSING = {
     "files": SAMPLE_PROCESSING_SUBMITTED_FILES,
     "@type": ["SampleProcessing", "Item"],
 }
+
 COHORT_ANALYSIS_UUID = "uuid_for_cohort_analysis"
 COHORT_ANALYSIS = {
     "uuid": COHORT_ANALYSIS_UUID,
@@ -373,12 +379,39 @@ COHORT_ANALYSIS_INPUT_GVCFS = [
     [GVCF_UUID_3],
     [GVCF_UUID_4],
 ]
+
+SOMATIC_ANALYSIS_SEX = "M"
+SOMATIC_ANALYSIS_INDIVIDUAL = {"sex": SOMATIC_ANALYSIS_SEX}
+SOMATIC_ANALYSIS_UUID = "uuid_for_somatic_analysis"
+SOMATIC_ANALYSIS_SAMPLES = [SAMPLE_1, SAMPLE_3]
+SOMATIC_ANALYSIS_VCF_UUID = "vcf_uuid"
+SOMATIC_ANALYSIS_VCF = {
+    "uuid": SOMATIC_ANALYSIS_VCF_UUID,
+    "file_format": {"file_format": "vcf_gz"},
+    "file_type": "TNscope VCF",
+}
+SOMATIC_ANALYSIS = {
+    "uuid": SOMATIC_ANALYSIS_UUID,
+    "project": PROJECT,
+    "institution": INSTITUTION,
+    "individual": SOMATIC_ANALYSIS_INDIVIDUAL,
+    "samples": SOMATIC_ANALYSIS_SAMPLES,
+    "processed_files": [SOMATIC_ANALYSIS_VCF],
+}
+SOMATIC_ANALYSIS_TUMOR_SAMPLE_NAME = SAMPLE_NAME_1
+SOMATIC_ANALYSIS_NORMAL_SAMPLE_NAME = SAMPLE_NAME_3
+SOMATIC_ANALYSIS_INPUT_TUMOR_BAM = [[BAM_UUID_1]]
+SOMATIC_ANALYSIS_INPUT_NORMAL_BAM = [[BAM_UUID_3]]
+SOMATIC_ANALYSIS_INPUT_VCF = [[SOMATIC_ANALYSIS_VCF_UUID]]
+SOMATIC_ANALYSIS_NORMAL_BAM_UUID = BAM_UUID_3
+
 ITEM_UUID = "item_uuid"
 ARBITRARY_ITEM = {
     "uuid": ITEM_UUID,
     "project": PROJECT,
     "institution": INSTITUTION,
 }
+
 INPUT_BAMS = "input_bams"
 INPUT_FASTQS_R1 = "fastqs_r1"
 FAMILY_SIZE = "family_size"
@@ -414,6 +447,7 @@ META_WORKFLOW = {
     ],
     "proband_only": PROBAND_ONLY_FALSE,
 }
+
 META_WORKFLOW_FOR_SAMPLE = {
     "uuid": META_WORKFLOW_UUID,
     "title": "FASTQ QC v0.0.0",
@@ -443,6 +477,7 @@ META_WORKFLOW_FOR_SAMPLE = {
     ],
     "proband_only": PROBAND_ONLY_FALSE,
 }
+
 META_WORKFLOW_FOR_COHORT_ANALYSIS = {
     "uuid": META_WORKFLOW_UUID,
     "title": "Joint Calling v0.0.0",
@@ -471,6 +506,36 @@ META_WORKFLOW_FOR_COHORT_ANALYSIS = {
         },
     ],
 }
+
+META_WORKFLOW_FOR_SOMATIC_ANALYSIS = {
+    "uuid": META_WORKFLOW_UUID,
+    "title": "Normal Processing v0.0.0",
+    "input": [
+        {
+            "argument_name": "input_normal_bam",
+            "argument_type": "file",
+            "dimensionality": 1,
+        },
+    ],
+    "workflows": [
+        {
+            "name": "workflow_do-something",
+            "workflow": "some_uuid",
+            "config": {
+                "run_name": "A fine workflow",
+            },
+            "input": [
+                {
+                    "scatter": 1,
+                    "argument_name": "input_normal_bam",
+                    "argument_type": "file",
+                    "source_argument_name": "input_normal_bam",
+                },
+            ],
+        },
+    ],
+}
+
 INPUT_PROPERTIES_INPUT_BAMS = [[BAM_UUID_1], [BAM_UUID_2]]
 INPUT_PROPERTIES_FAMILY_SIZE = 2
 AUTH_KEY = {"key": "foo"}
@@ -566,6 +631,7 @@ META_WORKFLOW_RUN_NO_FILES_INPUT = {
     "workflow_runs": [],
     "uuid": META_WORKFLOW_RUN_UUID,
 }
+
 META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     "meta_workflow": META_WORKFLOW_UUID,
     "input": [
@@ -588,6 +654,7 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
     ],
     "uuid": META_WORKFLOW_RUN_UUID,
 }
+
 META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS = {
     "meta_workflow": META_WORKFLOW_UUID,
     "input": [
@@ -616,6 +683,28 @@ META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS = {
     "uuid": META_WORKFLOW_RUN_UUID,
 }
 
+META_WORKFLOW_RUN_FOR_SOMATIC_ANALYSIS = {
+    "meta_workflow": META_WORKFLOW_UUID,
+    "input": [
+        {
+            "argument_name": "input_normal_bam",
+            "argument_type": "file",
+            "files": [
+                {"file": SOMATIC_ANALYSIS_NORMAL_BAM_UUID, "dimension": "0"},
+            ],
+        },
+    ],
+    "title": "MetaWorkflowRun Normal Processing v0.0.0 from %s" % TODAY,
+    "project": PROJECT,
+    "institution": INSTITUTION,
+    "common_fields": COMMON_FIELDS,
+    "final_status": "pending",
+    "workflow_runs": [
+        {"name": "workflow_do-something", "status": "pending", "shard": "0"},
+    ],
+    "uuid": META_WORKFLOW_RUN_UUID,
+}
+
 
 @pytest.fixture
 def meta_workflow_run_input():
@@ -638,6 +727,11 @@ def inputs_from_sample():
 @pytest.fixture
 def inputs_from_cohort_analysis():
     return InputPropertiesFromCohortAnalysis(deepcopy(COHORT_ANALYSIS))
+
+
+@pytest.fixture
+def inputs_from_somatic_analysis() -> InputPropertiesFromSomaticAnalysis:
+    return InputPropertiesFromSomaticAnalysis(deepcopy(SOMATIC_ANALYSIS))
 
 
 @pytest.fixture
@@ -718,6 +812,26 @@ def meta_workflow_run_from_cohort_analysis():
                 return_value=META_WORKFLOW_RUN_UUID,
             ):
                 return MetaWorkflowRunFromCohortAnalysis(None, None, AUTH_KEY)
+
+
+@pytest.fixture
+def meta_workflow_run_from_somatic_analysis() -> MetaWorkflowRunFromSomaticAnalysis:
+    with mock.patch(
+        "magma_ff.create_metawfr.make_embed_request",
+        return_value=SOMATIC_ANALYSIS,
+    ):
+        with mock.patch(
+            (
+                "magma_ff.create_metawfr.MetaWorkflowRunFromSomaticAnalysis"
+                ".get_item_properties"
+            ),
+            return_value=META_WORKFLOW_FOR_SOMATIC_ANALYSIS,
+        ):
+            with mock.patch(
+                "magma_ff.create_metawfr.uuid.uuid4",
+                return_value=META_WORKFLOW_RUN_UUID,
+            ):
+                return MetaWorkflowRunFromSomaticAnalysis(None, None, AUTH_KEY)
 
 
 @contextmanager
@@ -1473,6 +1587,26 @@ class TestInputPropertiesFromCohortAnalysis:
         assert result == expected
 
 
+class TestInputPropertiesFromSomaticAnalysis:
+    @pytest.mark.parametrize(
+        "attribute,expected",
+        [
+            ("input_normal_bam", SOMATIC_ANALYSIS_INPUT_NORMAL_BAM),
+            ("input_tumor_bam", SOMATIC_ANALYSIS_INPUT_TUMOR_BAM),
+            ("sex", SOMATIC_ANALYSIS_SEX),
+            ("tumor_sample_name", SOMATIC_ANALYSIS_TUMOR_SAMPLE_NAME),
+            ("normal_sample_name", SOMATIC_ANALYSIS_NORMAL_SAMPLE_NAME),
+            ("input_somatic_vcf", SOMATIC_ANALYSIS_INPUT_VCF),
+        ],
+    )
+    def test_attributes(
+        self, attribute: str, expected: Any,
+        inputs_from_somatic_analysis: InputPropertiesFromSomaticAnalysis,
+    ) -> None:
+        result = getattr(inputs_from_somatic_analysis, attribute)
+        assert result == expected
+
+
 class TestMetaWorkflowRunFromItem:
     @pytest.mark.parametrize(
         "attribute,expected",
@@ -1679,7 +1813,40 @@ class TestMetaWorkflowRunFromCohortAnalysis:
     def test_create_meta_workflow_run(
         self,
         meta_workflow_run_from_cohort_analysis: MetaWorkflowRunFromCohortAnalysis,
-    ):
+    ) -> None:
         """Test creation of MetaWorkflowRun properties."""
         result = meta_workflow_run_from_cohort_analysis.create_meta_workflow_run()
         assert result == META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS
+
+
+class TestMetaWorkflowRunFromSomaticAnalysis:
+    @pytest.mark.parametrize(
+        "attribute,expected",
+        [
+            ("project", PROJECT),
+            ("institution", INSTITUTION),
+            ("input_item", SOMATIC_ANALYSIS),
+            ("input_item_uuid", SOMATIC_ANALYSIS_UUID),
+            ("auth_key", AUTH_KEY),
+            ("meta_workflow", META_WORKFLOW_FOR_SOMATIC_ANALYSIS),
+            ("existing_meta_workflow_runs", []),
+            ("meta_workflow_run", META_WORKFLOW_RUN_FOR_SOMATIC_ANALYSIS),
+        ],
+    )
+    def test_attributes(
+        self,
+        attribute: str,
+        expected: Any,
+        meta_workflow_run_from_somatic_analysis: MetaWorkflowRunFromSomaticAnalysis,
+    ) -> None:
+        """Test attributes set correctly."""
+        result = getattr(meta_workflow_run_from_somatic_analysis, attribute)
+        assert result == expected
+
+    def test_create_meta_workflow_run(
+        self,
+        meta_workflow_run_from_somatic_analysis: MetaWorkflowRunFromSomaticAnalysis,
+    ) -> None:
+        """Test creation of MetaWorkflowRun properties."""
+        result = meta_workflow_run_from_somatic_analysis.create_meta_workflow_run()
+        assert result == META_WORKFLOW_RUN_FOR_SOMATIC_ANALYSIS

@@ -505,7 +505,6 @@ def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
     sample_fields_to_get = [
         "bam_sample_id",
         "uuid",
-        "individual.*",
         "files.uuid",
         "files.file_format.file_format",
         "processed_files.uuid",
@@ -518,9 +517,7 @@ def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
 class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
     FIELDS_TO_GET = (
         [
-            "project",
-            "institution",
-            "uuid",
+            "*",
         ]
         + _get_sample_fields_to_embed("case_samples")
         + _get_sample_fields_to_embed("control_samples")
@@ -570,10 +567,9 @@ class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
 class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
     FIELDS_TO_GET = (
         [
-            "project",
-            "institution",
-            "uuid",
+            "*",
             "processed_files.*",
+            "individual.*",
         ]
         + _get_sample_fields_to_embed("samples")
     )
@@ -1512,11 +1508,17 @@ class InputPropertiesFromCohortAnalysis:
 class InputPropertiesFromSomaticAnalysis:
 
     # Schema constants
+    FILE_TYPE = "file_type"
+    INDIVIDUAL = "individual"
     PROCESSED_FILES = "processed_files"
     SAMPLES = "samples"
+    SEX = "sex"
     TISSUE_TYPE = "tissue_type"
     TISSUE_TYPE_NORMAL = "Normal"
     TISSUE_TYPE_TUMOR = "Tumor"
+
+    TNSCOPE_FILE_TYPE = "TNscope VCF"
+    FILE_FORMAT_VCF_GZ = "vcf_gz"
 
     def __init__(self, somatic_analysis: JsonObject) -> None:
         """Initialize the object and set attributes.
@@ -1530,7 +1532,7 @@ class InputPropertiesFromSomaticAnalysis:
     def _validate(self) -> None:
         if len(self.samples) != len(self.tumor_samples) + len(self.normal_samples):
             raise MetaWorkflowRunCreationError(
-                "Tumor/normal sample counts were unexpected"
+                "Not every sample labelled as tumor or normal"
             )
 
     def _get_sample_type(self, sample: JsonObject) -> str:
@@ -1570,6 +1572,10 @@ class InputPropertiesFromSomaticAnalysis:
         return self._get_input_properties_from_sample_inputs(
             self.normal_sample_inputs, input_property_name
         )
+
+    @property
+    def individual(self) -> JsonObject:
+        return self.somatic_analysis.get(self.INDIVIDUAL, {})
 
     @property
     def samples(self) -> List[JsonObject]:
@@ -1614,11 +1620,7 @@ class InputPropertiesFromSomaticAnalysis:
 
     @property
     def sex(self) -> str:
-        all_sample_sexes = self._get_input_properties_from_all_samples("sex")
-        unique_sexes = [sex for sex in set(all_sample_sexes) if sex]
-        if len(unique_sexes) != 1:
-            raise MetaWorkflowRunCreationError("Only expected 1 sex for all samples")
-        return unique_sexes[0]
+        return self.individual.get(self.SEX, "")
 
     @property
     def tumor_sample_name(self) -> str:
@@ -1626,7 +1628,8 @@ class InputPropertiesFromSomaticAnalysis:
         unique_sample_names = [name for name in set(tumor_sample_names) if name]
         if len(unique_sample_names) != 1:
             raise MetaWorkflowRunCreationError(
-                "Could not identify only 1 tumor sample name")
+                "Could not identify only 1 tumor sample name"
+            )
         return unique_sample_names[0]
 
     @property
@@ -1635,15 +1638,16 @@ class InputPropertiesFromSomaticAnalysis:
         unique_sample_names = [name for name in set(normal_sample_names) if name]
         if len(unique_sample_names) != 1:
             raise MetaWorkflowRunCreationError(
-                "Could not identify only 1 normal sample name")
+                "Could not identify only 1 normal sample name"
+            )
         return unique_sample_names[0]
 
     @property
     def input_somatic_vcf(self) -> List[List[str]]:
-        requirements = {"file_type": "TNscope VCF"}
-        submitted_files = self.somatic_analysis.get(self.PROCESSED_FILES, [])
+        requirements = {self.FILE_TYPE: self.TNSCOPE_FILE_TYPE}
+        processed_files = self.somatic_analysis.get(self.PROCESSED_FILES, [])
         result = get_files_for_file_formats(
-            submitted_files, "vcf_gz", requirements=requirements
+            processed_files, self.FILE_FORMAT_VCF_GZ, requirements=requirements
         )
         if not result:
             raise MetaWorkflowRunCreationError(
