@@ -34,8 +34,12 @@ COMPLETED = "completed"
 FAILED = "failed"
 STOPPED = "stopped"
 
+INACTIVE = "inactive"
+QC_FAIL = "quality metric failed"
+
 
 #TODO: the following is here in case dup flag is added in the future
+#TODO: add back in
 # MWFR_TO_HANDLER_STEP_STATUS_DICT = {
 #     "pending": "pending",
 #     "running": "running",
