@@ -1,25 +1,15 @@
-#!/usr/bin/env python3
-
-################################################
-#
-#
-#
-################################################
-
-################################################
-#   Libraries
-################################################
 import sys, os
 
-# dcicutils
 from dcicutils import ff_utils
 from dcicutils.s3_utils import s3Utils
 from tibanna.job import Job
+from functools import cached_property
+from magma.magma_constants import *
+from magma_ff.utils import JsonObject
+from typing import Optional
+from requests.exceptions import HTTPError
 
 
-################################################
-#   FFWfrUtils
-################################################
 class FFWfrUtils(object):
     def __init__(self, env):
         """
@@ -122,8 +112,85 @@ class FFWfrUtils(object):
 
 #end class
 
-
 class FdnConnectionException(Exception):
     pass
 
 #end class
+
+
+class FFMetaWfrUtils(object):
+    """Class for accessing status and cost metadata of a MetaWorkflow Run from CGAP portal."""
+
+    def __init__(self, auth_key: JsonObject) -> None:
+        """ 
+        Initialize FFMetaWfrUtils object, setting basic attributes.
+        
+        :param auth_key: Authorization keys for C4 account
+        """
+        self._auth_key = auth_key
+
+    def get_meta_workflow_run_status(self, meta_workflow_run_identifier: str) -> str:
+        """
+        Return the status of the MetaWorkflow Run associated with specified ID.
+
+        :param meta_workflow_run_identifier: Identifier (e.g. UUID, @id) for 
+            MetaWorkflow Run to be searched
+        :return: the status of the specified MetaWorkflow Run
+        """
+        meta_workflow_run_portal_output = self._retrieve_meta_workflow_run(meta_workflow_run_identifier)
+        
+        # TODO: for now, just assuming it will have this attribute
+        # check this in integrated testing
+        return meta_workflow_run_portal_output[FINAL_STATUS]
+
+    def get_meta_workflow_run_cost(self, meta_workflow_run_identifier: str) -> float:
+        """
+        Return the cost of the MetaWorkflow Run associated with specified ID.
+        If no cost attribute found, return cost as 0.
+
+        :param meta_workflow_run_identifier: Identifier (e.g. UUID, @id) for
+            MetaWorkflow Run to be searched
+        :return: the cost of the specified MetaWorkflow Run
+        """
+        meta_workflow_run_portal_output = self._retrieve_meta_workflow_run(meta_workflow_run_identifier)
+
+        if COST in meta_workflow_run_portal_output:
+            return meta_workflow_run_portal_output[COST]
+
+        return float(0)
+
+    def _retrieve_meta_workflow_run(self, meta_workflow_run_identifier: str) -> JsonObject:
+        """
+        Get portal MetaWorkflow Run metadata JSON using its identifier.
+        Raises Exception if GET request is unsuccessful.
+
+        :param meta_workflow_run_identifier: Identifier (e.g. UUID, @id) for
+            MetaWorkflow Run to be searched
+        :return: Portal JSON object representing this MetaWorkflow Run and its metadata
+        """
+        # Use cache if ID is an existent key
+        if meta_workflow_run_identifier in self._meta_workflow_runs_cache:
+            return self._meta_workflow_runs_cache[meta_workflow_run_identifier]
+
+        # Otherwise retrieve this metadata from the portal
+        try:
+            result = ff_utils.get_metadata(
+                meta_workflow_run_identifier, key=self._auth_key
+            )
+        except Exception as err:
+            raise HTTPError(err, f"GET request unsuccessful for MetaWorkflow Run using the following ID:\
+                {meta_workflow_run_identifier}") from err
+
+        # Add GET request result to cache
+        self._meta_workflow_runs_cache[meta_workflow_run_identifier] = result
+        return result
+
+    @cached_property
+    def _meta_workflow_runs_cache(self) -> dict:
+        """
+        Cache for MetaWorkflowRun metadata retrieved from CGAP portal.
+        Can save several MetaWorkflow Run metadata dicts at a time.
+        Initially empty, modified as MetaWorkflow Runs are retrieved.
+        Key-value = uuid-metadata_dict
+        """
+        return {}
