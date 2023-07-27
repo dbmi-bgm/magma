@@ -80,11 +80,15 @@ Structure
           #   Optional fields can be added and customized
           "dependencies": [], # allows to force general dependencies to steps
 
+          "shards": [] # e.g.[['0'], ['1'], ['2'], ['3']]
+                       # allows to force a fixed shards structure for the step
+                       # ignoring the input structure, scatter and gather dimensions
+
           # Example of additional Tibanna specific fields
           "custom_pf_fields": {
             # Example for CGAP data model
             # For an updated list of permissible properties, see schema at
-            # https://github.com/dbmi-bgm/cgap-portal/blob/master/src/encoded/schemas/meta_workflow.json 
+            # https://github.com/dbmi-bgm/cgap-portal/blob/master/src/encoded/schemas/meta_workflow.json
             "<filename>": {
                  "file_type": <str>,
                  "variant_type": <str>,
@@ -129,6 +133,8 @@ Structure
               "extra_dimension": <int>, # additional increment to dimension used when creating the step specific input
                                         #   this will be applied on top of gather, if any, and will only affect the step specific input
                                         #   !!! this will not affect gather dimension in building the MetaWorkflowRun[json] structure !!!
+              "gather_input" # equivalent to gather in collecting output from dependencies for multiple shards
+                             #   !!! this will not affect scatter or gather dimensions in building the MetaWorkflowRun[json] structure !!!
               # These are optional fields
               #   It is possible to skip these fields or add custom ones
               "mount": <bool>,

@@ -68,6 +68,9 @@ class MetaWorkflow(object):
             self.gather_from = {} #{name: dimension, ...} of steps to gather from
                                   # dimension is input argument dimension increment
                                   # and shard dimension decrement, int
+            self.gather_input = {} #equivalent to gather_from but this will only
+                                   # affect dependencies input and not the
+                                   # scatter structure of the step
             # For building graph structure
             self._nodes = set() #step_objects for steps that depend on current step
             # Dependencies
@@ -102,7 +105,7 @@ class MetaWorkflow(object):
             """
             for arg in self.input:
                 scatter = arg.get('scatter') #scatter dimension
-                if scatter and scatter > self.is_scatter: # get max scatter
+                if scatter and scatter > self.is_scatter: #get max scatter
                     self.is_scatter = scatter
                 #end if
                 source = arg.get('source') #source step name
@@ -111,6 +114,11 @@ class MetaWorkflow(object):
                     gather = arg.get('gather')
                     if gather:
                         self.gather_from.setdefault(source, gather)
+                    else:
+                        gather_input = arg.get('gather_input')
+                        if gather_input:
+                            self.gather_input.setdefault(source, gather_input)
+                        #end if
                     #end if
                 #end if
             #end for
@@ -313,6 +321,7 @@ class MetaWorkflow(object):
             input_structure = [input_structure]
         #end if
         scatter = {} #{step_obj.name: dimension, ...}
+        fixed_shards = {} #{step_obj.name: shards, ...}
         dimensions = self._input_dimensions(input_structure)
         steps_ = self._order_run(end_steps)
         run_json = {
@@ -362,23 +371,39 @@ class MetaWorkflow(object):
                 #end if
             #end if
             # Created shards
-            if scatter_dimension: #create shards
+            #   Check if there are fixed shards,
+            #       else calculate based in input, scatter, gather dimensions
+            if hasattr(step_obj, 'shards'):
+                shards = step_obj.shards
+                fixed_shards.setdefault(step_obj.name, shards)
+            elif scatter_dimension:
                 shards = self._shards(dimensions, scatter_dimension)
             else: shards = [['0']] #no scatter, only one shard
             #end if
             for s in shards:
                 run_step_ = copy.deepcopy(run_step)
                 run_step_.setdefault('shard', ':'.join(s))
-                # Check gather_from
-                #   If dependency in gather_from,
-                #       dependencies must be aggregated from scatter
                 for dependency in sorted(step_obj.dependencies):
                     run_step_.setdefault('dependencies', [])
+                    # Check gather
+                    #   If dependency in gather_from or gather_input,
+                    #       dependencies must be aggregated from scatter
+                    gather_from_ = None
                     if dependency in step_obj.gather_from:
-                        # reducing dimension with gather
-                        #   but need to get shards for original scatter dimension
-                        shards_gather = self._shards(dimensions, scatter[dependency])
-                        gather_dimension = scatter[dependency] - step_obj.gather_from[dependency]
+                        gather_from_ = step_obj.gather_from
+                    elif dependency in step_obj.gather_input:
+                        gather_from_ = step_obj.gather_input
+                    if gather_from_:
+                        # Check if the previous step is fixed_shards
+                        #   if so get shards from there
+                        if dependency in fixed_shards:
+                            shards_gather = fixed_shards[dependency]
+                        else:
+                            # If the previous step is NOT in fixed_shards
+                            #   get shards for original scatter dimension
+                            shards_gather = self._shards(dimensions, scatter[dependency])
+                        # Reducing dimension organically to gather
+                        gather_dimension = scatter[dependency] - gather_from_[dependency]
                         for s_g in shards_gather:
                             if scatter_dimension == 0 or \
                                 scatter_dimension > gather_dimension: #gather all from that dependency
