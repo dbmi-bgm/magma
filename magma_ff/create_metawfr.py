@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime
 import json
 import uuid
+from functools import lru_cache
 from typing import Any, List
 
 from dcicutils import ff_utils
@@ -23,6 +24,7 @@ COHORT_ANALYSIS_TYPE = "CohortAnalysis"
 FILE_FORMAT = "file_format"
 SAMPLE_PROCESSING_TYPE = "SampleProcessing"
 SAMPLE_TYPE = "Sample"
+SOMATIC_ANALYSIS_TYPE = "SomaticAnalysis"
 TYPE = "@type"
 UUID = "uuid"
 
@@ -59,6 +61,10 @@ def create_meta_workflow_run(
         )
     if _is_item_of_type(COHORT_ANALYSIS_TYPE, item):
         return create_meta_workflow_run_from_cohort_analysis(
+            item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
+        )
+    if _is_item_of_type(SOMATIC_ANALYSIS_TYPE, item):
+        return create_meta_workflow_run_from_somatic_analysis(
             item_identifier, meta_workflow_identifier, auth_key, post=post, patch=patch
         )
     raise MetaWorkflowRunCreationError(
@@ -122,6 +128,23 @@ def create_meta_workflow_run_from_cohort_analysis(
     return _create_meta_workflow_run_for_item_type(
         MetaWorkflowRunFromCohortAnalysis,
         cohort_analysis_identifier,
+        meta_workflow_identifier,
+        auth_key,
+        post=post,
+        patch=patch,
+    )
+
+
+def create_meta_workflow_run_from_somatic_analysis(
+    somatic_analysis_identifier: str,
+    meta_workflow_identifier: str,
+    auth_key: JsonObject,
+    post: bool = True,
+    patch: bool = True,
+) -> JsonObject:
+    return _create_meta_workflow_run_for_item_type(
+        MetaWorkflowRunFromSomaticAnalysis,
+        somatic_analysis_identifier,
         meta_workflow_identifier,
         auth_key,
         post=post,
@@ -486,6 +509,7 @@ def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
         "files.file_format.file_format",
         "processed_files.uuid",
         "processed_files.file_format.file_format",
+        "tissue_type",
     ]
     return [f"{sample_prefix}.{field}" for field in sample_fields_to_get]
 
@@ -493,9 +517,7 @@ def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
 class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
     FIELDS_TO_GET = (
         [
-            "project",
-            "institution",
-            "uuid",
+            "*",
         ]
         + _get_sample_fields_to_embed("case_samples")
         + _get_sample_fields_to_embed("control_samples")
@@ -517,6 +539,57 @@ class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
         """
         super().__init__(cohort_analysis_identifier, meta_workflow_identifier, auth_key)
         self.input_properties = InputPropertiesFromCohortAnalysis(self.input_item)
+        self.meta_workflow_run_input = MetaWorkflowRunInput(
+            self.meta_workflow, self.input_properties
+        ).create_input()
+        self.meta_workflow_run = self.create_meta_workflow_run()
+
+    def create_meta_workflow_run(self) -> JsonObject:
+        """Create MetaWorkflowRun[json] to later POST to portal.
+
+        :return: MetaWorkflowRun[json]
+        """
+        meta_workflow_run = {
+            self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
+            self.INPUT: self.meta_workflow_run_input,
+            self.TITLE: self._get_meta_workflow_run_title(),
+            self.PROJECT: self.project,
+            self.INSTITUTION: self.institution,
+            self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
+            self.FINAL_STATUS: self.PENDING,
+            self.WORKFLOW_RUNS: [],
+            self.UUID: self.meta_workflow_run_uuid,
+        }
+        self.create_workflow_runs(meta_workflow_run)
+        return meta_workflow_run
+
+
+class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
+    FIELDS_TO_GET = [
+        "*",
+        "processed_files.*",
+        "processed_files.file_format.*",
+        "individual.*",
+    ] + _get_sample_fields_to_embed("samples")
+
+    def __init__(
+        self,
+        somatic_analysis_identifier: str,
+        meta_workflow_identifier: str,
+        auth_key: JsonObject,
+    ):
+        """Initialize the object and set all attributes.
+        :param somatic_analysis_identifier: somatic_analysis UUID or @id
+        :param meta_workflow_identifier: MetaWorkflow[portal] UUID,
+            @id, or accession
+        :param auth_key: Portal authorization key
+        :raises MetaWorkflowRunCreationError: If required item cannot
+            be found on environment of authorization key
+        """
+        super().__init__(
+            somatic_analysis_identifier, meta_workflow_identifier, auth_key
+        )
+        self.input_properties = InputPropertiesFromSomaticAnalysis(self.input_item)
         self.meta_workflow_run_input = MetaWorkflowRunInput(
             self.meta_workflow, self.input_properties
         ).create_input()
@@ -1168,20 +1241,20 @@ class InputPropertiesFromSample:
     """
 
     # Schema constants
-    UUID = "uuid"
-    SAMPLES_PEDIGREE = "samples_pedigree"
-    SAMPLES = "samples"
     BAM_SAMPLE_ID = "bam_sample_id"
-    PROCESSED_FILES = "processed_files"
-    FILES = "files"
-    RELATED_FILES = "related_files"
+    FILE = "file"
     FILE_FORMAT = "file_format"
+    FILES = "files"
+    INDIVIDUAL = "individual"
     PAIRED_END = "paired_end"
     PAIRED_END_1 = "1"
     PAIRED_END_2 = "2"
-    RELATIONSHIP_TYPE = "relationship_type"
     PAIRED_WITH = "paired with"
-    FILE = "file"
+    PROCESSED_FILES = "processed_files"
+    RELATED_FILES = "related_files"
+    RELATIONSHIP_TYPE = "relationship_type"
+    SEX = "sex"
+    UUID = "uuid"
 
     # File formats
     FASTQ_FORMAT = "fastq"
@@ -1372,6 +1445,14 @@ class InputPropertiesFromSample:
         """Sample UUID"""
         return [self.sample[self.UUID]]
 
+    @property
+    def individual(self) -> JsonObject:
+        return self.sample.get(self.INDIVIDUAL)
+
+    @property
+    def sex(self) -> str:
+        return self.individual.get(self.SEX)
+
 
 class InputPropertiesFromCohortAnalysis:
 
@@ -1382,8 +1463,8 @@ class InputPropertiesFromCohortAnalysis:
     def __init__(self, cohort_analysis: JsonObject) -> None:
         """Initialize the object and set attributes.
 
-        :param sample: Sample metadata
-        :type sample: dict
+        :param cohort_analysis: CohortAnalysis metadata
+        :type cohort_analysis: dict
         """
         self.cohort_analysis = cohort_analysis
         case_samples = cohort_analysis.get(self.CASE_SAMPLES, [])
@@ -1422,3 +1503,159 @@ class InputPropertiesFromCohortAnalysis:
     @property
     def input_gvcfs(self) -> List[List[str]]:
         return self._get_input_property_from_all_samples("input_gvcfs")
+
+
+class InputPropertiesFromSomaticAnalysis:
+
+    # Schema constants
+    FILE_TYPE = "file_type"
+    INDIVIDUAL = "individual"
+    PROCESSED_FILES = "processed_files"
+    SAMPLES = "samples"
+    SEX = "sex"
+    TISSUE_TYPE = "tissue_type"
+    TISSUE_TYPE_NORMAL = "Normal"
+    TISSUE_TYPE_TUMOR = "Tumor"
+
+    TNSCOPE_FILE_TYPE = "TNscope VCF"
+    FILE_FORMAT_VCF_GZ = "vcf_gz"
+
+    def __init__(self, somatic_analysis: JsonObject) -> None:
+        """Initialize the object and set attributes.
+
+        :param sample_analysis: SampleAnalysis metadata
+        :type sample_analysis: dict
+        """
+        self.somatic_analysis = somatic_analysis
+        self._validate()
+
+    def _validate(self) -> None:
+        if len(self.samples) != len(self.tumor_samples) + len(self.normal_samples):
+            raise MetaWorkflowRunCreationError(
+                "Not every sample labelled as tumor or normal"
+            )
+
+    def _get_sample_type(self, sample: JsonObject) -> str:
+        return sample.get(self.TISSUE_TYPE, "")
+
+    def _is_normal_sample(self, sample: JsonObject) -> bool:
+        return self._get_sample_type(sample) == self.TISSUE_TYPE_NORMAL
+
+    def _is_tumor_sample(self, sample: JsonObject) -> bool:
+        return self._get_sample_type(sample) == self.TISSUE_TYPE_TUMOR
+
+    def _get_input_properties_from_sample_inputs(
+        self, sample_inputs: List[InputPropertiesFromSample], input_property_name: str
+    ) -> List[Any]:
+        result = []
+        for sample_input in sample_inputs:
+            result += getattr(sample_input, input_property_name)
+        return result
+
+    def _get_input_properties_from_all_samples(
+        self, input_property_name: str
+    ) -> List[Any]:
+        return self._get_input_properties_from_sample_inputs(
+            self.all_sample_inputs, input_property_name
+        )
+
+    def _get_input_properties_from_tumor_samples(
+        self, input_property_name: str
+    ) -> List[Any]:
+        return self._get_input_properties_from_sample_inputs(
+            self.tumor_sample_inputs, input_property_name
+        )
+
+    def _get_input_properties_from_normal_samples(
+        self, input_property_name: str
+    ) -> List[Any]:
+        return self._get_input_properties_from_sample_inputs(
+            self.normal_sample_inputs, input_property_name
+        )
+
+    @property
+    def individual(self) -> JsonObject:
+        return self.somatic_analysis.get(self.INDIVIDUAL, {})
+
+    @property
+    def samples(self) -> List[JsonObject]:
+        return self.somatic_analysis.get(self.SAMPLES, [])
+
+    @property
+    def tumor_samples(self) -> List[JsonObject]:
+        return [sample for sample in self.samples if self._is_tumor_sample(sample)]
+
+    @property
+    def normal_samples(self) -> List[JsonObject]:
+        return [sample for sample in self.samples if self._is_normal_sample(sample)]
+
+    @property
+    @lru_cache()
+    def tumor_sample_inputs(self) -> List[InputPropertiesFromSample]:
+        return [InputPropertiesFromSample(sample) for sample in self.tumor_samples]
+
+    @property
+    @lru_cache()
+    def normal_sample_inputs(self) -> List[InputPropertiesFromSample]:
+        return [InputPropertiesFromSample(sample) for sample in self.normal_samples]
+
+    @property
+    @lru_cache()
+    def all_sample_inputs(self) -> List[InputPropertiesFromSample]:
+        return self.tumor_sample_inputs + self.normal_sample_inputs
+
+    @property
+    def input_normal_bam(self) -> List[List[str]]:
+        normal_bams = self._get_input_properties_from_normal_samples("input_bams")
+        if len(normal_bams) != 1:
+            raise MetaWorkflowRunCreationError
+        return normal_bams
+
+    @property
+    def input_tumor_bam(self) -> List[List[str]]:
+        tumor_bams = self._get_input_properties_from_tumor_samples("input_bams")
+        if len(tumor_bams) != 1:
+            raise MetaWorkflowRunCreationError
+        return tumor_bams
+
+    @property
+    def sex(self) -> str:
+        return self.individual.get(self.SEX, "")
+
+    @property
+    def tumor_sample_name(self) -> str:
+        tumor_sample_names = self._get_input_properties_from_tumor_samples(
+            "sample_names"
+        )
+        unique_sample_names = [name for name in set(tumor_sample_names) if name]
+        if len(unique_sample_names) != 1:
+            raise MetaWorkflowRunCreationError(
+                "Could not identify only 1 tumor sample name"
+            )
+        return unique_sample_names[0]
+
+    @property
+    def normal_sample_name(self) -> str:
+        normal_sample_names = self._get_input_properties_from_normal_samples(
+            "sample_names"
+        )
+        unique_sample_names = [name for name in set(normal_sample_names) if name]
+        if len(unique_sample_names) != 1:
+            raise MetaWorkflowRunCreationError(
+                "Could not identify only 1 normal sample name"
+            )
+        return unique_sample_names[0]
+
+    @property
+    def input_somatic_vcf(self) -> List[List[str]]:
+        requirements = {self.FILE_TYPE: self.TNSCOPE_FILE_TYPE}
+        processed_files = self.somatic_analysis.get(self.PROCESSED_FILES, [])
+        result = get_files_for_file_formats(
+            processed_files, self.FILE_FORMAT_VCF_GZ, requirements=requirements
+        )
+        if not result:
+            raise MetaWorkflowRunCreationError(
+                f"No file with acceptable VCF file format meeting requirements found on"
+                f" SomaticAnalysis: {self.somatic_analysis}"
+            )
+        return [result]
