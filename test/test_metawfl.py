@@ -354,3 +354,12 @@ def test_wfl_fixed_shards_gather_input():
     x = wfl_obj.write_run(['f1', 'f2'])
     assert x == results
 #end def
+
+def test_wfl_fixed_shards_gather_input_error():
+    # Read input
+    with open('test/files/test_METAWFL_shards_error.json') as json_file:
+        data = json.load(json_file)
+    # Create MetaWorkflow object
+    with pytest.raises(ValueError) as e:
+        wfl_obj = wfl.MetaWorkflow(data)
+    assert str(e.value) == 'JSON validation error, gather and gather_input can\'t be used together in the same step\n'

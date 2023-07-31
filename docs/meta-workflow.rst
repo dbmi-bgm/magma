@@ -135,6 +135,7 @@ Structure
                                         #   !!! this will not affect gather dimension in building the MetaWorkflowRun[json] structure !!!
               "gather_input" # equivalent to gather in collecting output from dependencies for multiple shards
                              #   !!! this will not affect scatter or gather dimensions in building the MetaWorkflowRun[json] structure !!!
+                             #   gather and gather_input are exclusive and can't be used together in a single step
               # These are optional fields
               #   It is possible to skip these fields or add custom ones
               "mount": <bool>,

@@ -272,7 +272,10 @@ class InputGenerator(object):
                 #end if
             #end for
             gather = getattr(arg_obj, 'gather', 0)
-            gather += getattr(arg_obj, 'gather_input', 0)
+            # If not gather look for gather_input
+            if not gather:
+                gather += getattr(arg_obj, 'gather_input', 0)
+            #end if
             gather += getattr(arg_obj, 'extra_dimension', 0)
             # extra_dimension is additional increment to dimension used
             #   when creating the step specific input

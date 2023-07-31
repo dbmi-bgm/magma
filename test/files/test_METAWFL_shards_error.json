@@ -60,6 +60,12 @@
           "argument_type": "file",
           "source": "C",
           "gather": 1
+        },
+        {
+          "argument_name": "INPUT_D",
+          "argument_type": "file",
+          "source": "A",
+          "gather_input": 1
         }
       ],
       "outputs": ["OUTPUT_D"]

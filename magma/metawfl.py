@@ -84,6 +84,12 @@ class MetaWorkflow(object):
             # Calculate attributes
             self._validate()
             self._attributes()
+            # Validate that gather and gather_input have not been set together
+            #   for the step
+            if self.gather_from and self.gather_input:
+                raise ValueError('JSON validation error, {0}\n'
+                    .format('gather and gather_input can\'t be used together in the same step'))
+            #end if
         #end def
 
         def _validate(self):
