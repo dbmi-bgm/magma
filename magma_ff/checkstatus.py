@@ -56,9 +56,15 @@ class CheckStatusFF(AbstractCheckStatus):
                 failed_jobs = self.wflrun_obj.update_failed_jobs()
                 if len(failed_jobs) > 0:
                     patch_dict['failed_jobs'] = failed_jobs
-                cost = self.wflrun_obj.update_cost()
-                if cost is not None and cost > 0:
-                    patch_dict['cost'] = cost
+                # -------------------------------------------------------
+                # Commenting this out to speed up the status check
+                # Now the cost will not be automatically updated as the pipeline goes
+
+                # cost = self.wflrun_obj.update_cost()
+                # if cost is not None and cost > 0:
+                #     patch_dict['cost'] = cost
+
+                # -------------------------------------------------------
                 yield patch_dict
 
     # The following three functions are for portal (cgap / 4dn)
