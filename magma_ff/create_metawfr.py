@@ -751,19 +751,19 @@ class MetaWorkflowRunInput:
                     f"Found an empty list of input files for parameter {file_parameter}"
                 )
             if input_dimensions == 1:
-                if len(file_input) > 1:
+                if len(file_input_value) > 1:
                     raise MetaWorkflowRunCreationError(
                         f"Found multiple input files when only 1 was expected for"
                         f" parameter {file_parameter}: {file_input}"
                     )
-                for file_uuid in file_input:
+                for file_idx, file_uuid in enumerate(file_input):
                     if not isinstance(file_uuid, str):
                         raise MetaWorkflowRunCreationError(
                             f"File input for parameter {file_parameter} was unexpected."
                             f" Exected input file dimension {input_dimensions} but"
                             f" received the following: {file_input_value}."
                         )
-                    dimension = str(input_idx)
+                    dimension = str(file_idx)
                     formatted_file_result = {
                         self.FILE: file_uuid,
                         self.DIMENSION: dimension,
