@@ -1,16 +1,21 @@
 import mock
 import pytest
+from typing import Any, Dict
 
 from magma_ff.status_metawfr import (
     evaluate_quality_metrics,
     evaluate_workflow_run_quality_metrics,
     get_recently_completed_workflow_runs,
+    is_final_status_completed,
 )
 
+
+META_WORKFLOW_RUN_COMPLETED = {"final_status": "completed"}
+META_WORKFLOW_RUN_RUNNING = {"final_status": "running"}
 WORKFLOW_RUN_UUID = "some_uuid"
-WORKFLOW_RUN_COMPLETED = {"status": "completed", "workflow_run": WORKFLOW_RUN_UUID}
-WORKFLOW_RUN_RUNNING = {"status": "running", "workflow_run": WORKFLOW_RUN_UUID}
-WORKFLOW_RUN_ERROR = {"status": "failed", "workflow_run": WORKFLOW_RUN_UUID}
+WORKFLOW_RUN_COMPLETED = {"run_status": "completed", "workflow_run": WORKFLOW_RUN_UUID}
+WORKFLOW_RUN_RUNNING = {"run_status": "running", "workflow_run": WORKFLOW_RUN_UUID}
+WORKFLOW_RUN_ERROR = {"run_status": "failed", "workflow_run": WORKFLOW_RUN_UUID}
 WORKFLOW_RUN_PASSING = {
     "output_files": [
         {"no_qc_here": "foo"},
@@ -126,4 +131,19 @@ def test_evaluate_workflow_run_quality_metrics(workflow_run, expected):
     QualityMetrics have failed.
     """
     result = evaluate_workflow_run_quality_metrics(workflow_run)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "meta_workflow_run,expected",
+    [
+        ({}, False),
+        (META_WORKFLOW_RUN_COMPLETED, True),
+        (META_WORKFLOW_RUN_RUNNING, False),
+    ]
+)
+def test_is_final_status_completed(
+    meta_workflow_run: Dict[str, Any], expected: bool
+) -> None:
+    result = is_final_status_completed(meta_workflow_run)
     assert result == expected
