@@ -566,11 +566,15 @@ class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
 
 
 class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
-    FIELDS_TO_GET = [
-        "processed_files.*",
-        "processed_files.file_format.*",
-        "individual.*",
-    ] + _get_sample_fields_to_embed("samples") + MetaWorkflowRunFromItem.FIELDS_TO_GET
+    FIELDS_TO_GET = (
+        [
+            "processed_files.*",
+            "processed_files.file_format.*",
+            "individual.*",
+        ]
+        + _get_sample_fields_to_embed("samples")
+        + MetaWorkflowRunFromItem.FIELDS_TO_GET
+    )
 
     def __init__(
         self,
