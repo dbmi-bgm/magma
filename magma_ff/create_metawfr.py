@@ -752,23 +752,40 @@ class MetaWorkflowRunInput:
                 )
             if input_dimensions == 1:
                 if len(file_input_value) > 1:
-                    raise MetaWorkflowRunCreationError(
-                        f"Found multiple input files when only 1 was expected for"
-                        f" parameter {file_parameter}: {file_input}"
-                    )
-                for file_idx, file_uuid in enumerate(file_input):
-                    if not isinstance(file_uuid, str):
+                    if len(file_input) > 1:
                         raise MetaWorkflowRunCreationError(
-                            f"File input for parameter {file_parameter} was unexpected."
-                            f" Exected input file dimension {input_dimensions} but"
-                            f" received the following: {file_input_value}."
+                            f"Found multiple input files when only 1 was expected for"
+                            f" parameter {file_parameter}: {file_input}"
                         )
-                    dimension = str(file_idx)
-                    formatted_file_result = {
-                        self.FILE: file_uuid,
-                        self.DIMENSION: dimension,
-                    }
-                    result.append(formatted_file_result)
+                    for file_idx, file_uuid in enumerate(file_input):
+                        if not isinstance(file_uuid, str):
+                            raise MetaWorkflowRunCreationError(
+                                f"File input for parameter {file_parameter} was"
+                                f" unexpected. Exected input file dimension"
+                                f" {input_dimensions} but received the following:"
+                                f" {file_uuid}."
+                            )
+                        dimension = str(input_idx)
+                        formatted_file_result = {
+                            self.FILE: file_uuid,
+                            self.DIMENSION: dimension,
+                        }
+                        result.append(formatted_file_result)
+                else:
+                    for file_idx, file_uuid in enumerate(file_input):
+                        if not isinstance(file_uuid, str):
+                            raise MetaWorkflowRunCreationError(
+                                f"File input for parameter {file_parameter} was"
+                                f" unexpected. Exected input file dimension"
+                                f" {input_dimensions} but received the following:"
+                                f" {file_uuid}."
+                            )
+                        dimension = str(file_idx)
+                        formatted_file_result = {
+                            self.FILE: file_uuid,
+                            self.DIMENSION: dimension,
+                        }
+                        result.append(formatted_file_result)
             elif input_dimensions == 2:
                 for file_uuid_idx, file_uuid in enumerate(file_input):
                     if not isinstance(file_uuid, str):
