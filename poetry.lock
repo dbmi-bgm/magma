@@ -783,39 +783,39 @@ tests = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest (>=3.3.0)", "pyth
 
 [[package]]
 name = "tibanna"
-version = "4.0.0.1b2"
+version = "4.0.0.1b4"
 description = "Tibanna runs portable pipelines (in CWL/WDL) on the AWS Cloud."
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "tibanna-4.0.0.1b2-py3-none-any.whl", hash = "sha256:bc7f52cbe53c6b723d1650939afeaa46765893986d1760074d32d4aafe9967e7"},
-    {file = "tibanna-4.0.0.1b2.tar.gz", hash = "sha256:2565aa7da5d2ef55558fda69a02f3dac9dbe559a8f504fca107dbe072eec0d40"},
+    {file = "tibanna-4.0.0.1b4-py3-none-any.whl", hash = "sha256:f3fde1244f3a52641bdb0cdfd2688f46e3b31197b195b05f7fbb3161df2d4dfb"},
+    {file = "tibanna-4.0.0.1b4.tar.gz", hash = "sha256:6a8a8a4a2daa6c0c079ed9db764dd107ea97b0d1356941b90831f4437b24fbab"},
 ]
 
 [package.dependencies]
 Benchmark-4dn = ">=0.5.23,<0.6.0"
-boto3 = ">=1.28.51,<2.0.0"
-botocore = ">=1.31.51,<2.0.0"
+boto3 = ">=1.28.56,<2.0.0"
+botocore = ">=1.31.56,<2.0.0"
 python-lambda-4dn = "0.12.3"
 tomlkit = ">=0.11.0,<0.12.0"
 
 [[package]]
 name = "tibanna-ff"
-version = "2.0.1.1b7"
+version = "2.0.1.1b9"
 description = "Tibanna runs portable pipelines (in CWL/WDL) on the AWS Cloud."
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "tibanna_ff-2.0.1.1b7-py3-none-any.whl", hash = "sha256:62820e80745a6449a9e3e99d2e7ded880156eca74c935a48f6ee1688ff7a04da"},
-    {file = "tibanna_ff-2.0.1.1b7.tar.gz", hash = "sha256:26ea25ebb7e7e41bcd8ad13cc44964fbbb21b1d6ae95b36dfe23c48bd559ae7a"},
+    {file = "tibanna_ff-2.0.1.1b9-py3-none-any.whl", hash = "sha256:6b685b27608f1116960e1ee6e93a505b2c968d0d716bd7cda0c983658173175f"},
+    {file = "tibanna_ff-2.0.1.1b9.tar.gz", hash = "sha256:cc61da8f161377b5b2ce6ff5dd09153f2ef1aea19717a05626b9585d54f57e3b"},
 ]
 
 [package.dependencies]
-boto3 = ">=1.28.54,<2.0.0"
-botocore = ">=1.31.54,<2.0.0"
+boto3 = ">=1.28.56,<2.0.0"
+botocore = ">=1.31.56,<2.0.0"
 dcicutils = "7.12.0.2b7"
 requests = "2.27.1"
-tibanna = "4.0.0.1b2"
+tibanna = "4.0.0.1b4"
 tomlkit = ">=0.11.0,<0.12.0"
 
 [[package]]
@@ -968,4 +968,4 @@ tests = ["PasteDeploy", "WSGIProxy2", "coverage", "mock", "nose (<1.3.0)", "pyqu
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "be0ab9f65f5e6b16f791a662c53f1a135224a054b33a9d36d0897b34e53b384f"
+content-hash = "8fece4ffe66bd9592b91404fe0cd21d1e687bcab95616a93990033681f9ef567"
