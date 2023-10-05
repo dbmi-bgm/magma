@@ -5,6 +5,7 @@ configure:
 	pip install poetry
 
 build:
+	make configure
 	poetry install
 
 update:
