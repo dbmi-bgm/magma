@@ -795,13 +795,13 @@ tests = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest (>=3.3.0)", "pyth
 
 [[package]]
 name = "tibanna"
-version = "5.0.0"
+version = "5.0.0.1b4"
 description = "Tibanna runs portable pipelines (in CWL/WDL) on the AWS Cloud."
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "tibanna-5.0.0-py3-none-any.whl", hash = "sha256:be1c4b1817d453f71cb3241c68b1f40ae51fb8b9db4deff9e2e6bc5046cab3a3"},
-    {file = "tibanna-5.0.0.tar.gz", hash = "sha256:3edb53b174df8e9271efc1477824a1ca337e85b7609b4812f911ecd8e9c5c2f3"},
+    {file = "tibanna-5.0.0.1b4-py3-none-any.whl", hash = "sha256:f79a0b6c8d9bf6a107950e0e350061ae6d98e429582d3af990b8b9480e49bb60"},
+    {file = "tibanna-5.0.0.1b4.tar.gz", hash = "sha256:29390ce6250d11bee9c1d20724516d35a35c0be31f619f9ce74f67b40cd4241a"},
 ]
 
 [package.dependencies]
@@ -813,13 +813,13 @@ tomlkit = ">=0.11.0,<0.12.0"
 
 [[package]]
 name = "tibanna-ff"
-version = "3.0.0"
+version = "3.0.0.1b2"
 description = "Tibanna runs portable pipelines (in CWL/WDL) on the AWS Cloud."
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "tibanna_ff-3.0.0-py3-none-any.whl", hash = "sha256:72a9100584e543dbcbc9756017a075f9d506bab25d8e1b9fd657b5182ae33a40"},
-    {file = "tibanna_ff-3.0.0.tar.gz", hash = "sha256:2cfa456a7884a9a5d3bd9d4429815bae01f49d3120c69231052248fda9356922"},
+    {file = "tibanna_ff-3.0.0.1b2-py3-none-any.whl", hash = "sha256:3aea44426870de0ef9f18c602cc5e5cf2a45ecf7ed53833738c0e735cd6fda57"},
+    {file = "tibanna_ff-3.0.0.1b2.tar.gz", hash = "sha256:f5e65028afdd862eec5db2f6d6d546d94337ff5dfbe8f6c8cbd9fb60f19b6c89"},
 ]
 
 [package.dependencies]
@@ -827,7 +827,7 @@ boto3 = ">=1.28.56,<2.0.0"
 botocore = ">=1.31.56,<2.0.0"
 dcicutils = "8.0.0"
 requests = "2.27.1"
-tibanna = "5.0.0"
+tibanna = "5.0.0.1b4"
 tomlkit = ">=0.11.0,<0.12.0"
 
 [[package]]
@@ -980,4 +980,4 @@ tests = ["PasteDeploy", "WSGIProxy2", "coverage", "mock", "nose (<1.3.0)", "pyqu
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "2bb087415d2f147973415f9831e8385f939ffa11bd83519d65e4251d0dc90b81"
+content-hash = "c379af3dbe4bae9e570fb699315e61dbc741f31b30e1606c180ec375c5a93455"
