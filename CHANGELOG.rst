@@ -4,6 +4,12 @@ Change Log
 ==========
 
 
+2.1.1
+=====
+* Update common fields for more strict validation with jsonschema updates in portal
+* Refactor dimensionality handling
+
+
 2.1.0
 =====
 * Add ability to specify explicit inputs to gather and sharding on MWFRs
