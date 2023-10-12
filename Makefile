@@ -5,6 +5,7 @@ configure:
 	pip install poetry
 
 build:
+	make configure
 	poetry install
 
 update:
@@ -18,6 +19,16 @@ help:
 
 clean:
 	rm -rf *.egg-info
+
+publish:
+	poetry run publish-to-pypi
+
+publish-for-ga:
+	# Need this poetry install first for some reason in GitHub Actions, otherwise getting this:
+	# Warning: 'publish-to-pypi' is an entry point defined in pyproject.toml, but it's not installed as a script. You may get improper `sys.argv[0]`.
+	# Only a warning, but then it does not find dcicutils for some reason.
+	poetry install
+	poetry run publish-to-pypi --noconfirm
 
 info:
 	@: $(info Here are some 'make' options:)

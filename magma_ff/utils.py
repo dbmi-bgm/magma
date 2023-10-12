@@ -78,12 +78,12 @@ def chunk_ids(ids):
     result = []
     chunk_size = 5
     for idx in range(0, len(ids), chunk_size):
-        result.append(ids[idx : idx + chunk_size])
+        result.append(ids[idx: idx + chunk_size])
     return result
 
 
 def check_status(meta_workflow_run, valid_final_status=None):
-    """Check if MetaWorkflowRun.status is valid.
+    """Check if MetaWorkflowRun status is valid.
 
     If given valid final status, check MetaWorkflowRun.final_status
     as well.

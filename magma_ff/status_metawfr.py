@@ -4,6 +4,8 @@
 #       runs in MetaWorkflowRun[portal]
 #
 ################################################
+from typing import Any, Dict
+
 from dcicutils import ff_utils
 
 from magma_ff import checkstatus
@@ -22,6 +24,9 @@ def status_metawfr(
     Retrieve the MetaWorkflowRun[portal], check all of its runs for
     updates, check for QC failures (if applicable),
     and then PATCH MetaWorkflowRun[portal] with updates (if found).
+
+    Calculate cost and include in PATCH body only if the MetaWorkflowRun
+    has finished to save on number of calls to tibanna API.
 
     :param metawfr_uuid: MetaWorkflowRun[portal] UUID
     :type metawfr_uuid: str
@@ -58,6 +63,8 @@ def status_metawfr(
                 )
                 if quality_metrics_failing:
                     patch_body["final_status"] = "quality metric failed"
+            if is_final_status_completed(patch_body):
+                patch_body["cost"] = run_obj.update_cost()
             patch_response = ff_utils.patch_metadata(
                 patch_body, metawfr_uuid, key=ff_key
             )
@@ -90,8 +97,8 @@ def get_recently_completed_workflow_runs(meta_workflow_run, updated_properties):
     for idx in range(len(original_workflow_runs)):
         original_workflow_run = original_workflow_runs[idx]
         updated_workflow_run = updated_workflow_runs[idx]
-        original_status = original_workflow_run.get("status")
-        updated_status = updated_workflow_run.get("status")
+        original_status = original_workflow_run.get("run_status")
+        updated_status = updated_workflow_run.get("run_status")
         if updated_status != original_status and updated_status == "completed":
             workflow_run_item = updated_workflow_run.get("workflow_run")
             if workflow_run_item:
@@ -142,3 +149,11 @@ def evaluate_workflow_run_quality_metrics(workflow_run):
                 result = True
                 break
     return result
+
+
+def is_final_status_completed(meta_workflow_run: Dict[str, Any]) -> bool:
+    """Determine whether MetaWorkflowRun has finished."""
+    status = meta_workflow_run.get("final_status")
+    if status == "completed":
+        return True
+    return False

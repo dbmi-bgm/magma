@@ -303,3 +303,63 @@ def test_wfl_end_workflows():
     wfl_obj = wfl.MetaWorkflow(data)
     assert wfl_obj.end_workflows == ['H', 'M']
 #end def
+
+def test_wfl_fixed_shards_gather_input():
+    # Results expected
+    results = {
+     'meta_workflow': 'test-uuid',
+     'workflow_runs': [
+      # A ("scatter": 1)
+      {'name': 'A', 'status': 'pending', 'shard': '0'},
+      {'name': 'A', 'status': 'pending', 'shard': '1'},
+      # B ("gather_input": 1 [A], "shards": [["0"], ["1"], ["2"], ["3"]])
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '0',
+       'dependencies': ['A:0', 'A:1']},
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '1',
+       'dependencies': ['A:0', 'A:1']},
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '2',
+       'dependencies': ['A:0', 'A:1']},
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '3',
+       'dependencies': ['A:0', 'A:1']},
+       # C (source [A], "gather_input": 1 [B])
+      {'name': 'C',
+       'status': 'pending',
+       'shard': '0',
+       'dependencies': ['A:0', 'B:0', 'B:1', 'B:2', 'B:3']},
+      {'name': 'C',
+       'status': 'pending',
+       'shard': '1',
+       'dependencies': ['A:1', 'B:0', 'B:1', 'B:2', 'B:3']},
+       # D ("gather": 1 [C])
+      {'name': 'D',
+       'status': 'pending',
+       'shard': '0',
+       'dependencies': ['C:0', 'C:1']}],
+     'input': [],
+     'final_status': 'pending'}
+    # Read input
+    with open('test/files/test_METAWFL_shards.json') as json_file:
+        data = json.load(json_file)
+    # Create MetaWorkflow object
+    wfl_obj = wfl.MetaWorkflow(data)
+    # Run test
+    x = wfl_obj.write_run(['f1', 'f2'])
+    assert x == results
+#end def
+
+def test_wfl_fixed_shards_gather_input_error():
+    # Read input
+    with open('test/files/test_METAWFL_shards_error.json') as json_file:
+        data = json.load(json_file)
+    # Create MetaWorkflow object
+    with pytest.raises(ValueError) as e:
+        wfl_obj = wfl.MetaWorkflow(data)
+    assert str(e.value) == 'JSON validation error, gather and gather_input can\'t be used together in the same step\n'
