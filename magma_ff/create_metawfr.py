@@ -181,7 +181,7 @@ class MetaWorkflowRunFromItem:
     """
 
     # Embedding API Fields
-    FIELDS_TO_GET = []
+    FIELDS_TO_GET = ["*", "project.uuid", "institution.uuid"]
 
     # Schema constants
     META_WORKFLOW_RUNS = "meta_workflow_runs"
@@ -338,10 +338,24 @@ class MetaWorkflowRunFromItem:
 
     def _get_meta_workflow_run_common_fields(self) -> JsonObject:
         return {
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
+            self.PROJECT: self._get_project_uuid(),
+            self.INSTITUTION: self._get_institution_uuid(),
             self.ASSOCIATED_META_WORKFLOW_RUN: [self.meta_workflow_run_uuid],
         }
+
+    def _get_project_uuid(self) -> str:
+        return self._get_uuid_or_raise_exception(self.project, self.PROJECT)
+
+    def _get_institution_uuid(self) -> str:
+        return self._get_uuid_or_raise_exception(self.institution, self.INSTITUTION)
+
+    def _get_uuid_or_raise_exception(self, item: Any, item_type: str) -> str:
+        if not isinstance(item, dict):
+            raise TypeError(f"{item_type.capitalize()} was not embedded as an object")
+        uuid = item.get(self.UUID)
+        if uuid:
+            return uuid
+        raise ValueError(f"UUID was not found on the {item_type}")
 
 
 ################################################
@@ -354,11 +368,6 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
 
     # Embedding API fields
     FIELDS_TO_GET = [
-        "project",
-        "institution",
-        "uuid",
-        "meta_workflow_runs",
-        "samples_pedigree",
         "samples.bam_sample_id",
         "samples.uuid",
         "samples.files.uuid",
@@ -374,7 +383,7 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
         "files.uuid",
         "files.file_format.file_format",
         "files.variant_type",
-    ]
+    ] + MetaWorkflowRunFromItem.FIELDS_TO_GET
 
     def __init__(
         self,
@@ -422,8 +431,8 @@ class MetaWorkflowRunFromSampleProcessing(MetaWorkflowRunFromItem):
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
             self.TITLE: self._get_meta_workflow_run_title(),
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
+            self.PROJECT: self._get_project_uuid(),
+            self.INSTITUTION: self._get_institution_uuid(),
             self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
             self.ASSOCIATED_SAMPLE_PROCESSING: self.input_item_uuid,
             self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
@@ -442,12 +451,6 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
 
     # Embedding API fields
     FIELDS_TO_GET = [
-        "project",
-        "institution",
-        "uuid",
-        "meta_workflow_runs",
-        "bam_sample_id",
-        "uuid",
         "files.uuid",
         "files.paired_end",
         "files.file_format.file_format",
@@ -458,7 +461,7 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
         "processed_files.uuid",
         "processed_files.paired_end",
         "processed_files.file_format.file_format",
-    ]
+    ] + MetaWorkflowRunFromItem.FIELDS_TO_GET
 
     def __init__(self, sample_identifier, meta_workflow_identifier, auth_key):
         """Initialize the object and set all attributes.
@@ -489,8 +492,8 @@ class MetaWorkflowRunFromSample(MetaWorkflowRunFromItem):
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
             self.TITLE: self._get_meta_workflow_run_title(),
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
+            self.PROJECT: self._get_project_uuid(),
+            self.INSTITUTION: self._get_institution_uuid(),
             self.INPUT_SAMPLES: self.input_properties.input_sample_uuids,
             self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
@@ -516,11 +519,9 @@ def _get_sample_fields_to_embed(sample_prefix: str) -> List[str]:
 
 class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
     FIELDS_TO_GET = (
-        [
-            "*",
-        ]
-        + _get_sample_fields_to_embed("case_samples")
+        _get_sample_fields_to_embed("case_samples")
         + _get_sample_fields_to_embed("control_samples")
+        + MetaWorkflowRunFromItem.FIELDS_TO_GET
     )
 
     def __init__(
@@ -553,8 +554,8 @@ class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
             self.TITLE: self._get_meta_workflow_run_title(),
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
+            self.PROJECT: self._get_project_uuid(),
+            self.INSTITUTION: self._get_institution_uuid(),
             self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
@@ -565,12 +566,15 @@ class MetaWorkflowRunFromCohortAnalysis(MetaWorkflowRunFromItem):
 
 
 class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
-    FIELDS_TO_GET = [
-        "*",
-        "processed_files.*",
-        "processed_files.file_format.*",
-        "individual.*",
-    ] + _get_sample_fields_to_embed("samples")
+    FIELDS_TO_GET = (
+        [
+            "processed_files.*",
+            "processed_files.file_format.*",
+            "individual.*",
+        ]
+        + _get_sample_fields_to_embed("samples")
+        + MetaWorkflowRunFromItem.FIELDS_TO_GET
+    )
 
     def __init__(
         self,
@@ -604,8 +608,8 @@ class MetaWorkflowRunFromSomaticAnalysis(MetaWorkflowRunFromItem):
             self.META_WORKFLOW: self.meta_workflow.get(self.UUID),
             self.INPUT: self.meta_workflow_run_input,
             self.TITLE: self._get_meta_workflow_run_title(),
-            self.PROJECT: self.project,
-            self.INSTITUTION: self.institution,
+            self.PROJECT: self._get_project_uuid(),
+            self.INSTITUTION: self._get_institution_uuid(),
             self.COMMON_FIELDS: self._get_meta_workflow_run_common_fields(),
             self.FINAL_STATUS: self.PENDING,
             self.WORKFLOW_RUNS: [],
@@ -751,24 +755,41 @@ class MetaWorkflowRunInput:
                     f"Found an empty list of input files for parameter {file_parameter}"
                 )
             if input_dimensions == 1:
-                if len(file_input) > 1:
-                    raise MetaWorkflowRunCreationError(
-                        f"Found multiple input files when only 1 was expected for"
-                        f" parameter {file_parameter}: {file_input}"
-                    )
-                for file_uuid in file_input:
-                    if not isinstance(file_uuid, str):
+                if len(file_input_value) > 1:
+                    if len(file_input) > 1:
                         raise MetaWorkflowRunCreationError(
-                            f"File input for parameter {file_parameter} was unexpected."
-                            f" Exected input file dimension {input_dimensions} but"
-                            f" received the following: {file_input_value}."
+                            f"Found multiple input files when only 1 was expected for"
+                            f" parameter {file_parameter}: {file_input}"
                         )
-                    dimension = str(input_idx)
-                    formatted_file_result = {
-                        self.FILE: file_uuid,
-                        self.DIMENSION: dimension,
-                    }
-                    result.append(formatted_file_result)
+                    for file_idx, file_uuid in enumerate(file_input):
+                        if not isinstance(file_uuid, str):
+                            raise MetaWorkflowRunCreationError(
+                                f"File input for parameter {file_parameter} was"
+                                f" unexpected. Exected input file dimension"
+                                f" {input_dimensions} but received the following:"
+                                f" {file_uuid}."
+                            )
+                        dimension = str(input_idx)
+                        formatted_file_result = {
+                            self.FILE: file_uuid,
+                            self.DIMENSION: dimension,
+                        }
+                        result.append(formatted_file_result)
+                else:
+                    for file_idx, file_uuid in enumerate(file_input):
+                        if not isinstance(file_uuid, str):
+                            raise MetaWorkflowRunCreationError(
+                                f"File input for parameter {file_parameter} was"
+                                f" unexpected. Exected input file dimension"
+                                f" {input_dimensions} but received the following:"
+                                f" {file_uuid}."
+                            )
+                        dimension = str(file_idx)
+                        formatted_file_result = {
+                            self.FILE: file_uuid,
+                            self.DIMENSION: dimension,
+                        }
+                        result.append(formatted_file_result)
             elif input_dimensions == 2:
                 for file_uuid_idx, file_uuid in enumerate(file_input):
                     if not isinstance(file_uuid, str):

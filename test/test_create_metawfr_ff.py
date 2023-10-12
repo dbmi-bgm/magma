@@ -66,8 +66,10 @@ FASTQ_R2_UUIDS = [
     [FASTQ_R2_UUID_2],
     [FASTQ_R2_UUID_1, FASTQ_R2_UUID_1_2],
 ]
-PROJECT = "/projects/cgap-core/"
-INSTITUTION = "/institutions/hms-dbmi/"
+PROJECT_UUID = "project_uuid"
+INSTITUTION_UUID = "institution_uuid"
+PROJECT = {"uuid": PROJECT_UUID}
+INSTITUTION = {"uuid": INSTITUTION_UUID}
 SAMPLE_NAME_1 = "SAMPLE1-DNA-WGS"
 SAMPLE_NAME_2 = "SAMPLE2-DNA-WGS"
 SAMPLE_NAME_3 = "SAMPLE3-DNA-WGS"
@@ -542,8 +544,8 @@ AUTH_KEY = {"key": "foo"}
 TODAY = datetime.date.today().isoformat()
 META_WORKFLOW_RUN_UUID = "another_uuid"
 COMMON_FIELDS = {
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "associated_meta_workflow_runs": [META_WORKFLOW_RUN_UUID],
 }
 META_WORKFLOW_RUN = {
@@ -567,8 +569,8 @@ META_WORKFLOW_RUN = {
         },
     ],
     "title": "MetaWorkflowRun WGS Family v0.0.0 from %s" % TODAY,
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "common_fields": COMMON_FIELDS,
     "input_samples": INPUT_SAMPLES,
     "associated_sample_processing": SAMPLE_PROCESSING_UUID,
@@ -602,8 +604,8 @@ META_WORKFLOW_RUN_NO_WORKFLOW_RUNS = {
         },
     ],
     "title": "MetaWorkflowRun WGS Family v0.0.0 from %s" % TODAY,
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "common_fields": COMMON_FIELDS,
     "input_samples": INPUT_SAMPLES,
     "associated_sample_processing": SAMPLE_PROCESSING_UUID,
@@ -622,8 +624,8 @@ META_WORKFLOW_RUN_NO_FILES_INPUT = {
         },
     ],
     "title": "MetaWorkflowRun WGS Family v0.0.0 from %s" % TODAY,
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "common_fields": COMMON_FIELDS,
     "input_samples": INPUT_SAMPLES,
     "associated_sample_processing": SAMPLE_PROCESSING_UUID,
@@ -644,8 +646,8 @@ META_WORKFLOW_RUN_FOR_SAMPLE_3 = {
         },
     ],
     "title": "MetaWorkflowRun FASTQ QC v0.0.0 from %s" % TODAY,
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "common_fields": COMMON_FIELDS,
     "input_samples": [SAMPLE_UUID_3],
     "final_status": "pending",
@@ -670,8 +672,8 @@ META_WORKFLOW_RUN_FOR_COHORT_ANALYSIS = {
         },
     ],
     "title": "MetaWorkflowRun Joint Calling v0.0.0 from %s" % TODAY,
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "common_fields": COMMON_FIELDS,
     "final_status": "pending",
     "workflow_runs": [
@@ -695,8 +697,8 @@ META_WORKFLOW_RUN_FOR_SOMATIC_ANALYSIS = {
         },
     ],
     "title": "MetaWorkflowRun Normal Processing v0.0.0 from %s" % TODAY,
-    "project": PROJECT,
-    "institution": INSTITUTION,
+    "project": PROJECT_UUID,
+    "institution": INSTITUTION_UUID,
     "common_fields": COMMON_FIELDS,
     "final_status": "pending",
     "workflow_runs": [
@@ -1033,8 +1035,11 @@ class TestMetaWorkflowRunInput:
                 "input_files",
                 [["file_1", "file_2"]],
                 1,
-                True,
-                [],
+                False,
+                [
+                    {"file": "file_1", "dimension": "0"},
+                    {"file": "file_2", "dimension": "1"},
+                ],
             ),
             (
                 "input_files",
