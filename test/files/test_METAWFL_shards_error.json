@@ -1,0 +1,74 @@
+{
+  "accession": "ACCID",
+  "uuid": "test-uuid",
+  "input": [],
+  "workflows": [
+    {
+      "name": "A",
+      "workflow": "A-UUID",
+      "config": {},
+      "input": [
+        {
+          "argument_name": "INPUT_A",
+          "argument_type": "file",
+          "scatter": 1
+        }
+      ],
+      "outputs": ["OUTPUT_A"]
+    },
+    {
+      "name": "B",
+      "workflow": "B-UUID",
+      "config": {},
+      "shards": [["0"], ["1"], ["2"], ["3"]],
+      "input": [
+        {
+          "argument_name": "INPUT_B",
+          "argument_type": "file",
+          "source": "A",
+          "gather_input": 1
+        }
+      ],
+      "outputs": ["OUTPUT_B"]
+    },
+    {
+      "name": "C",
+      "workflow": "C-UUID",
+      "config": {},
+      "input": [
+        {
+          "argument_name": "INPUT_C",
+          "argument_type": "file",
+          "source": "A"
+        },
+        {
+          "argument_name": "INPUT_CC",
+          "argument_type": "file",
+          "source": "B",
+          "gather_input": 1
+        }
+      ],
+      "outputs": ["OUTPUT_C"]
+    },
+    {
+      "name": "D",
+      "workflow": "D-UUID",
+      "config": {},
+      "input": [
+        {
+          "argument_name": "INPUT_D",
+          "argument_type": "file",
+          "source": "C",
+          "gather": 1
+        },
+        {
+          "argument_name": "INPUT_D",
+          "argument_type": "file",
+          "source": "A",
+          "gather_input": 1
+        }
+      ],
+      "outputs": ["OUTPUT_D"]
+    }
+  ]
+}
