@@ -4,11 +4,10 @@ Change Log
 ==========
 
 
-3.0.0
+2.1.0
 =====
-* Breaking change
-    * Cost calculations for MWFRs only performed once after MWFR has finished running
 * Add ability to specify explicit inputs to gather and sharding on MWFRs
+* Cost calculations for MWFRs only performed once after MWFR has finished running to save on tibanna API calls
 * Small bug fixes for determination of WorkflowRun status
 
 
