@@ -14,7 +14,7 @@ import copy
 
 # magma
 from magma.metawflrun import MetaWorkflowRun as MetaWorkflowRunFromMagma
-from magma_ff.parser import ParserFF
+from magma_smaht.parser import ParserFF
 from tibanna_ffcommon.core import API
 
 ################################################

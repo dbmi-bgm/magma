@@ -1,7 +1,7 @@
 import argparse
 
-from magma_ff.create_metawfr import create_meta_workflow_run
-from magma_ff.utils import get_auth_key
+from magma_smaht.create_metawfr import create_meta_workflow_run
+from magma_smaht.utils import get_auth_key
 
 
 def main() -> None:

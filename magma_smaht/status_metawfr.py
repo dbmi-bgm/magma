@@ -8,9 +8,9 @@ from typing import Any, Dict
 
 from dcicutils import ff_utils
 
-from magma_ff import checkstatus
-from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import check_status, make_embed_request
+from magma_smaht import checkstatus
+from magma_smaht.metawflrun import MetaWorkflowRun
+from magma_smaht.utils import check_status, make_embed_request
 
 
 ################################################

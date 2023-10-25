@@ -13,7 +13,7 @@
 import sys, os
 
 # magma
-from magma_ff.metawflrun import MetaWorkflowRun
+from magma_smaht.metawflrun import MetaWorkflowRun
 
 # dcicutils
 from dcicutils import ff_utils

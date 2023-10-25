@@ -15,9 +15,9 @@ from typing import Any, List
 
 from dcicutils import ff_utils
 
-from magma_ff.metawfl import MetaWorkflow
-from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import JsonObject, keep_last_item, make_embed_request
+from magma_smaht.metawfl import MetaWorkflow
+from magma_smaht.metawflrun import MetaWorkflowRun
+from magma_smaht.utils import JsonObject, keep_last_item, make_embed_request
 
 
 COHORT_ANALYSIS_TYPE = "CohortAnalysis"

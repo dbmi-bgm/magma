@@ -11,9 +11,9 @@ import json
 from dcicutils import ff_utils
 
 from magma.metawflrun import MetaWorkflowRun
-from magma_ff.create_metawfr import MetaWorkflowRunFromSampleProcessing
-from magma_ff.runupdate import RunUpdate
-from magma_ff.utils import make_embed_request
+from magma_smaht.create_metawfr import MetaWorkflowRunFromSampleProcessing
+from magma_smaht.runupdate import RunUpdate
+from magma_smaht.utils import make_embed_request
 
 
 ################################################

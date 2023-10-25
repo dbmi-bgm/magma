@@ -11,7 +11,7 @@
 ################################################
 
 from magma.checkstatus import AbstractCheckStatus
-from magma_ff.wfrutils import FFWfrUtils
+from magma_smaht.wfrutils import FFWfrUtils
 
 
 ################################################

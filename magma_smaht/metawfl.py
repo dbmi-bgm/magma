@@ -14,7 +14,7 @@ import copy
 
 # magma
 from magma.metawfl import MetaWorkflow as MetaWorkflowFromMagma
-from magma_ff.parser import ParserFF
+from magma_smaht.parser import ParserFF
 
 ################################################
 #   MetaWorkflow

@@ -61,8 +61,8 @@ class ParserFF(object):
         for arg in input:
             if arg['argument_type'] == 'file':
                 self._file_to_json(arg)
-            else: # is parameter
-                self._parameter_to_json(arg)
+            # else: # is parameter
+            #     self._parameter_to_json(arg)
             #end if
         #end for
     #end def
@@ -133,32 +133,32 @@ class ParserFF(object):
         #end for
     #end def
 
-    def _parameter_to_json(self, arg):
-        """Convert parameter argument from string to json
-        and replaces the argument value (value).
-
-        possible values for value_type:
-            json | string | integer | boolean | float
-        """
-        if not arg.get('value'):
-            return
-        #end if
-        value = arg['value']
-        value_type = arg['value_type']
-        if value_type == 'json':
-            value = json.loads(value)
-        elif value_type == 'integer':
-            value = int(value)
-        elif value_type == 'float':
-            value = float(value)
-        elif value_type == 'boolean':
-            if value.lower() == 'true':
-                value = True
-            else: value = False
-            #end if
-        #end if
-        arg['value'] = value
-        del arg['value_type']
-    #end def
+    # def _parameter_to_json(self, arg):
+    #     """Convert parameter argument from string to json
+    #     and replaces the argument value (value).
+    #
+    #     possible values for value_type:
+    #         json | string | integer | boolean | float
+    #     """
+    #     if not arg.get('value'):
+    #         return
+    #     #end if
+    #     value = arg['value']
+    #     value_type = arg['value_type']
+    #     if value_type == 'json':
+    #         value = json.loads(value)
+    #     elif value_type == 'integer':
+    #         value = int(value)
+    #     elif value_type == 'float':
+    #         value = float(value)
+    #     elif value_type == 'boolean':
+    #         if value.lower() == 'true':
+    #             value = True
+    #         else: value = False
+    #         #end if
+    #     #end if
+    #     arg['value'] = value
+    #     del arg['value_type']
+    # #end def
 
 #end class
