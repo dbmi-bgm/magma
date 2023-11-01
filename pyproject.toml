@@ -23,7 +23,7 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"
 dcicutils = "8.0.0"
-tibanna-ff = "3.1.1"
+tibanna-ff = ">=3.1.1"
 
 
 [tool.poetry.dev-dependencies]
