@@ -23,7 +23,7 @@ from tibanna.job import Job
 class FFWfrUtils(object):
     def __init__(self, env):
         """
-        :param env: e.g. 'fourfront-cgap', 'fourfront-cgap-wolf'
+        :param env: e.g. 'smaht-wolf', 'smaht-wolf'
         :type env: str
         """
         self.env = env
@@ -78,7 +78,7 @@ class FFWfrUtils(object):
         if job_id in self._metadata:
             return self._metadata[job_id]
         # Search by job id
-        query='/search/?type=WorkflowRun&awsem_job_id=%s' % job_id
+        query='/search/?type=WorkflowRun&job_id=%s' % job_id
         try:
             search_res = ff_utils.search_metadata(query, key=self.ff_key)
         except Exception as e:

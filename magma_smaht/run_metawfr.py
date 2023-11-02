@@ -20,8 +20,8 @@ def run_metawfr(
     metawfr_uuid,
     ff_key,
     verbose=False,
-    sfn="tibanna_zebra",
-    env="fourfront-cgap",
+    sfn="tibanna_tiger",
+    env="smaht-wolf",
     maxcount=None,
     valid_status=None,
 ):

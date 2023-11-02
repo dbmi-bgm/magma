@@ -59,7 +59,7 @@ class InputGenerator(InputGeneratorFromMagma):
             input_json = {
                 'app_name': run_obj.name,
                 'workflow_uuid': step_obj.workflow,
-                'config': self._eval_formula(step_obj.config),
+                'config': step_obj.config,
                 'parameters': {},
                 'input_files': [],
                 'jobid': jobid,
@@ -71,21 +71,14 @@ class InputGenerator(InputGeneratorFromMagma):
 
             ####################################################################
             # This should either come from run_obj or step_obj
-            #     at some point add that option and possibly merge the two
             if getattr(step_obj, 'custom_pf_fields', None):
                 input_json.setdefault('custom_pf_fields', step_obj.custom_pf_fields)
-            #end if
-            if getattr(step_obj, 'custom_qc_fields', None):
-                input_json.setdefault('custom_qc_fields', step_obj.custom_qc_fields)
-            #end if
             ####################################################################
 
             ####################################################################
             # This should either come from wflrun_obj or wfl_obj
-            #     at some point add that option and possibly merge the two
             if getattr(self.wflrun_obj, 'common_fields', None):
                 input_json.setdefault('common_fields', self.wflrun_obj.common_fields)
-            #end if
             ####################################################################
 
             for arg_obj in run_args:
