@@ -52,7 +52,7 @@ class InputGenerator(InputGeneratorFromMagma):
             jobid = create_jobid()
             # Update run status and jobid
             self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'running')
-            self.wflrun_obj.update_attribute(run_obj.shard_name, 'jobid', jobid)
+            self.wflrun_obj.update_attribute(run_obj.shard_name, 'job_id', jobid)
             ### This is where formatting happens,
             #       to change formatting just change this part
             step_obj = self.wfl_obj.steps[run_obj.name]
