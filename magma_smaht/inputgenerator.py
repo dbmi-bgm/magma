@@ -37,7 +37,7 @@ class InputGenerator(InputGeneratorFromMagma):
 
         For each WorkflowRun[obj] ready to run:
             - Update status to 'running'
-            - Add a jobid
+            - Add a job_id
             - Create specific input as dict
             - Create updated workflow_runs and final_status properties
             - Yield input, {workflow_runs, final_status}
@@ -49,10 +49,10 @@ class InputGenerator(InputGeneratorFromMagma):
         :rtype: generator(dict, dict)
         """
         for run_obj, run_args in self._input():
-            jobid = create_jobid()
-            # Update run status and jobid
+            job_id = create_jobid()
+            # Update run status and job_id
             self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', 'running')
-            self.wflrun_obj.update_attribute(run_obj.shard_name, 'job_id', jobid)
+            self.wflrun_obj.update_attribute(run_obj.shard_name, 'job_id', job_id)
             ### This is where formatting happens,
             #       to change formatting just change this part
             step_obj = self.wfl_obj.steps[run_obj.name]
@@ -62,7 +62,7 @@ class InputGenerator(InputGeneratorFromMagma):
                 'config': step_obj.config,
                 'parameters': {},
                 'input_files': [],
-                'jobid': jobid,
+                'jobid': job_id,
                 "_tibanna": {
                   "run_type": run_obj.name,
                   "env": env
