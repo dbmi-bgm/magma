@@ -43,8 +43,8 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         # Reset run_obj
         run_obj.output = []
         run_obj.status = 'pending'
-        if getattr(run_obj, 'jobid', None):
-            delattr(run_obj, 'jobid')
+        if getattr(run_obj, 'job_id', None):
+            delattr(run_obj, 'job_id')
         #end if
         if getattr(run_obj, 'workflow_run', None):
             delattr(run_obj, 'workflow_run')
@@ -63,7 +63,7 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         #end if
         for _, run_obj in self.runs.items():
             if run_obj.status == 'failed':
-                self.failed_jobs.append(run_obj.jobid)
+                self.failed_jobs.append(run_obj.job_id)
             #end if
         #end for
         self.failed_jobs = list(set(self.failed_jobs)) # Remove duplicates
@@ -79,22 +79,23 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         """
         self.cost = 0.0
         #end if
-        for jobid in self.failed_jobs:
+        for job_id in self.failed_jobs:
             try:
-                run_cost, _ = API().cost_estimate(job_id=jobid, force=True)
+                run_cost, _ = API().cost_estimate(job_id=job_id, force=True)
                 self.cost = self.cost + run_cost
-            except Exception:
-                return None
+            except Exception as e:
+                return 0.0
         #end for
         for _, run_obj in self.runs.items():
             # only look for completed jobs as failed ones are in self.failed_jobs
             if run_obj.status == 'completed':
                 try:
-                    run_cost, _ = API().cost_estimate(job_id=run_obj.jobid, force=True)
+                    run_cost, _ = API().cost_estimate(job_id=run_obj.job_id, force=True)
+                    print(f"Costs {job_id}: {run_cost}")
                     self.cost = self.cost + run_cost
                 except Exception:
                     # This can happen, if e.g. prices from AWS can't be retrieved
-                    return None
+                    return 0.0
             #end if
         #end for
         return self.cost

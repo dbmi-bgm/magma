@@ -115,8 +115,7 @@ class FFWfrUtils(object):
         if wfr_output:
             return [{'argument_name': opf['workflow_argument_name'],
                      'file': opf['value']['uuid']} \
-                        for opf in wfr_output \
-                            if opf['type'] == 'Output processed file']
+                        for opf in wfr_output]
         else:
             return None
 

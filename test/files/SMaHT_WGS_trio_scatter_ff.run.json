@@ -1,0 +1,313 @@
+{
+    "meta_workflow": "UUID",
+    "workflow_runs": [
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "0:0"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "1:0"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "status": "pending",
+            "shard": "1:1"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "output": [
+              {
+                "argument_name": "raw_bam",
+                "file": "uuid-raw_bam-2:0"
+              }
+            ],
+            "status": "completed",
+            "shard": "2:0",
+            "job_id": "a1b2c3d"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "output": [
+              {
+                "argument_name": "raw_bam",
+                "file": "uuid-raw_bam-2:1"
+              }
+            ],
+            "status": "completed",
+            "shard": "2:1",
+            "job_id": "e1f2g3h"
+        },
+        {
+            "name": "workflow_bwa-mem_no_unzip-check",
+            "output": [
+              {
+                "argument_name": "raw_bam",
+                "file": "uuid-raw_bam-2:2"
+              }
+            ],
+            "status": "completed",
+            "shard": "2:2",
+            "job_id": "AAAAAAa"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:0:0"
+            ],
+            "shard": "0:0"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:1:0"
+            ],
+            "shard": "1:0"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:1:1"
+            ],
+            "shard": "1:1"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "output": [
+              {
+                "argument_name": "bam_w_readgroups",
+                "file": "uuid-bam_w_readgroups-2:0"
+              }
+            ],
+            "status": "completed",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:0"
+            ],
+            "shard": "2:0"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "output": [
+              {
+                "argument_name": "bam_w_readgroups",
+                "file": "uuid-bam_w_readgroups-2:1"
+              }
+            ],
+            "status": "completed",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:1"
+            ],
+            "shard": "2:1"
+        },
+        {
+            "name": "workflow_add-readgroups-check",
+            "output": [
+              {
+                "argument_name": "bam_w_readgroups",
+                "file": "uuid-bam_w_readgroups-2:2"
+              }
+            ],
+            "status": "completed",
+            "dependencies": [
+                "workflow_bwa-mem_no_unzip-check:2:2"
+            ],
+            "shard": "2:2"
+        },
+        {
+            "name": "workflow_merge-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_add-readgroups-check:0:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_merge-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_add-readgroups-check:1:0",
+                "workflow_add-readgroups-check:1:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_merge-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_add-readgroups-check:2:0",
+                "workflow_add-readgroups-check:2:1",
+                "workflow_add-readgroups-check:2:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_picard-MarkDuplicates-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_merge-bam-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_picard-MarkDuplicates-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_merge-bam-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_picard-MarkDuplicates-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_merge-bam-check:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_sort-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_picard-MarkDuplicates-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_sort-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_picard-MarkDuplicates-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_sort-bam-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_picard-MarkDuplicates-check:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_gatk-BaseRecalibrator",
+            "status": "pending",
+            "dependencies": [
+                "workflow_sort-bam-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_gatk-BaseRecalibrator",
+            "status": "pending",
+            "dependencies": [
+                "workflow_sort-bam-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_gatk-BaseRecalibrator",
+            "status": "pending",
+            "dependencies": [
+                "workflow_sort-bam-check:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_gatk-ApplyBQSR-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-BaseRecalibrator:0",
+                "workflow_sort-bam-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_gatk-ApplyBQSR-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-BaseRecalibrator:1",
+                "workflow_sort-bam-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_gatk-ApplyBQSR-check",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-BaseRecalibrator:2",
+                "workflow_sort-bam-check:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_gatk-HaplotypeCaller",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-ApplyBQSR-check:0"
+            ],
+            "shard": "0"
+        },
+        {
+            "name": "workflow_gatk-HaplotypeCaller",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-ApplyBQSR-check:1"
+            ],
+            "shard": "1"
+        },
+        {
+            "name": "workflow_gatk-HaplotypeCaller",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-ApplyBQSR-check:2"
+            ],
+            "shard": "2"
+        },
+        {
+            "name": "workflow_gatk-CombineGVCFs",
+            "status": "pending",
+            "dependencies": [
+                "workflow_gatk-HaplotypeCaller:0",
+                "workflow_gatk-HaplotypeCaller:1",
+                "workflow_gatk-HaplotypeCaller:2"
+            ],
+            "shard": "0"
+        }
+    ],
+    "input": [
+      {
+        "argument_name": "sample_name",
+        "argument_type": "parameter",
+        "value": "AVALUE",
+        "value_type": "string"
+      },
+      {
+        "argument_name": "fastq_R1",
+        "argument_type": "file",
+        "files": [
+            {"file": "A1", "dimension": "0,0"},
+            {"file": "C1", "dimension": "1,0"},
+            {"file": "D1", "dimension": "1,1"},
+            {"file": "B1", "dimension": "2,0"},
+            {"file": "E1", "dimension": "2,1"},
+            {"file": "F1", "dimension": "2,2"}]
+      },
+      {
+        "argument_name": "fastq_R2",
+        "argument_type": "file",
+        "files": [
+            {"file": "A2", "dimension": "0,0"},
+            {"file": "C2", "dimension": "1,0"},
+            {"file": "D2", "dimension": "1,1"},
+            {"file": "B2", "dimension": "2,0"},
+            {"file": "E2", "dimension": "2,1"},
+            {"file": "F2", "dimension": "2,2"}]
+      }
+    ],
+    "final_status": "pending"
+}
