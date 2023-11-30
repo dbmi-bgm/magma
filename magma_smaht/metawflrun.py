@@ -78,20 +78,20 @@ class MetaWorkflowRun(MetaWorkflowRunFromMagma):
         :rtype: float
         """
         self.cost = 0.0
-        #end if
-        for job_id in self.failed_jobs:
-            try:
-                run_cost, _ = API().cost_estimate(job_id=job_id, force=True)
-                self.cost = self.cost + run_cost
-            except Exception as e:
-                return 0.0
+        if hasattr(self, 'failed_jobs'):
+            for job_id in self.failed_jobs:
+                try:
+                    run_cost, _ = API().cost_estimate(job_id=job_id, force=True)
+                    self.cost = self.cost + run_cost
+                except Exception as e:
+                    return 0.0
         #end for
         for _, run_obj in self.runs.items():
             # only look for completed jobs as failed ones are in self.failed_jobs
             if run_obj.status == 'completed':
                 try:
                     run_cost, _ = API().cost_estimate(job_id=run_obj.job_id, force=True)
-                    print(f"Costs {job_id}: {run_cost}")
+                    #print(f"Costs {run_obj.job_id}: {run_cost}")
                     self.cost = self.cost + run_cost
                 except Exception:
                     # This can happen, if e.g. prices from AWS can't be retrieved
