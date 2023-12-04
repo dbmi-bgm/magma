@@ -115,7 +115,7 @@ def get_cgap_keys_path() -> Path:
     return CGAP_KEYS_FILE
 
 
-# TODO: Move to dcicutils
+# TODO: dcicutils.creds_utils handles all of this
 def get_auth_key(env_key: str) -> JsonObject:
     keys_path = get_cgap_keys_path()
     with keys_path.open() as file_handle:

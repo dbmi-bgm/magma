@@ -15,7 +15,7 @@ def main() -> None:
         help="MetaWorkflow identifier for input to MetaWorkflowRun",
     )
     parser.add_argument(
-        "-e", "--auth-env", default="default", help="Env name in ~/.cgap-keys.json"
+        "-e", "--auth-env", default="default", help="Env name in ~/.smaht-keys.json"
     )
     parser.add_argument(
         "--no-post", action="store_true", help="Do not POST the MetaWorkflowRun created"

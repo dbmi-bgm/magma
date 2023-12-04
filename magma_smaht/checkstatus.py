@@ -15,9 +15,9 @@ from magma_smaht.wfrutils import FFWfrUtils
 
 
 ################################################
-#   CheckStatusFF
+#   CheckStatusSMA
 ################################################
-class CheckStatusFF(AbstractCheckStatus):
+class CheckStatusSMA(AbstractCheckStatus):
     """Customized CheckStatus class for the portal.
     """
 

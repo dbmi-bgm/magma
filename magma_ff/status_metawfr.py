@@ -154,6 +154,4 @@ def evaluate_workflow_run_quality_metrics(workflow_run):
 def is_final_status_completed(meta_workflow_run: Dict[str, Any]) -> bool:
     """Determine whether MetaWorkflowRun has finished."""
     status = meta_workflow_run.get("final_status")
-    if status == "completed":
-        return True
-    return False
+    return status == "completed"

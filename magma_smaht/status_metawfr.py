@@ -49,7 +49,7 @@ def status_metawfr(
     if perform_action:
         ignore_quality_metrics = run_json.get("ignore_output_quality_metrics")
         run_obj = MetaWorkflowRun(run_json)
-        cs_obj = checkstatus.CheckStatusFF(run_obj, env)
+        cs_obj = checkstatus.CheckStatusSMA(run_obj, env)
         status_updates = list(cs_obj.check_running())  # Get all updates
         if status_updates:
             patch_body = status_updates[-1]  # Take most updated
@@ -159,6 +159,4 @@ def evaluate_workflow_run_quality_metrics(workflow_run):
 def is_final_status_completed(meta_workflow_run: Dict[str, Any]) -> bool:
     """Determine whether MetaWorkflowRun has finished."""
     status = meta_workflow_run.get("final_status")
-    if status == "completed":
-        return True
-    return False
+    return status == "completed"
