@@ -8,16 +8,16 @@ from typing import Any, Dict
 
 from dcicutils import ff_utils
 
-from magma_ff import checkstatus
-from magma_ff.metawflrun import MetaWorkflowRun
-from magma_ff.utils import check_status, make_embed_request
+from magma_smaht import checkstatus
+from magma_smaht.metawflrun import MetaWorkflowRun
+from magma_smaht.utils import check_status, make_embed_request
 
 
 ################################################
 #   Functions
 ################################################
 def status_metawfr(
-    metawfr_uuid, ff_key, verbose=False, env="fourfront-cgap", valid_status=None
+    metawfr_uuid, ff_key, verbose=False, env="smaht-wolf", valid_status=None
 ):
     """Perform status check on MetaWorkflowRun[portal].
 
@@ -49,7 +49,7 @@ def status_metawfr(
     if perform_action:
         ignore_quality_metrics = run_json.get("ignore_output_quality_metrics")
         run_obj = MetaWorkflowRun(run_json)
-        cs_obj = checkstatus.CheckStatusFF(run_obj, env)
+        cs_obj = checkstatus.CheckStatusSMA(run_obj, env)
         status_updates = list(cs_obj.check_running())  # Get all updates
         if status_updates:
             patch_body = status_updates[-1]  # Take most updated
@@ -118,14 +118,17 @@ def evaluate_quality_metrics(workflow_runs_to_check, ff_key):
     :rtype: bool
     """
     result = False
-    embed_fields = ["output_files.value_qc.overall_quality_status"]
-    embed_response = make_embed_request(workflow_runs_to_check, embed_fields, ff_key)
-    for workflow_run in embed_response:
-        quality_metrics_failed = evaluate_workflow_run_quality_metrics(workflow_run)
-        if quality_metrics_failed:
-            result = True
-            break
+
     return result
+    ## TODO: Look at this in the SMaHT context
+    # embed_fields = ["output_files.value_qc.overall_quality_status"]
+    # embed_response = make_embed_request(workflow_runs_to_check, embed_fields, ff_key)
+    # for workflow_run in embed_response:
+    #     quality_metrics_failed = evaluate_workflow_run_quality_metrics(workflow_run)
+    #     if quality_metrics_failed:
+    #         result = True
+    #         break
+    # return result
 
 
 def evaluate_workflow_run_quality_metrics(workflow_run):
@@ -140,15 +143,17 @@ def evaluate_workflow_run_quality_metrics(workflow_run):
     :rtype: bool
     """
     result = False
-    output_files = workflow_run.get("output_files", [])
-    for output_file in output_files:
-        quality_metric = output_file.get("value_qc", {})
-        if quality_metric:
-            quality_metric_status = quality_metric.get("overall_quality_status")
-            if quality_metric_status == "FAIL":
-                result = True
-                break
     return result
+    ## TODO: Look at this in the SMaHT context
+    # output_files = workflow_run.get("output_files", [])
+    # for output_file in output_files:
+    #     quality_metric = output_file.get("value_qc", {})
+    #     if quality_metric:
+    #         quality_metric_status = quality_metric.get("overall_quality_status")
+    #         if quality_metric_status == "FAIL":
+    #             result = True
+    #             break
+    # return result
 
 
 def is_final_status_completed(meta_workflow_run: Dict[str, Any]) -> bool:

@@ -3,6 +3,9 @@
 Change Log
 ==========
 
+3.0.0
+=====
+* Added magma components for interfacing with SMaHT portal
 
 2.1.1
 =====

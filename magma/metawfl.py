@@ -298,6 +298,11 @@ class MetaWorkflow(object):
         return shards
     #end def
 
+    def _shards_dimension(self, shards):
+        """
+        """
+        return len(shards[0])
+
     def write_run(self, input_structure, end_steps=[]):
         """Create MetaWorkflowRun[json] for MetaWorkflow[json]
         given end_steps and input_structure.
@@ -399,6 +404,7 @@ class MetaWorkflow(object):
                         gather_from_ = step_obj.gather_from
                     elif dependency in step_obj.gather_input:
                         gather_from_ = step_obj.gather_input
+                    #end if
                     if gather_from_:
                         # Check if the previous step is fixed_shards
                         #   if so get shards from there
@@ -408,8 +414,9 @@ class MetaWorkflow(object):
                             # If the previous step is NOT in fixed_shards
                             #   get shards for original scatter dimension
                             shards_gather = self._shards(dimensions, scatter[dependency])
+                        #end if
                         # Reducing dimension organically to gather
-                        gather_dimension = scatter[dependency] - gather_from_[dependency]
+                        gather_dimension = self._shards_dimension(shards_gather) - gather_from_[dependency]
                         for s_g in shards_gather:
                             if scatter_dimension == 0 or \
                                 scatter_dimension > gather_dimension: #gather all from that dependency

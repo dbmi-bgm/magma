@@ -48,15 +48,16 @@ class AbstractCheckStatus(object):
         """
         for run_obj in self.wflrun_obj.running():
 
+            jobid = run_obj.jobid if hasattr(run_obj, 'jobid') else run_obj.job_id
             # Check current status from jobid
-            status_ = self.get_status(run_obj.jobid)
+            status_ = self.get_status(jobid)
             status = self.status_map[status_]
 
             # Update run status no matter what
             self.wflrun_obj.update_attribute(run_obj.shard_name, 'status', status)
 
             # Get run uuid
-            run_uuid = self.get_uuid(run_obj.jobid)
+            run_uuid = self.get_uuid(jobid)
 
             # Update run uuid regardless of the status
             if run_uuid:  # some failed runs don't have run uuid
@@ -65,7 +66,7 @@ class AbstractCheckStatus(object):
             if status == 'completed':
 
                 # Get formatted output
-                output = self.get_output(run_obj.jobid)
+                output = self.get_output(jobid)
 
                 # Update output
                 if output:
