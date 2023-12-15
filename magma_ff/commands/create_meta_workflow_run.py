@@ -1,4 +1,5 @@
 import argparse
+import json
 
 from magma_ff.create_metawfr import create_meta_workflow_run
 from magma_ff.utils import get_auth_key
@@ -29,13 +30,14 @@ def main() -> None:
     auth_key = get_auth_key(args.auth_env)
     post = not args.no_post
     patch = not args.no_patch
-    create_meta_workflow_run(
+    meta_workflow_run = create_meta_workflow_run(
         args.input_item_identifier,
         args.meta_workflow_identifier,
         auth_key,
         post=post,
         patch=patch,
     )
+    print(f"MetaWorkflowRun: {json.dumps(meta_workflow_run, indent=2)}")
 
 
 if __name__ == "__main__":

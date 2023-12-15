@@ -1446,7 +1446,15 @@ class InputPropertiesFromSample:
     @property
     def input_bams(self):
         """BAM file input."""
-        bams = self.get_processed_files_for_file_format(self.BAM_FORMAT)
+        try:
+            bams = self.get_processed_files_for_file_format(self.BAM_FORMAT)
+        except MetaWorkflowRunCreationError:
+            try:
+                bams = self.get_submitted_files_for_file_format(self.BAM_FORMAT)
+            except MetaWorkflowRunCreationError:
+                raise MetaWorkflowRunCreationError(
+                    f"No BAM files found on Sample: {self.sample}"
+                )
         return [keep_last_item(bams)]
 
     @property
