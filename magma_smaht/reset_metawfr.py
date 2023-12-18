@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ################################################
 #
 #   Functions to reset runs status

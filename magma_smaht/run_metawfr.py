@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+
 ################################################
 #
-#   Function to run MetaWorkflowRun[portal]
+#   Functions to run MetaWorkflowRun[portal]
 #       with tibanna and patch metadata
 #
 ################################################

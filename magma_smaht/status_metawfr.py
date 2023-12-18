@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+
 ################################################
 #
-#   Function to check and patch status
+#   Functions to check and patch status
 #       runs in MetaWorkflowRun[portal]
 #
 ################################################

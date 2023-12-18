@@ -2,7 +2,7 @@
 
 ################################################
 #
-#   Function to compute and patch the cost
+#   Functions to compute and patch the cost
 #         of a MetaWorkflowRun[portal]
 #
 ################################################
