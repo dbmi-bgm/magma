@@ -3,6 +3,10 @@
 Change Log
 ==========
 
+3.0.1
+=====
+* Change dcicutils from 8.0.0 to ^8.0.0.
+
 3.0.0
 =====
 * Added magma components for interfacing with SMaHT portal
