@@ -82,7 +82,7 @@ class InputGenerator(InputGeneratorFromMagma):
             ####################################################################
 
             for arg_obj in run_args:
-                if arg_obj.argument_type == 'parameter':
+                if arg_obj.argument_type in ['parameter', 'QC ruleset']:
                     input_json['parameters'].setdefault(arg_obj.argument_name, arg_obj.value)
                 else:
                     # Basic argument information
