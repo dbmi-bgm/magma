@@ -3,6 +3,10 @@
 Change Log
 ==========
 
+3.1.0
+=====
+* Add ``mwfr_from_input``
+
 3.0.1
 =====
 * Change dcicutils from 8.0.0 to ^8.0.0.
