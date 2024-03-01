@@ -79,7 +79,7 @@ def chunk_ids(ids):
     result = []
     chunk_size = 5
     for idx in range(0, len(ids), chunk_size):
-        result.append(ids[idx : idx + chunk_size])
+        result.append(ids[idx: idx + chunk_size])
     return result
 
 
@@ -137,6 +137,21 @@ def keep_last_item(items: Sequence) -> Sequence:
     return result
 
 
+def get_file_set(fileset_accession, smaht_key):
+    """Get the file set from its accession
+
+    Args:
+        fileset_accession (str): fileset accession
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        dict: Fileset item from portal
+    """
+    return ff_utils.get_metadata(
+        fileset_accession, add_on="frame=raw&datastore=database", key=smaht_key
+    )
+
+
 def get_library_from_file_set(file_set, smaht_key):
     """Get the library that is associated with a fileset
 
@@ -157,7 +172,6 @@ def get_library_from_file_set(file_set, smaht_key):
         file_set["libraries"][0], add_on="frame=raw&datastore=database", key=smaht_key
     )
     return library
-
 
 def get_sample_from_library(library, smaht_key):
     """Get the sample that is associated with a library
@@ -195,19 +209,17 @@ def get_latest_mwf(mwf_name, smaht_key):
     """
     query = f"/search/?type=MetaWorkflow&name={mwf_name}"
     search_results = ff_utils.search_metadata(query, key=smaht_key)
-
+    
     if len(search_results) == 0:
         return None
-
+    
     latest_result = search_results[0]
     if len(search_results) == 1:
         return latest_result
-
+    
     # There are multiple MWFs. Get the latest version
     for search_result in search_results:
-        if version.parse(latest_result["version"]) < version.parse(
-            search_result["version"]
-        ):
+        if version.parse(latest_result["version"]) < version.parse(search_result["version"]):
             latest_result = search_result
     return latest_result
 

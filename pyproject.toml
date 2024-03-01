@@ -34,9 +34,11 @@ pytest = "*"
 
 
 [tool.poetry.scripts]
-create-illumina-mwfr = "magma_smaht.create_metawfr:mwfr_illumina_alignment"
-create-pacbio-mwfr = "magma_smaht.create_metawfr:mwfr_pacbio_alignment"
-create-fastqc-mwfr = "magma_smaht.create_metawfr:mwfr_fastqc"
+create-illumina-mwfr = "magma_smaht.commands.create_meta_workflow_run:mwfr_illumina_alignment_cmd"
+create-pacbio-mwfr = "magma_smaht.commands.create_meta_workflow_run:mwfr_pacbio_alignment_cmd"
+create-hic-mwfr = "magma_smaht.commands.create_meta_workflow_run:mwfr_hic_alignment_cmd"
+create-ont-mwfr = "magma_smaht.commands.create_meta_workflow_run:mwfr_ont_alignment_cmd"
+create-fastqc-mwfr = "magma_smaht.commands.create_meta_workflow_run:mwfr_fastqc_cmd"
 publish-to-pypi = "dcicutils.scripts.publish_to_pypi:main"
 
 
