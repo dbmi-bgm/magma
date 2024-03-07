@@ -227,6 +227,7 @@ def get_core_alignment_mwfr_input(file_set, input_arg, smaht_key):
         get_mwfr_parameter_input_arg("sample_name", sample["accession"]),
         get_mwfr_parameter_input_arg("library_id", library["accession"]),
     ]
+    return mwfr_input
 
 
 def filter_list_of_dicts(list_of_dics, property_target, target):
