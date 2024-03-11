@@ -20,7 +20,7 @@ from magma_smaht.utils import get_auth_key
     "--length-required",
     required=True,
     type=int,
-    help="Requried length (can be obtained from FastQC output)",
+    help="Required length (can be obtained from FastQC output)",
 )
 @click.option(
     "-e",
@@ -30,7 +30,7 @@ from magma_smaht.utils import get_auth_key
     help="Name of environment in smaht-keys file",
 )
 def mwfr_illumina_alignment_cmd(fileset_accession, length_required, auth_env):
-    """Creates a MetaWorflowRun item in the portal for Illumina alignemnt of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for Illumina alignment of submitted files within a fileset"""
     smaht_key = get_auth_key(auth_env)
     mwfr_illumina_alignment(fileset_accession, length_required, smaht_key)
 
@@ -48,7 +48,7 @@ def mwfr_illumina_alignment_cmd(fileset_accession, length_required, auth_env):
     help="Name of environment in smaht-keys file",
 )
 def mwfr_pacbio_alignment_cmd(fileset_accession, auth_env):
-    """Creates a MetaWorflowRun item in the portal for Pacbio alignment of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for PacBio alignment of submitted files within a fileset"""
     smaht_key = get_auth_key(auth_env)
     mwfr_pacbio_alignment(fileset_accession, smaht_key)
 
@@ -66,7 +66,7 @@ def mwfr_pacbio_alignment_cmd(fileset_accession, auth_env):
     help="Name of environment in smaht-keys file",
 )
 def mwfr_hic_alignment_cmd(fileset_accession, auth_env):
-    """Creates a MetaWorflowRun item in the portal for HIC alignment of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for HIC alignment of submitted files within a fileset"""
     smaht_key = get_auth_key(auth_env)
     mwfr_hic_alignment(fileset_accession, smaht_key)
 
@@ -84,7 +84,7 @@ def mwfr_hic_alignment_cmd(fileset_accession, auth_env):
     help="Name of environment in smaht-keys file",
 )
 def mwfr_ont_alignment_cmd(fileset_accession, auth_env):
-    """Creates a MetaWorflowRun item in the portal for ONT alignment of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for ONT alignment of submitted files within a fileset"""
     smaht_key = get_auth_key(auth_env)
     mwfr_ont_alignment(fileset_accession, smaht_key)
 

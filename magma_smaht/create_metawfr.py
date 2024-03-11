@@ -35,6 +35,15 @@ MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
 MWF_NAME_FASTQC = "short_reads_FASTQ_quality_metrics"
 
+# Input argument names
+INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
+INPUT_FILES_R2_FASTQ_GZ = "input_files_r2_fastq_gz"
+INPUT_FILES_BAM = "input_files_bam"
+INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
+SAMPLE_NAME = "sample_name"
+LENGTH_REQUIRED = "length_required"
+LIBRARY_ID = "library_id"
+
 
 ################################################
 #   Functions
@@ -42,51 +51,46 @@ MWF_NAME_FASTQC = "short_reads_FASTQ_quality_metrics"
 
 
 def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
-    """Creates a MetaWorflowRun item in the portal for Illumina alignemnt of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for Illumina alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_ILLUMINA, smaht_key)
     print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
-    input_arg_1 = "input_files_r1_fastq_gz"
-    input_arg_2 = "input_files_r2_fastq_gz"
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
-        file_set, input_arg_1, input_arg_2, smaht_key
+        file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
     # Illumina specific input
-    mwfr_input.append(get_mwfr_parameter_input_arg("length_required", length_required))
-    create_and_post_mwfr(mwf["uuid"], file_set, input_arg_1, mwfr_input, smaht_key)
+    mwfr_input.append(get_mwfr_parameter_input_arg(LENGTH_REQUIRED, length_required))
+    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
 
 
 def mwfr_pacbio_alignment(fileset_accession, smaht_key):
-    """Creates a MetaWorflowRun item in the portal for Pacbio alignment of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for PacBio alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_PACBIO, smaht_key)
     print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
-    input_arg = "input_files_bam"
-    mwfr_input = get_core_alignment_mwfr_input(file_set, input_arg, smaht_key)
-    create_and_post_mwfr(mwf["uuid"], file_set, input_arg, mwfr_input, smaht_key)
+    mwfr_input = get_core_alignment_mwfr_input(file_set, INPUT_FILES_BAM, smaht_key)
+    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 def mwfr_hic_alignment(fileset_accession, smaht_key):
-    """Creates a MetaWorflowRun item in the portal for HIC alignment of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for HI-C alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_HIC, smaht_key)
     print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
-    input_arg_1 = "input_files_r1_fastq_gz"
-    input_arg_2 = "input_files_r2_fastq_gz"
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
-        file_set, input_arg_1, input_arg_2, smaht_key
+        file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
-    create_and_post_mwfr(mwf["uuid"], file_set, input_arg_1, mwfr_input, smaht_key)
+    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
 
 
 def mwfr_ont_alignment(fileset_accession, smaht_key):
-    """Creates a MetaWorflowRun item in the portal for HIC alignment of submitted files within a file set"""
+    """Creates a MetaWorflowRun item in the portal for ONT alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_ONT, smaht_key)
     print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
@@ -108,15 +112,14 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
             {"file": file_fastq["derived_from"][0]["uuid"], "dimension": f"{dim}"}
         )
 
-    input_arg = "input_files_fastq_gz"
     mwfr_input = [
-        get_mwfr_file_input_arg(input_arg, fastqs),
-        get_mwfr_file_input_arg("input_files_bam", bams),
-        get_mwfr_parameter_input_arg("sample_name", sample["accession"]),
-        get_mwfr_parameter_input_arg("library_id", library["accession"]),
+        get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, fastqs),
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bams),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample["accession"]),
+        get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
     ]
 
-    create_and_post_mwfr(mwf["uuid"], file_set, input_arg, mwfr_input, smaht_key)
+    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key)
 
 
 def mwfr_fastqc(fileset_accession, smaht_key):
@@ -165,8 +168,8 @@ def get_core_alignment_mwfr_input_from_readpairs(
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg_1, files_r1),
         get_mwfr_file_input_arg(file_input_arg_2, files_r2),
-        get_mwfr_parameter_input_arg("sample_name", sample["accession"]),
-        get_mwfr_parameter_input_arg("library_id", library["accession"]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample["accession"]),
+        get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
     ]
     return mwfr_input
 
@@ -186,8 +189,8 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg, files),
-        get_mwfr_parameter_input_arg("sample_name", sample["accession"]),
-        get_mwfr_parameter_input_arg("library_id", library["accession"]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample["accession"]),
+        get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
     ]
     return mwfr_input
 

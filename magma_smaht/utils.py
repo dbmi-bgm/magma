@@ -138,7 +138,7 @@ def keep_last_item(items: Sequence) -> Sequence:
 
 
 def get_file_set(fileset_accession, smaht_key):
-    """Get the file set from its accession
+    """Get the fileset from its accession
 
     Args:
         fileset_accession (str): fileset accession
@@ -160,7 +160,7 @@ def get_library_from_file_set(file_set, smaht_key):
         smaht_key (dict): SMaHT key
 
     Raises:
-        Exception: Raises an exception when there are multiple libraried associated
+        Exception: Raises an exception when there are multiple libraries associated
 
     Returns:
         dict: Library item from portal
@@ -198,7 +198,7 @@ def get_sample_from_library(library, smaht_key):
 
 
 def get_latest_mwf(mwf_name, smaht_key):
-    """Gets the latest version of the MWF with name `mwf_name`
+    """Get the latest version of the MWF with name `mwf_name`
 
     Args:
         mwf_name (string): Name of the MWF
