@@ -44,6 +44,15 @@ SAMPLE_NAME = "sample_name"
 LENGTH_REQUIRED = "length_required"
 LIBRARY_ID = "library_id"
 
+# Schema fields
+COMMON_FIELDS = "common_fields"
+UUID = "uuid"
+SUBMISSION_CENTERS = "submission_centers"
+SEQUENCING_CENTER = "sequencing_center"
+CONSORTIA = "consortia"
+FILE_SETS = "file_sets"
+META_WORFLOW_RUN ="MetaWorkflowRun"
+
 
 ################################################
 #   Functions
@@ -62,7 +71,7 @@ def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
     )
     # Illumina specific input
     mwfr_input.append(get_mwfr_parameter_input_arg(LENGTH_REQUIRED, length_required))
-    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
 
 
 def mwfr_pacbio_alignment(fileset_accession, smaht_key):
@@ -73,7 +82,7 @@ def mwfr_pacbio_alignment(fileset_accession, smaht_key):
 
     file_set = get_file_set(fileset_accession, smaht_key)
     mwfr_input = get_core_alignment_mwfr_input(file_set, INPUT_FILES_BAM, smaht_key)
-    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 def mwfr_hic_alignment(fileset_accession, smaht_key):
@@ -86,7 +95,7 @@ def mwfr_hic_alignment(fileset_accession, smaht_key):
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
         file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
-    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
 
 
 def mwfr_ont_alignment(fileset_accession, smaht_key):
@@ -101,15 +110,15 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     sample = get_sample_from_library(library, smaht_key)
 
     # We are only retrieving the fastq files and get the bams from the derived_from property
-    search_filter = f"?type=UnalignedReads&file_format.display_title=fastq_gz&file_sets.uuid={file_set['uuid']}"
+    search_filter = f"?type=UnalignedReads&file_format.display_title=fastq_gz&file_sets.uuid={file_set[UUID]}"
     files_fastq = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
 
     # Create files list for input args
     fastqs, bams = [], []
     for dim, file_fastq in enumerate(files_fastq):
-        fastqs.append({"file": file_fastq["uuid"], "dimension": f"{dim}"})
+        fastqs.append({"file": file_fastq[UUID], "dimension": f"{dim}"})
         bams.append(
-            {"file": file_fastq["derived_from"][0]["uuid"], "dimension": f"{dim}"}
+            {"file": file_fastq["derived_from"][0][UUID], "dimension": f"{dim}"}
         )
 
     mwfr_input = [
@@ -129,7 +138,7 @@ def mwfr_fastqc(fileset_accession, smaht_key):
     print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
 
     # Get unaligned reads in the fileset that don't have already QC
-    search_filter = f"?file_sets.uuid={file_set['uuid']}&type=UnalignedReads&file_format.display_title=fastq_gz&quality_metrics=No+value"
+    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=fastq_gz&quality_metrics=No+value"
     files_to_run = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
 
     if len(files_to_run) == 0:
@@ -138,12 +147,23 @@ def mwfr_fastqc(fileset_accession, smaht_key):
 
     files_input = []
     for dim, file in enumerate(files_to_run):
-        files_input.append({"file": file["uuid"], "dimension": f"{dim}"})
+        files_input.append({"file": file[UUID], "dimension": f"{dim}"})
 
-    input_arg = "input_files_fastq_gz"
-    mwfr_input = [get_mwfr_file_input_arg(input_arg, files_input)]
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, files_input)]
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key)
 
-    create_and_post_mwfr(mwf["uuid"], file_set, input_arg, mwfr_input, smaht_key)
+
+def get_common_fields(file_set):
+
+    sequencing_centers = file_set[SUBMISSION_CENTERS]
+    if len(sequencing_centers) != 1:
+        raise Exception(f"Exacted exactly one submission center for file set {file_set['accession']} but got {len(sequencing_centers)}")
+
+    common_fields = {
+        SEQUENCING_CENTER: sequencing_centers[0][UUID]
+    }
+
+    return common_fields
 
 
 def get_core_alignment_mwfr_input_from_readpairs(
@@ -155,15 +175,15 @@ def get_core_alignment_mwfr_input_from_readpairs(
 
     # We are only retrieving the R2 reads and get the R1 read from the paired_with property
     search_filter = (
-        f"?type=UnalignedReads&read_pair_number=R2&file_sets.uuid={file_set['uuid']}"
+        f"?type=UnalignedReads&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
     )
     reads_r2 = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
 
     # Create files list for input args
     files_r1, files_r2 = [], []
     for dim, file_r2 in enumerate(reads_r2):
-        files_r2.append({"file": file_r2["uuid"], "dimension": f"{dim}"})
-        files_r1.append({"file": file_r2["paired_with"]["uuid"], "dimension": f"{dim}"})
+        files_r2.append({"file": file_r2[UUID], "dimension": f"{dim}"})
+        files_r1.append({"file": file_r2["paired_with"][UUID], "dimension": f"{dim}"})
 
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg_1, files_r1),
@@ -179,13 +199,13 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
     library = get_library_from_file_set(file_set, smaht_key)
     sample = get_sample_from_library(library, smaht_key)
 
-    search_filter = f"?type=UnalignedReads&file_sets.uuid={file_set['uuid']}"
+    search_filter = f"?type=UnalignedReads&file_sets.uuid={file_set[UUID]}"
     search_result = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
 
     # Create files list for input args
     files = []
     for dim, file in enumerate(search_result):
-        files.append({"file": file["uuid"], "dimension": f"{dim}"})
+        files.append({"file": file[UUID], "dimension": f"{dim}"})
 
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg, files),
@@ -198,10 +218,11 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
 
     mwfr = mwfr_from_input(mwf_uuid, mwfr_input, input_arg, smaht_key)
-    mwfr["file_sets"] = [file_set["uuid"]]
+    mwfr[FILE_SETS] = [file_set[UUID]]
+    mwfr[COMMON_FIELDS] = get_common_fields(file_set)
     # mwfr['final_status'] = 'stopped'
     # print(mwfr)
-    post_response = ff_utils.post_metadata(mwfr, "MetaWorkflowRun", smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(
         f"Posted MetaWorkflowRun {mwfr_accession} for Fileset {file_set['accession']}."
@@ -252,9 +273,9 @@ def mwfr_from_input(
     mwf = MetaWorkflow(metawf_meta)
     mwfr = mwf.write_run(input_structure)
 
-    mwfr["uuid"] = str(uuid.uuid4())
-    mwfr["consortia"] = consortia
-    mwfr["submission_centers"] = submission_centers
+    mwfr[UUID] = str(uuid.uuid4())
+    mwfr[CONSORTIA] = consortia
+    mwfr[SUBMISSION_CENTERS] = submission_centers
     mwfr["input"] = input
 
     return mwfr
