@@ -51,7 +51,7 @@ SUBMISSION_CENTERS = "submission_centers"
 SEQUENCING_CENTER = "sequencing_center"
 CONSORTIA = "consortia"
 FILE_SETS = "file_sets"
-META_WORFLOW_RUN ="MetaWorkflowRun"
+META_WORFLOW_RUN = "MetaWorkflowRun"
 
 
 ################################################
@@ -71,7 +71,9 @@ def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
     )
     # Illumina specific input
     mwfr_input.append(get_mwfr_parameter_input_arg(LENGTH_REQUIRED, length_required))
-    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
+    create_and_post_mwfr(
+        mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key
+    )
 
 
 def mwfr_pacbio_alignment(fileset_accession, smaht_key):
@@ -95,7 +97,9 @@ def mwfr_hic_alignment(fileset_accession, smaht_key):
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
         file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
-    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key)
+    create_and_post_mwfr(
+        mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key
+    )
 
 
 def mwfr_ont_alignment(fileset_accession, smaht_key):
@@ -112,6 +116,7 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     # We are only retrieving the fastq files and get the bams from the derived_from property
     search_filter = f"?type=UnalignedReads&file_format.display_title=fastq_gz&file_sets.uuid={file_set[UUID]}"
     files_fastq = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
+    files_fastq.reverse()
 
     # Create files list for input args
     fastqs, bams = [], []
@@ -128,7 +133,9 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
         get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
     ]
 
-    create_and_post_mwfr(mwf["uuid"], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key)
+    create_and_post_mwfr(
+        mwf["uuid"], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key
+    )
 
 
 def mwfr_fastqc(fileset_accession, smaht_key):
@@ -140,6 +147,7 @@ def mwfr_fastqc(fileset_accession, smaht_key):
     # Get unaligned reads in the fileset that don't have already QC
     search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=fastq_gz&quality_metrics=No+value"
     files_to_run = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
+    files_to_run.reverse()
 
     if len(files_to_run) == 0:
         print(f"No files to run for search {search_filter}")
@@ -150,18 +158,20 @@ def mwfr_fastqc(fileset_accession, smaht_key):
         files_input.append({"file": file[UUID], "dimension": f"{dim}"})
 
     mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, files_input)]
-    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key)
+    create_and_post_mwfr(
+        mwf[UUID], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key
+    )
 
 
 def get_common_fields(file_set):
 
     sequencing_centers = file_set[SUBMISSION_CENTERS]
     if len(sequencing_centers) != 1:
-        raise Exception(f"Exacted exactly one submission center for file set {file_set['accession']} but got {len(sequencing_centers)}")
+        raise Exception(
+            f"Exacted exactly one submission center for file set {file_set['accession']} expected but got {len(sequencing_centers)}"
+        )
 
-    common_fields = {
-        SEQUENCING_CENTER: sequencing_centers[0][UUID]
-    }
+    common_fields = {SEQUENCING_CENTER: sequencing_centers[0]}
 
     return common_fields
 
@@ -178,6 +188,7 @@ def get_core_alignment_mwfr_input_from_readpairs(
         f"?type=UnalignedReads&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
     )
     reads_r2 = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
+    reads_r2.reverse()
 
     # Create files list for input args
     files_r1, files_r2 = [], []
@@ -201,6 +212,7 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 
     search_filter = f"?type=UnalignedReads&file_sets.uuid={file_set[UUID]}"
     search_result = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
+    search_result.reverse()
 
     # Create files list for input args
     files = []
@@ -220,8 +232,9 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
     mwfr = mwfr_from_input(mwf_uuid, mwfr_input, input_arg, smaht_key)
     mwfr[FILE_SETS] = [file_set[UUID]]
     mwfr[COMMON_FIELDS] = get_common_fields(file_set)
-    # mwfr['final_status'] = 'stopped'
+    #mwfr['final_status'] = 'stopped'
     # print(mwfr)
+
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(
@@ -262,9 +275,7 @@ def mwfr_from_input(
                     }, ...]
     """
 
-    metawf_meta = ff_utils.get_metadata(
-        metawf_uuid, add_on="frame=raw&datastore=database", key=ff_key
-    )
+    metawf_meta = get_metadata(metawf_uuid, ff_key)
 
     for arg in input:
         if arg["argument_name"] == input_arg:
@@ -279,3 +290,9 @@ def mwfr_from_input(
     mwfr["input"] = input
 
     return mwfr
+
+
+def get_metadata(identifier, key):
+    return ff_utils.get_metadata(
+        identifier, add_on="frame=raw&datastore=database", key=key
+    )
