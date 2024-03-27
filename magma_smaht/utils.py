@@ -12,6 +12,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, Sequence
+from packaging import version
 
 from dcicutils import ff_utils
 
@@ -134,3 +135,102 @@ def keep_last_item(items: Sequence) -> Sequence:
     elif len(items) > 1:
         result = items[-1:]
     return result
+
+
+def get_file_set(fileset_accession, smaht_key):
+    """Get the fileset from its accession
+
+    Args:
+        fileset_accession (str): fileset accession
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        dict: Fileset item from portal
+    """
+    return ff_utils.get_metadata(
+        fileset_accession, add_on="frame=raw&datastore=database", key=smaht_key
+    )
+
+
+def get_library_from_file_set(file_set, smaht_key):
+    """Get the library that is associated with a fileset
+
+    Args:
+        file_set(dicr): fileset from portal
+        smaht_key (dict): SMaHT key
+
+    Raises:
+        Exception: Raises an exception when there are multiple libraries associated
+
+    Returns:
+        dict: Library item from portal
+    """
+
+    if len(file_set["libraries"]) > 1:
+        raise Exception(f"Multiple libraries found for fileset {file_set['accession']}")
+    library = ff_utils.get_metadata(
+        file_set["libraries"][0], add_on="frame=raw&datastore=database", key=smaht_key
+    )
+    return library
+
+def get_sample_from_library(library, smaht_key):
+    """Get the sample that is associated with a library
+
+    Args:
+        library (dict): library item from portal
+        smaht_key (dict): SMaHT key
+
+    Raises:
+        Exception: Raises an exception when there are multiple samples associated
+
+    Returns:
+        dict: Sample item from portal
+    """
+    analyte = ff_utils.get_metadata(
+        library["analyte"], add_on="frame=raw&datastore=database", key=smaht_key
+    )
+    if len(analyte["samples"]) > 1:
+        raise Exception(f"Multiple samples found for library {library['accession']}")
+    sample = ff_utils.get_metadata(
+        analyte["samples"][0], add_on="frame=raw&datastore=database", key=smaht_key
+    )
+    return sample
+
+
+def get_latest_mwf(mwf_name, smaht_key):
+    """Get the latest version of the MWF with name `mwf_name`
+
+    Args:
+        mwf_name (string): Name of the MWF
+        smaht_key (dcit): SMaHT key
+
+    Returns:
+        dict: MWF item from portal
+    """
+    query = f"/search/?type=MetaWorkflow&name={mwf_name}"
+    search_results = ff_utils.search_metadata(query, key=smaht_key)
+    
+    if len(search_results) == 0:
+        return None
+    
+    latest_result = search_results[0]
+    if len(search_results) == 1:
+        return latest_result
+    
+    # There are multiple MWFs. Get the latest version
+    for search_result in search_results:
+        if version.parse(latest_result["version"]) < version.parse(search_result["version"]):
+            latest_result = search_result
+    return latest_result
+
+
+def get_mwfr_file_input_arg(argument_name, files):
+    return {"argument_name": argument_name, "argument_type": "file", "files": files}
+
+
+def get_mwfr_parameter_input_arg(argument_name, value):
+    return {
+        "argument_name": argument_name,
+        "argument_type": "parameter",
+        "value": value,
+    }

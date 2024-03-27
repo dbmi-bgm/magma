@@ -1,42 +1,107 @@
-import argparse
+import click
 
-from magma_smaht.create_metawfr import create_meta_workflow_run
+from magma_smaht.create_metawfr import (
+    mwfr_illumina_alignment,
+    mwfr_pacbio_alignment,
+    mwfr_fastqc,
+    mwfr_hic_alignment,
+    mwfr_ont_alignment,
+)
 from magma_smaht.utils import get_auth_key
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Create MetaWorkflowRun")
-    parser.add_argument(
-        "input_item_identifier",
-        help="Identifier for item (e.g. Sample) for input to MetaWorkflowRun",
-    )
-    parser.add_argument(
-        "meta_workflow_identifier",
-        help="MetaWorkflow identifier for input to MetaWorkflowRun",
-    )
-    parser.add_argument(
-        "-e", "--auth-env", default="default", help="Env name in ~/.smaht-keys.json"
-    )
-    parser.add_argument(
-        "--no-post", action="store_true", help="Do not POST the MetaWorkflowRun created"
-    )
-    parser.add_argument(
-        "--no-patch",
-        action="store_true",
-        help="Do not PATCH the input item with the MetaWorkflowRun created",
-    )
-    args = parser.parse_args()
-    auth_key = get_auth_key(args.auth_env)
-    post = not args.no_post
-    patch = not args.no_patch
-    create_meta_workflow_run(
-        args.input_item_identifier,
-        args.meta_workflow_identifier,
-        auth_key,
-        post=post,
-        patch=patch,
-    )
+@click.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-l",
+    "--length-required",
+    required=True,
+    type=int,
+    help="Required length (can be obtained from FastQC output)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def mwfr_illumina_alignment_cmd(fileset_accession, length_required, auth_env):
+    """Creates a MetaWorflowRun item in the portal for Illumina alignment of submitted files within a fileset"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_illumina_alignment(fileset_accession, length_required, smaht_key)
 
 
-if __name__ == "__main__":
-    main()
+@click.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def mwfr_pacbio_alignment_cmd(fileset_accession, auth_env):
+    """Creates a MetaWorflowRun item in the portal for PacBio alignment of submitted files within a fileset"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_pacbio_alignment(fileset_accession, smaht_key)
+
+
+@click.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def mwfr_hic_alignment_cmd(fileset_accession, auth_env):
+    """Creates a MetaWorflowRun item in the portal for HIC alignment of submitted files within a fileset"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_hic_alignment(fileset_accession, smaht_key)
+
+
+@click.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def mwfr_ont_alignment_cmd(fileset_accession, auth_env):
+    """Creates a MetaWorflowRun item in the portal for ONT alignment of submitted files within a fileset"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_ont_alignment(fileset_accession, smaht_key)
+
+
+
+@click.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def mwfr_fastqc_cmd(fileset_accession, auth_env):
+    smaht_key = get_auth_key(auth_env)
+    mwfr_fastqc(fileset_accession, smaht_key)
