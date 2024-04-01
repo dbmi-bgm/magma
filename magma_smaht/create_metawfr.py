@@ -52,6 +52,8 @@ SEQUENCING_CENTER = "sequencing_center"
 CONSORTIA = "consortia"
 FILE_SETS = "file_sets"
 META_WORFLOW_RUN = "MetaWorkflowRun"
+ACCESSION = "accession"
+ALIASES = "aliases"
 
 
 ################################################
@@ -63,7 +65,7 @@ def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
     """Creates a MetaWorflowRun item in the portal for Illumina alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_ILLUMINA, smaht_key)
-    print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
@@ -80,7 +82,7 @@ def mwfr_pacbio_alignment(fileset_accession, smaht_key):
     """Creates a MetaWorflowRun item in the portal for PacBio alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_PACBIO, smaht_key)
-    print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
     mwfr_input = get_core_alignment_mwfr_input(file_set, INPUT_FILES_BAM, smaht_key)
@@ -91,7 +93,7 @@ def mwfr_hic_alignment(fileset_accession, smaht_key):
     """Creates a MetaWorflowRun item in the portal for HI-C alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_HIC, smaht_key)
-    print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
@@ -106,7 +108,7 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     """Creates a MetaWorflowRun item in the portal for ONT alignment of submitted files within a fileset"""
 
     mwf = get_latest_mwf(MWF_NAME_ONT, smaht_key)
-    print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Collect Input
     file_set = get_file_set(fileset_accession, smaht_key)
@@ -129,8 +131,8 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     mwfr_input = [
         get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, fastqs),
         get_mwfr_file_input_arg(INPUT_FILES_BAM, bams),
-        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample["accession"]),
-        get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample[ACCESSION]),
+        get_mwfr_parameter_input_arg(LIBRARY_ID, library[ACCESSION]),
     ]
 
     create_and_post_mwfr(
@@ -142,7 +144,7 @@ def mwfr_fastqc(fileset_accession, smaht_key):
 
     file_set = get_file_set(fileset_accession, smaht_key)
     mwf = get_latest_mwf(MWF_NAME_FASTQC, smaht_key)
-    print(f"Using MetaWorkflow {mwf['accession']} ({mwf['aliases'][0]})")
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Get unaligned reads in the fileset that don't have already QC
     search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=fastq_gz&quality_metrics=No+value"
@@ -168,7 +170,7 @@ def get_common_fields(file_set):
     sequencing_centers = file_set[SUBMISSION_CENTERS]
     if len(sequencing_centers) != 1:
         raise Exception(
-            f"Exacted exactly one submission center for file set {file_set['accession']} expected but got {len(sequencing_centers)}"
+            f"Exacted exactly one submission center for file set {file_set[ACCESSION]} expected but got {len(sequencing_centers)}"
         )
 
     common_fields = {SEQUENCING_CENTER: sequencing_centers[0]}
@@ -199,8 +201,8 @@ def get_core_alignment_mwfr_input_from_readpairs(
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg_1, files_r1),
         get_mwfr_file_input_arg(file_input_arg_2, files_r2),
-        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample["accession"]),
-        get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample[ACCESSION]),
+        get_mwfr_parameter_input_arg(LIBRARY_ID, library[ACCESSION]),
     ]
     return mwfr_input
 
@@ -221,8 +223,8 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg, files),
-        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample["accession"]),
-        get_mwfr_parameter_input_arg(LIBRARY_ID, library["accession"]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample[ACCESSION]),
+        get_mwfr_parameter_input_arg(LIBRARY_ID, library[ACCESSION]),
     ]
     return mwfr_input
 
@@ -238,7 +240,7 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(
-        f"Posted MetaWorkflowRun {mwfr_accession} for Fileset {file_set['accession']}."
+        f"Posted MetaWorkflowRun {mwfr_accession} for Fileset {file_set[ACCESSION]}."
     )
 
 
