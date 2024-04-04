@@ -33,7 +33,7 @@ MWF_NAME_ILLUMINA = "Illumina_alignment_GRCh38"
 MWF_NAME_ONT = "ONT_alignment_GRCh38"
 MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
-MWF_NAME_FASTQC = "short_reads_FASTQ_quality_metrics"
+MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
@@ -146,20 +146,24 @@ def mwfr_fastqc(fileset_accession, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_FASTQC, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
-    # Get unaligned reads in the fileset that don't have already QC
-    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=fastq_gz&quality_metrics=No+value"
-    files_to_run = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
-    files_to_run.reverse()
+    # Get unaligned R2 reads in the fileset that don't have already QC
+    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=fastq_gz&read_pair_number=R2&quality_metrics=No+value"
+    
+    files_to_run_r2 = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
+    files_to_run_r2.reverse()
 
-    if len(files_to_run) == 0:
+    if len(files_to_run_r2) == 0:
         print(f"No files to run for search {search_filter}")
         return
-
+    
+    # Create files list for input args
     files_input = []
-    for dim, file in enumerate(files_to_run):
-        files_input.append({"file": file[UUID], "dimension": f"{dim}"})
+    for dim, file_r2 in enumerate(files_to_run_r2):
+        files_input.append({"file": file_r2[UUID], "dimension": f"1,{dim}"})
+        files_input.append({"file": file_r2["paired_with"][UUID], "dimension": f"0,{dim}"})
+    files_input_list = sorted(files_input, key=lambda x: x['dimension'])
 
-    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, files_input)]
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, files_input_list)]
     create_and_post_mwfr(
         mwf[UUID], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key
     )
@@ -235,7 +239,7 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
     mwfr[FILE_SETS] = [file_set[UUID]]
     mwfr[COMMON_FIELDS] = get_common_fields(file_set)
     #mwfr['final_status'] = 'stopped'
-    # print(mwfr)
+    #pprint.pprint(mwfr)
 
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
@@ -281,8 +285,8 @@ def mwfr_from_input(
 
     for arg in input:
         if arg["argument_name"] == input_arg:
-            input_structure = arg["files"]
-
+            input_structure = generate_input_structure(arg["files"])
+        
     mwf = MetaWorkflow(metawf_meta)
     mwfr = mwf.write_run(input_structure)
 
@@ -292,6 +296,31 @@ def mwfr_from_input(
     mwfr["input"] = input
 
     return mwfr
+
+def generate_input_structure(files):
+    dimension_first_file = files[0]["dimension"] # We assume that this is representative of the input structure
+    if dimension_first_file.count(",") == 0:
+        return list(range(len(files)))
+    elif dimension_first_file.count(",") == 1:
+        dimensions = list(map(lambda x: x["dimension"].split(","), files))
+        dimensions = list(map(lambda x: [int(x[0]), int(x[1])], dimensions))
+        # Example for dimensions: [[1, 0],[0, 0],[1, 1],[0, 1],[1, 2]]
+        dimensions_dict = {}
+        for dim in dimensions:
+            if dim[0] not in dimensions_dict:
+                dimensions_dict[dim[0]] = [dim[1]]
+            else:
+                dimensions_dict[dim[0]].append(dim[1])
+        # Example for dimensions_dict: {0: [0, 1], 1: [0, 1, 2]}
+        input_structure = []
+        for key in sorted(dimensions_dict.keys()):
+            input_structure.append(dimensions_dict[key])
+        # Example for input_structure: [[0, 1], [0, 1, 2]]
+        return input_structure
+    else:
+        print("More than 2 input dimensions are currently no supported")
+        exit()
+
 
 
 def get_metadata(identifier, key):
