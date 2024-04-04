@@ -94,9 +94,9 @@ class FFWfrUtils(object):
             wfr_uuid = job_info.get('WorkflowRun uuid', '')
             if not wfr_uuid:
                 return None
-            self._metadata[job_id] = ff_utils.get_metadata(wfr_uuid, key=self.ff_key)
+            self._metadata[job_id] = ff_utils.get_metadata(wfr_uuid, add_on="frame=raw&datastore=database", key=self.ff_key)
             return self._metadata[job_id]
-
+        
     @property
     def ff_key(self):
         """Get access key for the portal.
