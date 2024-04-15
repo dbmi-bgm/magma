@@ -3,18 +3,36 @@
 Change Log
 ==========
 
+3.2.2
+=====
+* Generalize tibanna-ff dependency
+
+
+3.2.1
+=====
+* Use click ^7.00
+
+
+3.2.0
+=====
+* Automated MetaWorkflowRun creation scripts
+
+
 3.1.0
 =====
 * Add ``mwfr_from_input``
+
 
 3.0.1
 =====
 * Change dcicutils from 8.0.0 to ^8.0.0.
 * Treat QC rulesets as parameters
 
+
 3.0.0
 =====
 * Added magma components for interfacing with SMaHT portal
+
 
 2.1.1
 =====
