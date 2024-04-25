@@ -6,6 +6,7 @@ from magma_smaht.create_metawfr import (
     mwfr_fastqc,
     mwfr_hic_alignment,
     mwfr_ont_alignment,
+    mwfr_cram_to_fastq_paired_end
 )
 from magma_smaht.utils import get_auth_key
 
@@ -105,3 +106,20 @@ def mwfr_ont_alignment_cmd(fileset_accession, auth_env):
 def mwfr_fastqc_cmd(fileset_accession, auth_env):
     smaht_key = get_auth_key(auth_env)
     mwfr_fastqc(fileset_accession, smaht_key)
+
+
+@click.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def mwfr_cram_to_fastq_paired_end_cmd(fileset_accession, auth_env):
+    smaht_key = get_auth_key(auth_env)
+    mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key)

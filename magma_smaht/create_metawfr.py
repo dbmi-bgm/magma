@@ -34,12 +34,14 @@ MWF_NAME_ONT = "ONT_alignment_GRCh38"
 MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
 MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
+MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
 INPUT_FILES_R2_FASTQ_GZ = "input_files_r2_fastq_gz"
 INPUT_FILES_BAM = "input_files_bam"
 INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
+INPUT_FILES_CRAM = "input_files_cram"
 SAMPLE_NAME = "sample_name"
 LENGTH_REQUIRED = "length_required"
 LIBRARY_ID = "library_id"
@@ -137,6 +139,29 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
 
     create_and_post_mwfr(
         mwf["uuid"], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key
+    )
+
+
+def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
+    file_set = get_file_set(fileset_accession, smaht_key)
+    mwf = get_latest_mwf(MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    # Get submitted CRAMs in fileset (can be aligned or unaligned)
+    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=SubmittedFile&file_format.display_title=cram"
+    files_to_run = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
+    files_to_run.reverse()
+
+    if len(files_to_run) == 0:
+        print(f"No files to run for search {search_filter}")
+        return
+    
+    crams = []
+    for dim, file in enumerate(files_to_run):
+        crams.append({"file": file[UUID], "dimension": f"{dim}"})
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_CRAM, crams)]
+    create_and_post_mwfr(
+        mwf[UUID], file_set, INPUT_FILES_CRAM, mwfr_input, smaht_key
     )
 
 

@@ -39,6 +39,7 @@ create-pacbio-mwfr-smaht = "magma_smaht.commands.create_meta_workflow_run:mwfr_p
 create-hic-mwfr-smaht = "magma_smaht.commands.create_meta_workflow_run:mwfr_hic_alignment_cmd"
 create-ont-mwfr-smaht = "magma_smaht.commands.create_meta_workflow_run:mwfr_ont_alignment_cmd"
 create-fastqc-mwfr-smaht = "magma_smaht.commands.create_meta_workflow_run:mwfr_fastqc_cmd"
+associate-conversion-output-with-fileset-smaht = "magma_smaht.commands.wrangler_utils:associate_conversion_output_with_fileset_cmp"
 publish-to-pypi = "dcicutils.scripts.publish_to_pypi:main"
 
 
