@@ -6,7 +6,14 @@ from magma_smaht.wrangler_utils import (
 from magma_smaht.utils import get_auth_key
 
 
-@click.command()
+@click.group()
+@click.help_option("--help", "-h")
+def cli():
+    # create group for all the commands. -h will show all available commands
+    pass
+
+
+@cli.command()
 @click.help_option("--help", "-h")
 @click.option(
     "-m",
@@ -22,6 +29,11 @@ from magma_smaht.utils import get_auth_key
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def associate_conversion_output_with_fileset_cmp(mwfr_identifier, auth_env):
+def cram2fastq_out_to_fileset(mwfr_identifier, auth_env):
+    """Associate CRAM2FASTQ output with fileset"""
     smaht_key = get_auth_key(auth_env)
     associate_conversion_output_with_fileset(mwfr_identifier, smaht_key)
+
+
+if __name__ == "__main__":
+    cli()

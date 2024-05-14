@@ -34,14 +34,18 @@ MWF_NAME_ONT = "ONT_alignment_GRCh38"
 MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
 MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
+MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
 MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
+MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
 INPUT_FILES_R2_FASTQ_GZ = "input_files_r2_fastq_gz"
 INPUT_FILES_BAM = "input_files_bam"
+INPUT_FILES = "input_files"
 INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
 INPUT_FILES_CRAM = "input_files_cram"
+GENOME_REFERENCE_FASTA = "genome_reference_fasta"
 SAMPLE_NAME = "sample_name"
 LENGTH_REQUIRED = "length_required"
 LIBRARY_ID = "library_id"
@@ -59,7 +63,7 @@ ALIASES = "aliases"
 
 
 ################################################
-#   Functions
+#   Alignemnt MetaWorkflowRuns
 ################################################
 
 
@@ -142,6 +146,11 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     )
 
 
+################################################
+#   Conversion MetaWorkflowRuns
+################################################
+
+
 def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
     file_set = get_file_set(fileset_accession, smaht_key)
     mwf = get_latest_mwf(MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, smaht_key)
@@ -155,14 +164,32 @@ def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
     if len(files_to_run) == 0:
         print(f"No files to run for search {search_filter}")
         return
-    
+
+    reference_genome_uuid = None
     crams = []
     for dim, file in enumerate(files_to_run):
         crams.append({"file": file[UUID], "dimension": f"{dim}"})
-    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_CRAM, crams)]
-    create_and_post_mwfr(
-        mwf[UUID], file_set, INPUT_FILES_CRAM, mwfr_input, smaht_key
-    )
+        # We need to assume that all crams have the same reference genome. Fail otherwise
+        current_ref_genome = file.get("reference_genome")
+        if not current_ref_genome:
+            raise Exception(f"File {file[UUID]} has not reference genome")
+        if reference_genome_uuid and current_ref_genome[UUID] != reference_genome_uuid:
+            raise Exception(f"Multiple reference genomes detected.")
+        reference_genome_uuid = current_ref_genome[UUID]
+    reference_genome_item = ff_utils.get_metadata(reference_genome_uuid, smaht_key)
+    reference_genome_file = reference_genome_item["files"][0][UUID]
+    reference_genome = [{"file": reference_genome_file}]
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_CRAM, crams),
+        get_mwfr_file_input_arg(GENOME_REFERENCE_FASTA, reference_genome),
+    ]
+    # pprint.pprint(mwfr_input)
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_CRAM, mwfr_input, smaht_key)
+
+
+################################################
+#   QC MetaWorkflowRuns
+################################################
 
 
 def mwfr_fastqc(fileset_accession, smaht_key):
@@ -172,26 +199,79 @@ def mwfr_fastqc(fileset_accession, smaht_key):
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Get unaligned R2 reads in the fileset that don't have already QC
-    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=fastq_gz&read_pair_number=R2&quality_metrics=No+value"
-    
-    files_to_run_r2 = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
+    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=File&file_format.display_title=fastq_gz&read_pair_number=R2&quality_metrics=No+value"
+
+    files_to_run_r2 = ff_utils.search_metadata(
+        (f"search/{search_filter}"), key=smaht_key
+    )
     files_to_run_r2.reverse()
 
     if len(files_to_run_r2) == 0:
         print(f"No files to run for search {search_filter}")
         return
-    
+
     # Create files list for input args
     files_input = []
     for dim, file_r2 in enumerate(files_to_run_r2):
         files_input.append({"file": file_r2[UUID], "dimension": f"1,{dim}"})
-        files_input.append({"file": file_r2["paired_with"][UUID], "dimension": f"0,{dim}"})
-    files_input_list = sorted(files_input, key=lambda x: x['dimension'])
+        files_input.append(
+            {"file": file_r2["paired_with"][UUID], "dimension": f"0,{dim}"}
+        )
+
+    # # Manual override
+    # files_input = []
+    # files_input.append({"file": "577b4259-81f5-4b0c-9ffc-254696b37493", "dimension": f"1,0"}) # R2
+    # files_input.append({"file": "cc0cb991-5fbc-4166-ad03-eaf8a42de649", "dimension": f"0,0"}) # R1
+
+    files_input_list = sorted(files_input, key=lambda x: x["dimension"])
 
     mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, files_input_list)]
     create_and_post_mwfr(
         mwf[UUID], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key
     )
+
+
+def mwfr_fastq_qc_long_read(fileset_accession, smaht_key):
+    
+    file_set = get_file_set(fileset_accession, smaht_key)
+    mwf = get_latest_mwf(MWF_NAME_FASTQ_LONG_READ, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    # Get unaligned BAMs in the fileset that don't have already QC
+    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=bam&quality_metrics=No+value"
+
+    bams = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
+    bams.reverse()
+
+    if len(bams) == 0:
+        print(f"No files to run for search {search_filter}")
+        return
+
+    # Create files list for input args
+    files_input = []
+    for dim, bam in enumerate(bams):
+        files_input.append({"file": bam[UUID], "dimension": f"{dim}"})
+
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES, files_input)]
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES, mwfr_input, smaht_key)
+
+
+def mwfr_bamqc_short_read(file_accession, smaht_key):
+    mwf = get_latest_mwf(MWF_NAME_BAMQC_SHORT_READ, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+    bam_meta = get_metadata(file_accession, smaht_key)
+    bam = [{"file": bam_meta[UUID], "dimension": "0"}]
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
+    ]
+
+    create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+
+################################################
+#   Helper functions
+################################################
 
 
 def get_common_fields(file_set):
@@ -216,7 +296,8 @@ def get_core_alignment_mwfr_input_from_readpairs(
 
     # We are only retrieving the R2 reads and get the R1 read from the paired_with property
     search_filter = (
-        f"?type=UnalignedReads&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
+        # f"?type=UnalignedReads&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
+        f"?type=File&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
     )
     reads_r2 = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
     reads_r2.reverse()
@@ -261,16 +342,20 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
 
     mwfr = mwfr_from_input(mwf_uuid, mwfr_input, input_arg, smaht_key)
-    mwfr[FILE_SETS] = [file_set[UUID]]
-    mwfr[COMMON_FIELDS] = get_common_fields(file_set)
-    #mwfr['final_status'] = 'stopped'
-    #pprint.pprint(mwfr)
+    if file_set:
+        mwfr[FILE_SETS] = [file_set[UUID]]
+        mwfr[COMMON_FIELDS] = get_common_fields(file_set)
+    # mwfr['final_status'] = 'stopped'
+    # pprint.pprint(mwfr)
 
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
-    print(
-        f"Posted MetaWorkflowRun {mwfr_accession} for Fileset {file_set[ACCESSION]}."
-    )
+    if file_set:
+        print(
+            f"Posted MetaWorkflowRun {mwfr_accession} for Fileset {file_set[ACCESSION]}."
+        )
+    else:
+        print(f"Posted MetaWorkflowRun {mwfr_accession}.")
 
 
 def filter_list_of_dicts(list_of_dics, property_target, target):
@@ -311,7 +396,7 @@ def mwfr_from_input(
     for arg in input:
         if arg["argument_name"] == input_arg:
             input_structure = generate_input_structure(arg["files"])
-        
+
     mwf = MetaWorkflow(metawf_meta)
     mwfr = mwf.write_run(input_structure)
 
@@ -322,8 +407,11 @@ def mwfr_from_input(
 
     return mwfr
 
+
 def generate_input_structure(files):
-    dimension_first_file = files[0]["dimension"] # We assume that this is representative of the input structure
+    dimension_first_file = files[0][
+        "dimension"
+    ]  # We assume that this is representative of the input structure
     if dimension_first_file.count(",") == 0:
         return list(range(len(files)))
     elif dimension_first_file.count(",") == 1:
@@ -345,7 +433,6 @@ def generate_input_structure(files):
     else:
         print("More than 2 input dimensions are currently no supported")
         exit()
-
 
 
 def get_metadata(identifier, key):

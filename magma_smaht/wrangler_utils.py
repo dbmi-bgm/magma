@@ -32,7 +32,6 @@ def associate_conversion_output_with_fileset(mwfr_identifier: str, smaht_key: di
     """
 
     mwfr_meta = ff_utils.get_metadata(mwfr_identifier, smaht_key)
-    pprint.pprint(mwfr_meta)
     if mwfr_meta["final_status"] != COMPLETED:
         print_error_and_exit("MetaWorkflowRun must have final_status 'completed'.")
     if mwfr_meta["meta_workflow"]["name"] not in SUPPORTED_MWF:
