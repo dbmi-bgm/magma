@@ -9,6 +9,7 @@ from dcicutils import ff_utils
 import pprint
 
 from .create_metawfr import MWF_NAME_CRAM_TO_FASTQ_PAIRED_END
+from .reset_metawfr import reset_failed
 
 JsonObject = Dict[str, Any]
 
@@ -21,7 +22,9 @@ COMPLETED = "completed"
 UUID = "uuid"
 
 
-def associate_conversion_output_with_fileset(mwfr_identifier: str, smaht_key: dict) -> None:
+def associate_conversion_output_with_fileset(
+    mwfr_identifier: str, smaht_key: dict
+) -> None:
     """Patches conversion workflow outputs, so that they can be used for downstream processing.
     It associates fastq pairs with each other and patches them to the Fileset that is on the
     MetaWorkflowRun.
@@ -38,7 +41,7 @@ def associate_conversion_output_with_fileset(mwfr_identifier: str, smaht_key: di
         print_error_and_exit(
             f"Metaworkflow {mwfr_meta['meta_workflow']['name']} is not supported."
         )
-    file_sets = mwfr_meta.get("file_sets",[])
+    file_sets = mwfr_meta.get("file_sets", [])
     file_sets_uuids = list(map(lambda f: f[UUID], file_sets))
     if not file_sets_uuids:
         print_error_and_exit("The MetaWorkflowRun has not associated FileSet. Exiting.")
@@ -93,7 +96,9 @@ def associate_paired_fastqs(
         print_error_and_exit(f"Could not identify fastq pair")
 
     if file_r2.get("paired_with") and not force_override:
-        print(f"The 'paired_with' property is already set for file {file_r2[UUID]}. Not patching")
+        print(
+            f"The 'paired_with' property is already set for file {file_r2[UUID]}. Not patching"
+        )
         return
 
     patch_body = {"paired_with": file_r1[UUID]}
@@ -101,6 +106,20 @@ def associate_paired_fastqs(
         ff_utils.patch_metadata(patch_body, obj_id=file_r2[UUID], key=smaht_key)
     except Exception as e:
         raise Exception(f"Item could not be PATCHed: {e}")
+
+
+def reset_failed_mwfrs(mwfr_uuids: list, smaht_key: dict):
+    for id in mwfr_uuids:
+        print(f"Reset MetaWorkflowRun {id}")
+        reset_failed(id, smaht_key)
+
+
+def reset_all_failed_mwfrs(smaht_key: dict):
+    url = "/search/?final_status=failed&type=MetaWorkflowRun"
+    results = ff_utils.search_metadata(url, key=smaht_key)
+    for item in results:
+        print(f"Reset MetaWorkflowRun {item['uuid']}")
+        reset_failed(item["uuid"], smaht_key)
 
 
 def print_error_and_exit(error):
