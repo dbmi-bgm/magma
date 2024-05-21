@@ -39,6 +39,7 @@ def cram2fastq_out_to_fileset(mwfr_identifier, auth_env):
     "--mwfr-uuids",
     required=True,
     type=str,
+    multiple=True,
     help="List of MWFRs to reset",
 )
 @click.option(
