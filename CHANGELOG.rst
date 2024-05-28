@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.2.3
+=====
+* Update `magma_smaht` to accommodate data model change on Library from `analyte` to `analytes`
+
+
 3.2.2
 =====
 * Generalize tibanna-ff dependency
