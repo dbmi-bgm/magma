@@ -186,13 +186,17 @@ def get_sample_from_library(library, smaht_key):
     Returns:
         dict: Sample item from portal
     """
-    analyte = ff_utils.get_metadata(
-        library["analyte"], add_on="frame=raw&datastore=database", key=smaht_key
-    )
-    if len(analyte["samples"]) > 1:
+    samples = []
+    analytes = library.get("analytes", [])
+    for analyte in analytes:
+        item = ff_utils.get_metadata(
+            analyte, add_on="frame=raw&datastore=database", key=smaht_key
+        )
+        samples += item.get("samples", [])
+    if len(set(samples)) > 1:
         raise Exception(f"Multiple samples found for library {library['accession']}")
     sample = ff_utils.get_metadata(
-        analyte["samples"][0], add_on="frame=raw&datastore=database", key=smaht_key
+        samples[0], add_on="frame=raw&datastore=database", key=smaht_key
     )
     return sample
 
