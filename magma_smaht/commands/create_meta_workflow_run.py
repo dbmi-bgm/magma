@@ -8,7 +8,7 @@ from magma_smaht.create_metawfr import (
     mwfr_ont_alignment,
     mwfr_cram_to_fastq_paired_end,
     mwfr_bamqc_short_read,
-    mwfr_fastq_qc_long_read,
+    mwfr_ubam_qc_long_read,
 )
 from magma_smaht.utils import get_auth_key
 
@@ -132,7 +132,7 @@ def qc_short_read_fastq(fileset_accession, auth_env):
 def qc_long_read_ubam(fileset_accession, auth_env):
     """QC MWFR for unaligned long-read BAMs"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_fastq_qc_long_read(fileset_accession, smaht_key)
+    mwfr_ubam_qc_long_read(fileset_accession, smaht_key)
 
 
 @cli.command()

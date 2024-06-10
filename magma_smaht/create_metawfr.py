@@ -231,7 +231,7 @@ def mwfr_fastqc(fileset_accession, smaht_key):
     )
 
 
-def mwfr_fastq_qc_long_read(fileset_accession, smaht_key):
+def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
     
     file_set = get_file_set(fileset_accession, smaht_key)
     mwf = get_latest_mwf(MWF_NAME_FASTQ_LONG_READ, smaht_key)
