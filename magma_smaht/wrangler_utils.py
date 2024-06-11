@@ -134,7 +134,6 @@ def set_property(
     smaht_key: Dict[str, Any]
     ):
     """"Sets a property prop_key to value prop_value for item with uuid."""
-    result = ff_utils.get_metadata(uuid, key=smaht_key)
     patch_body={
         prop_key: prop_value
     }
