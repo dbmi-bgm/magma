@@ -3,7 +3,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, Union
 from packaging import version
 from dcicutils import ff_utils
 import pprint
@@ -125,3 +125,21 @@ def reset_all_failed_mwfrs(smaht_key: dict):
 def print_error_and_exit(error):
     print(error)
     exit()
+
+
+def set_property(
+    uuid: str,
+    prop_key: str,
+    prop_value: Union[str,int],
+    smaht_key: Dict[str, Any]
+    ):
+    """"Sets a property prop_key to value prop_value for item with uuid."""
+    result = ff_utils.get_metadata(uuid, key=smaht_key)
+    patch_body={
+        prop_key: prop_value
+    }
+    try:
+        ff_utils.patch_metadata(patch_body, obj_id=uuid, key=smaht_key)
+        print(f"Set item {uuid} property {prop_key} to {prop_value}.")
+    except Exception as e:
+        raise Exception(f"Item could not be PATCHed: {e}")
