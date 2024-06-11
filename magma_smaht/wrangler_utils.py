@@ -66,7 +66,7 @@ def associate_conversion_output_with_fileset(
             ff_utils.patch_metadata(patch_body, obj_id=fastq_1_uuid, key=smaht_key)
             ff_utils.patch_metadata(patch_body, obj_id=fastq_2_uuid, key=smaht_key)
         except Exception as e:
-            raise Exception(f"Item could not be PATCHed: {e}")
+            raise Exception(f"Item could not be PATCHed: {str(e)}")
 
 
 def associate_paired_fastqs(
@@ -105,7 +105,7 @@ def associate_paired_fastqs(
     try:
         ff_utils.patch_metadata(patch_body, obj_id=file_r2[UUID], key=smaht_key)
     except Exception as e:
-        raise Exception(f"Item could not be PATCHed: {e}")
+        raise Exception(f"Item could not be PATCHed: {str(e)}")
 
 
 def reset_failed_mwfrs(mwfr_uuids: list, smaht_key: dict):
@@ -130,7 +130,7 @@ def print_error_and_exit(error):
 def set_property(
     uuid: str,
     prop_key: str,
-    prop_value: Union[str,int],
+    prop_value: Any,
     smaht_key: Dict[str, Any]
     ):
     """"Sets a property prop_key to value prop_value for item with uuid."""
@@ -141,4 +141,4 @@ def set_property(
         ff_utils.patch_metadata(patch_body, obj_id=uuid, key=smaht_key)
         print(f"Set item {uuid} property {prop_key} to {prop_value}.")
     except Exception as e:
-        raise Exception(f"Item could not be PATCHed: {e}")
+        raise Exception(f"Item could not be PATCHed: {str(e)}")
