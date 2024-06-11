@@ -3,6 +3,13 @@
 Change Log
 ==========
 
+3.3.0
+=====
+* Restructure CLI to create MetaWorkflowRuns and execute wrangler functions
+* Add more MetaWorkflowRun creation functions for SMaHT (CRAM to FASTQ conversion, long read QC)
+* Add wrangler utils for SMaHT
+
+
 3.2.3
 =====
 * Update `magma_smaht` to accommodate data model change on Library from `analyte` to `analytes`
