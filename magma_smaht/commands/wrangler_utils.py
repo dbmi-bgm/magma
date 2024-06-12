@@ -73,8 +73,8 @@ def reset_all_failed_mwfrs(auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-m",
-    "--mwfr-identifier",
+    "-i",
+    "--identifier",
     required=True,
     type=str,
     help="Item UUID",
