@@ -3,6 +3,10 @@
 Change Log
 ==========
 
+3.4.0
+=====
+* Add set_property function to wrangler utils for SMaHT
+
 3.3.0
 =====
 * Restructure CLI to create MetaWorkflowRuns and execute wrangler functions
