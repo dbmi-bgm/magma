@@ -100,10 +100,10 @@ def reset_all_failed_mwfrs(auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def set_property(mwfr_identifier,property_key,property_value,auth_env):
+def set_property(identifier,property_key,property_value,auth_env):
     """Set item property to value by uuid. """
     smaht_key = get_auth_key(auth_env)
-    wrangler_utils.set_property(mwfr_identifier,property_key,property_value,smaht_key)
+    wrangler_utils.set_property(identifier,property_key,property_value,smaht_key)
 
 
 if __name__ == "__main__":
