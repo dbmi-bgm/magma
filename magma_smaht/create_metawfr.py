@@ -37,6 +37,8 @@ MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
 MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
 MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
+MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
+MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
@@ -258,6 +260,32 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
 
 def mwfr_bamqc_short_read(file_accession, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_BAMQC_SHORT_READ, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+    bam_meta = get_metadata(file_accession, smaht_key)
+    bam = [{"file": bam_meta[UUID], "dimension": "0"}]
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
+    ]
+
+    create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+
+def mwfr_ultra_long_bamqc(file_accession, smaht_key):
+    mwf = get_latest_mwf(MWF_NAME_ULTRA_LONG_BAMQC, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+    bam_meta = get_metadata(file_accession, smaht_key)
+    bam = [{"file": bam_meta[UUID], "dimension": "0"}]
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
+    ]
+
+    create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+
+def mwfr_long_read_bamqc(file_accession, smaht_key):
+    mwf = get_latest_mwf(MWF_NAME_LONG_READ_BAMQC, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
     bam_meta = get_metadata(file_accession, smaht_key)
     bam = [{"file": bam_meta[UUID], "dimension": "0"}]

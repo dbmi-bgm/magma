@@ -3,9 +3,14 @@
 Change Log
 ==========
 
-3.5.0
+3.6.0
 =====
 * Support for Pyhthon 3.12.
+
+
+3.5.0
+=====
+* Add commands to create ultra-long BAM QC (ONT) and long-read BAM QC (Pacbio) MetaWorkflowRuns
 
 
 3.4.1
@@ -16,6 +21,7 @@ Change Log
 3.4.0
 =====
 * Add set_property function to wrangler utils for SMaHT
+
 
 3.3.0
 =====
