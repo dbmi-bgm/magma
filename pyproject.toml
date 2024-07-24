@@ -24,7 +24,7 @@ packages = [
 python = ">=3.8.1,<3.13"
 dcicutils = "^8.13.3"
 docutils = ">=0.10,<0.17,"
-tibanna-ff = "3.4.2.1b2"
+tibanna-ff = "3.4.2.1b3"
 packaging = "^23.0"
 click = "^7.1.2"
 
