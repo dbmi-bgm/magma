@@ -92,28 +92,28 @@ lxml = ["lxml"]
 
 [[package]]
 name = "benchmark-4dn"
-version = "0.5.23"
+version = "0.5.24"
 description = "Benchmark functions that returns total space, mem, cpu given input size and parameters for the CWL workflows"
 optional = false
-python-versions = ">=3.5,<4.0"
+python-versions = "<4.0,>=3.5"
 files = [
-    {file = "Benchmark-4dn-0.5.23.tar.gz", hash = "sha256:f17a02c5cd9669f96ea65cb31603106bb77a0a01775b4fd2983a95ab66ee7b7c"},
-    {file = "benchmark_4dn-0.5.23-py3-none-any.whl", hash = "sha256:bd8aa8c252e868f1d7afa2c2003e1148f409e6dc825af5656f37cd5fec30e2c3"},
+    {file = "benchmark_4dn-0.5.24-py3-none-any.whl", hash = "sha256:422189b58337e72e953100d3b00ff4370079dca1cf79f3f6c09ba2c14ad2f645"},
+    {file = "benchmark_4dn-0.5.24.tar.gz", hash = "sha256:1a485e917eb667b2006aaacc37b86b42b0a4a76b1a92bca62530577453b251b2"},
 ]
 
 [[package]]
 name = "boto3"
-version = "1.34.124"
+version = "1.34.147"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.124-py3-none-any.whl", hash = "sha256:549d9735bbb7cf8e1a2f4b3b676be32946717c59f33c47234586835dc904d04e"},
-    {file = "boto3-1.34.124.tar.gz", hash = "sha256:a91ee58fa54b170f17b2e144f038e155f92cf515f1c073ac2595e9ee45f125a8"},
+    {file = "boto3-1.34.147-py3-none-any.whl", hash = "sha256:e1cef9a1a301866bcdee32ae0c699465eb2345f9a8e613a5835821430165ff6d"},
+    {file = "boto3-1.34.147.tar.gz", hash = "sha256:9ec1c6ab22588242a47549f51a63dfc7c21fdf95a94820fc6e629ab060c38bd9"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.124,<1.35.0"
+botocore = ">=1.34.147,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -122,13 +122,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.124"
+version = "1.34.147"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.124-py3-none-any.whl", hash = "sha256:fede092c7f8f414f78f3e7991e47cb0cf2279d90c027606ad7cba79fa370b827"},
-    {file = "botocore-1.34.124.tar.gz", hash = "sha256:3f0bf79c17d656acdfdb53581224f6a38867ff2829f7428c586198f67a90ea26"},
+    {file = "botocore-1.34.147-py3-none-any.whl", hash = "sha256:be94a2f4874b1d1705cae2bd512c475047497379651678593acb6c61c50d91de"},
+    {file = "botocore-1.34.147.tar.gz", hash = "sha256:2e8f000b77e4ca345146cb2edab6403769a517b564f627bb084ab335417f3dbe"},
 ]
 
 [package.dependencies]
@@ -311,32 +311,32 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dcicutils"
-version = "8.11.0"
+version = "8.13.3"
 description = "Utility package for interacting with the 4DN Data Portal and other 4DN resources"
 optional = false
-python-versions = "<3.13,>=3.8"
+python-versions = "<3.13,>=3.8.1"
 files = [
-    {file = "dcicutils-8.11.0-py3-none-any.whl", hash = "sha256:f80a5957f6dfd32a1324828f8594a619aed4b66dea152303485cb589616e2351"},
-    {file = "dcicutils-8.11.0.tar.gz", hash = "sha256:0bb909df77ef634e14e6519fa9b0f42832d40b76b6fd9ecd20ec951c5ed523b1"},
+    {file = "dcicutils-8.13.3-py3-none-any.whl", hash = "sha256:6d4ab34d6590927e3b68dd63d0168b4de3ee9d12b495103153b934ff7569deff"},
+    {file = "dcicutils-8.13.3.tar.gz", hash = "sha256:f9f61297fcf116f0a03ecdab5e73d30c6669770c2707c9909af0b5ff1bc02c9b"},
 ]
 
 [package.dependencies]
 appdirs = ">=1.4.4,<2.0.0"
 aws-requests-auth = ">=0.4.2,<1"
-boto3 = ">=1.34.93,<2.0.0"
-botocore = ">=1.34.93,<2.0.0"
+boto3 = ">=1.34.136,<2.0.0"
+botocore = ">=1.34.136,<2.0.0"
 chardet = ">=5.2.0,<6.0.0"
 docker = ">=4.4.4,<5.0.0"
 elasticsearch = "7.13.4"
 gitpython = ">=3.1.2,<4.0.0"
 jsonc-parser = ">=1.1.5,<2.0.0"
-jsonschema = ">=4.19.0,<5.0.0"
+jsonschema = ">=4.22.0,<5.0.0"
 openpyxl = ">=3.1.2,<4.0.0"
 opensearch-py = ">=2.0.1,<3.0.0"
 PyJWT = ">=2.6.0,<3.0.0"
 pyOpenSSL = ">=23.1.1,<24.0.0"
 pyperclip = ">=1.8.2,<2.0.0"
-pyramid = "1.10.4"
+pyramid = "1.10.8"
 pytz = ">=2020.4"
 PyYAML = ">=6.0.1,<7.0.0"
 redis = ">=4.5.1,<5.0.0"
@@ -347,7 +347,7 @@ structlog = ">=19.2.0,<20.0.0"
 toml = ">=0.10.1,<1"
 tqdm = ">=4.66.2,<5.0.0"
 typing-extensions = ">=3.8"
-urllib3 = ">=1.26.6,<2.0.0"
+urllib3 = ">=1.26.19,<2.0.0"
 webtest = ">=2.0.34,<3.0.0"
 
 [[package]]
@@ -376,8 +376,11 @@ name = "docutils"
 version = "0.20.1"
 description = "Docutils -- Python Documentation Utilities"
 optional = false
-python-versions = "*"
-files = []
+python-versions = ">=3.7"
+files = [
+    {file = "docutils-0.20.1-py3-none-any.whl", hash = "sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6"},
+    {file = "docutils-0.20.1.tar.gz", hash = "sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b"},
+]
 
 [[package]]
 name = "elasticsearch"
@@ -894,13 +897,13 @@ files = [
 
 [[package]]
 name = "pyramid"
-version = "1.10.4"
+version = "1.10.8"
 description = "The Pyramid Web Framework, a Pylons project"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 files = [
-    {file = "pyramid-1.10.4-py2.py3-none-any.whl", hash = "sha256:51bf64647345237c00d2fe558935e0e4938c156e29f17e203457fd8e1d757dc7"},
-    {file = "pyramid-1.10.4.tar.gz", hash = "sha256:d80ccb8cfa550139b50801591d4ca8a5575334adb493c402fce2312f55d07d66"},
+    {file = "pyramid-1.10.8-py2.py3-none-any.whl", hash = "sha256:06e99d3174586921490203288e2cc9cd43d12992306f924ca32a2c59233386a9"},
+    {file = "pyramid-1.10.8.tar.gz", hash = "sha256:b7cd66595bef92f81764b976ddde2b2fa8e4f5f325e02f65f6ec7f3708b29cf6"},
 ]
 
 [package.dependencies]
@@ -915,7 +918,7 @@ webob = ">=1.8.3"
 "zope.interface" = ">=3.8.0"
 
 [package.extras]
-docs = ["Sphinx (>=1.8.1)", "docutils", "pylons-sphinx-latesturl", "pylons-sphinx-themes (>=1.0.8)", "repoze.sphinx.autointerface", "sphinxcontrib-autoprogram"]
+docs = ["Sphinx (>=3.0.0)", "docutils", "pylons-sphinx-latesturl", "pylons-sphinx-themes (>=1.0.8)", "repoze.sphinx.autointerface", "sphinxcontrib-autoprogram"]
 testing = ["coverage", "nose", "virtualenv", "webtest (>=1.3.1)", "zope.component (>=4.0)"]
 
 [[package]]
@@ -1336,40 +1339,40 @@ tests = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest (>=3.3.0)", "pyth
 
 [[package]]
 name = "tibanna"
-version = "5.2.0"
+version = "5.4.1"
 description = "Tibanna runs portable pipelines (in CWL/WDL) on the AWS Cloud."
 optional = false
-python-versions = ">=3.8,<3.12"
+python-versions = "<3.13,>=3.8"
 files = [
-    {file = "tibanna-5.2.0-py3-none-any.whl", hash = "sha256:baddc832a3ff2e29a75409afc3b3be9e75ad4a5a372909ed98847646e0e936ae"},
-    {file = "tibanna-5.2.0.tar.gz", hash = "sha256:6e6d52661667ef245dcaed37a6a5fe73ab2f5f393d2038cfb5380c94ed4d292f"},
+    {file = "tibanna-5.4.1-py3-none-any.whl", hash = "sha256:d94183c27f6cf15daf25ae9e13e90e8ae7137f917ec1155e5eb79ec41ac9fa96"},
+    {file = "tibanna-5.4.1.tar.gz", hash = "sha256:c9406ee6dd9ff3c55f3ea936c74c9cb64903d9c278647ccb9fe4219cd1e55fa8"},
 ]
 
 [package.dependencies]
-Benchmark-4dn = ">=0.5.23,<0.6.0"
-boto3 = ">=1.28.56,<2.0.0"
-botocore = ">=1.31.56,<2.0.0"
+Benchmark-4dn = ">=0.5.24,<0.6.0"
+boto3 = ">=1.34.136,<2.0.0"
+botocore = ">=1.34.136,<2.0.0"
 python-lambda-4dn = "0.12.3"
 tomlkit = ">=0.11.0,<0.12.0"
 
 [[package]]
 name = "tibanna-ff"
-version = "3.4.0"
+version = "3.5.0"
 description = "Tibanna runs portable pipelines (in CWL/WDL) on the AWS Cloud."
 optional = false
-python-versions = "<3.12,>=3.8"
+python-versions = "<3.13,>=3.8.1"
 files = [
-    {file = "tibanna_ff-3.4.0-py3-none-any.whl", hash = "sha256:a460fdb3325e47853a03b48a638b81be8881b92062040358bac29f06f0314cbd"},
-    {file = "tibanna_ff-3.4.0.tar.gz", hash = "sha256:0de476914a8bcfef36d2a0f0f7ce2edd805550e24329565f5b0d6238eec7319e"},
+    {file = "tibanna_ff-3.5.0-py3-none-any.whl", hash = "sha256:968e7dc716817ec980d07dfdeb51504c953f5d517e396641150e2014a98112a9"},
+    {file = "tibanna_ff-3.5.0.tar.gz", hash = "sha256:8702159065964fa25ea393b46ad4c588bc9782c33eb2c9f71950cf5c0d992acf"},
 ]
 
 [package.dependencies]
-boto3 = ">=1.28.56,<2.0.0"
-botocore = ">=1.31.56,<2.0.0"
-dcicutils = ">=8.0.0,<9.0.0"
+boto3 = ">=1.34.147,<2.0.0"
+botocore = ">=1.34.147,<2.0.0"
+dcicutils = ">=8.13.3,<9.0.0"
 pydantic = ">=2.4.2,<3.0.0"
 requests = "2.27.1"
-tibanna = ">=5.1.0,<6.0.0"
+tibanna = ">=5.4.1,<6.0.0"
 tomlkit = ">=0.11.0,<0.12.0"
 
 [[package]]
@@ -1452,13 +1455,13 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "1.26.18"
+version = "1.26.19"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
-    {file = "urllib3-1.26.18-py2.py3-none-any.whl", hash = "sha256:34b97092d7e0a3a8cf7cd10e386f401b3737364026c45e622aa02903dffe0f07"},
-    {file = "urllib3-1.26.18.tar.gz", hash = "sha256:f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"},
+    {file = "urllib3-1.26.19-py2.py3-none-any.whl", hash = "sha256:37a0344459b199fce0e80b0d3569837ec6b6937435c5244e7fd73fa6006830f3"},
+    {file = "urllib3-1.26.19.tar.gz", hash = "sha256:3e3d753a8618b86d7de333b4223005f68720bcd6a7d2bcb9fbd2229ec7c1e429"},
 ]
 
 [package.extras]
@@ -1636,5 +1639,5 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.8,<3.12"
-content-hash = "5f8f332d1f0f40e34c4eb28051c7bf82ceed683c546836e76c4674a9cf2586af"
+python-versions = ">=3.8.1,<3.13"
+content-hash = "f1e2e829081645506f6430c176958740b257e35ff2f534a775e15d11c7c8debe"

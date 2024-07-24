@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.6.0
+=====
+* Support for Pyhthon 3.12.
+
+
 3.5.0
 =====
 * Add commands to create ultra-long BAM QC (ONT) and long-read BAM QC (Pacbio) MetaWorkflowRuns
