@@ -62,6 +62,7 @@ FILE_SETS = "file_sets"
 META_WORFLOW_RUN = "MetaWorkflowRun"
 ACCESSION = "accession"
 ALIASES = "aliases"
+UPLOADED = "uploaded"
 
 
 ################################################
@@ -124,7 +125,12 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     sample = get_sample_from_library(library, smaht_key)
 
     # We are only retrieving the fastq files and get the bams from the derived_from property
-    search_filter = f"?type=UnalignedReads&file_format.display_title=fastq_gz&file_sets.uuid={file_set[UUID]}"
+    search_filter = (
+        "?type=UnalignedReads"
+        f"&file_sets.uuid={file_set[UUID]}"
+        f"&status={UPLOADED}"
+        "&file_format.display_title=fastq_gz"
+    )
     files_fastq = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
     files_fastq.reverse()
 
@@ -159,7 +165,11 @@ def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Get submitted CRAMs in fileset (can be aligned or unaligned)
-    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=SubmittedFile&file_format.display_title=cram"
+    search_filter = (
+        f"?file_sets.uuid={file_set[UUID]}"
+        "&type=SubmittedFile"
+        "&file_format.display_title=cram"
+    )
     files_to_run = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
     files_to_run.reverse()
 
@@ -201,7 +211,14 @@ def mwfr_fastqc(fileset_accession, smaht_key):
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Get unaligned R2 reads in the fileset that don't have already QC
-    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=File&file_format.display_title=fastq_gz&read_pair_number=R2&quality_metrics=No+value"
+    search_filter = (
+        "?type=File"
+        f"&file_sets.uuid={file_set[UUID]}"
+        f"&status={UPLOADED}"
+        "&file_format.display_title=fastq_gz"
+        "&read_pair_number=R2"
+        "&quality_metrics=No+value"
+    )
 
     files_to_run_r2 = ff_utils.search_metadata(
         (f"search/{search_filter}"), key=smaht_key
@@ -240,7 +257,13 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Get unaligned BAMs in the fileset that don't have already QC
-    search_filter = f"?file_sets.uuid={file_set[UUID]}&type=UnalignedReads&file_format.display_title=bam&quality_metrics=No+value"
+    search_filter = (
+        "?type=UnalignedReads"
+        f"&status={UPLOADED}"
+        "&file_format.display_title=bam"
+        "&quality_metrics=No+value"
+        f"&file_sets.uuid={file_set[UUID]}"
+    )
 
     bams = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
     bams.reverse()
@@ -325,7 +348,10 @@ def get_core_alignment_mwfr_input_from_readpairs(
     # We are only retrieving the R2 reads and get the R1 read from the paired_with property
     search_filter = (
         # f"?type=UnalignedReads&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
-        f"?type=File&read_pair_number=R2&file_sets.uuid={file_set[UUID]}"
+        "?type=File"
+        f"&status={UPLOADED}"
+        "&read_pair_number=R2"
+        f"&file_sets.uuid={file_set[UUID]}"
     )
     reads_r2 = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
     reads_r2.reverse()
@@ -350,7 +376,11 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
     library = get_library_from_file_set(file_set, smaht_key)
     sample = get_sample_from_library(library, smaht_key)
 
-    search_filter = f"?type=UnalignedReads&file_sets.uuid={file_set[UUID]}"
+    search_filter = (
+        "?type=UnalignedReads"
+        f"&file_sets.uuid={file_set[UUID]}"
+        f"&status={UPLOADED}"
+    )
     search_result = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
     search_result.reverse()
 
