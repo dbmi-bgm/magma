@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.6.1
+=====
+* Use only input files with status `uploaded` when creating MetaWorkflowRuns. (Ignore `retracted` files)
+
+
 3.6.0
 =====
 * Support for Pyhthon 3.12.
