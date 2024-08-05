@@ -35,6 +35,7 @@ MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
 MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
 MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
+MWF_NAME_FASTQ_SHORT_READ = "short_reads_FASTQ_quality_metrics"
 MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
@@ -277,8 +278,8 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
     for dim, bam in enumerate(bams):
         files_input.append({"file": bam[UUID], "dimension": f"{dim}"})
 
-    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES, files_input)]
-    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES, mwfr_input, smaht_key)
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_BAM, files_input)]
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 def mwfr_bamqc_short_read(file_accession, smaht_key):
@@ -318,6 +319,19 @@ def mwfr_long_read_bamqc(file_accession, smaht_key):
     ]
 
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+
+def mwfr_short_read_fastqc(file_accession, smaht_key):
+    mwf = get_latest_mwf(MWF_NAME_FASTQ_SHORT_READ, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+    fastq_meta = get_metadata(file_accession, smaht_key)
+    fastq = [{"file": fastq_meta[UUID], "dimension": "0"}]
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, fastq),
+    ]
+
+    create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key)
 
 
 ################################################
