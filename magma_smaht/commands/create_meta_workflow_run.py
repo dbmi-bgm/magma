@@ -10,7 +10,8 @@ from magma_smaht.create_metawfr import (
     mwfr_bamqc_short_read,
     mwfr_ubam_qc_long_read,
     mwfr_ultra_long_bamqc,
-    mwfr_long_read_bamqc
+    mwfr_long_read_bamqc,
+    mwfr_short_read_fastqc
 )
 from magma_smaht.utils import get_auth_key
 
@@ -113,10 +114,28 @@ def align_ont(fileset_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def qc_short_read_fastq(fileset_accession, auth_env):
-    """QC MWFR for short-read FASTQs"""
+def qc_short_read_fastq_illumina(fileset_accession, auth_env):
+    """QC MWFR for paired short-read Illumina FASTQs"""
     smaht_key = get_auth_key(auth_env)
     mwfr_fastqc(fileset_accession, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--file-accession", required=True, type=str, help="File accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def qc_short_read_fastq(file_accession, auth_env):
+    """QC MWFR for short-read FASTQs"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_short_read_fastqc(file_accession, smaht_key)
 
 
 @cli.command()

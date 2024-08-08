@@ -3,6 +3,12 @@
 Change Log
 ==========
 
+3.6.2
+=====
+* Add short_reads_FASTQ_quality_metrics MetaWorkflowRun
+* Rename short read FASTQ MetaWorkflowRun specific for Illumina
+
+
 3.6.1
 =====
 * Use only input files with status `uploaded` when creating MetaWorkflowRuns. (Ignore `retracted` files)
