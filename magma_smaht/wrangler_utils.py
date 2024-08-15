@@ -14,8 +14,9 @@ from .reset_metawfr import reset_failed
 JsonObject = Dict[str, Any]
 
 WF_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
+WF_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 
-SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END]
+SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
 
 # Portal constants
 COMPLETED = "completed"
@@ -48,7 +49,7 @@ def associate_conversion_output_with_fileset(
 
     for wfr in mwfr_meta["workflow_runs"]:
         output = wfr["output"]
-        if wfr["name"] != WF_CRAM_TO_FASTQ_PAIRED_END:
+        if wfr["name"] not in [WF_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]:
             continue
         if len(output) != 2:
             print_error_and_exit(f"Expected exactly 2 output files in WorkflowRun")

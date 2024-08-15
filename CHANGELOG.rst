@@ -3,6 +3,13 @@
 Change Log
 ==========
 
+3.7.0
+=====
+* Add support for BAM2FASTQ MetaWorkflowRun
+* Add RNA-Seq alignment MetaWorkflowRun
+
+
+
 3.6.2
 =====
 * Add short_reads_FASTQ_quality_metrics MetaWorkflowRun

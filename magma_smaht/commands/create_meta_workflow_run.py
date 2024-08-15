@@ -2,16 +2,18 @@ import click
 
 from magma_smaht.create_metawfr import (
     mwfr_illumina_alignment,
+    mwfr_rnaseq_alignment,
     mwfr_pacbio_alignment,
     mwfr_fastqc,
     mwfr_hic_alignment,
     mwfr_ont_alignment,
     mwfr_cram_to_fastq_paired_end,
+    mwfr_bam_to_fastq_paired_end,
     mwfr_bamqc_short_read,
     mwfr_ubam_qc_long_read,
     mwfr_ultra_long_bamqc,
     mwfr_long_read_bamqc,
-    mwfr_short_read_fastqc
+    mwfr_short_read_fastqc,
 )
 from magma_smaht.utils import get_auth_key
 
@@ -46,6 +48,31 @@ def align_illumina(fileset_accession, length_required, auth_env):
     """Alignment MWFR for Illumina data"""
     smaht_key = get_auth_key(auth_env)
     mwfr_illumina_alignment(fileset_accession, length_required, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-l",
+    "--sequence-length",
+    required=True,
+    type=int,
+    help="Sequence length (can be obtained from FastQC output)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def align_rnaseq(fileset_accession, sequence_length, auth_env):
+    """Alignment MWFR for RNA-Seq data"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key)
 
 
 @cli.command()
@@ -108,23 +135,29 @@ def align_ont(fileset_accession, auth_env):
     "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
 )
 @click.option(
+    "-c",
+    "--check-lanes",
+    required=True,
+    default=True,
+    type=bool,
+    help="Wether to check lanes or not (different MWFs)",
+)
+@click.option(
     "-e",
     "--auth-env",
     required=True,
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def qc_short_read_fastq_illumina(fileset_accession, auth_env):
+def qc_short_read_fastq_illumina(fileset_accession, check_lanes, auth_env):
     """QC MWFR for paired short-read Illumina FASTQs"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_fastqc(fileset_accession, smaht_key)
+    mwfr_fastqc(fileset_accession, check_lanes, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
-@click.option(
-    "-f", "--file-accession", required=True, type=str, help="File accession"
-)
+@click.option("-f", "--file-accession", required=True, type=str, help="File accession")
 @click.option(
     "-e",
     "--auth-env",
@@ -220,6 +253,24 @@ def conversion_cram_to_fastq(fileset_accession, auth_env):
     """Conversion MWFR for CRAM to FASTQ (paired-end)"""
     smaht_key = get_auth_key(auth_env)
     mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def conversion_bam_to_fastq(fileset_accession, auth_env):
+    """Conversion MWFR for BAM to FASTQ (paired-end)"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key)
 
 
 if __name__ == "__main__":
