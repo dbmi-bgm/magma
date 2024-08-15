@@ -201,6 +201,29 @@ def get_sample_from_library(library, smaht_key):
     return sample
 
 
+def get_library_preparation_from_library(library, smaht_key):
+    """Get the library preparation that is associated with a library
+
+    Args:
+        library (dict): library item from portal
+        smaht_key (dict): SMaHT key
+
+    Raises:
+        Exception: Raises an exception when there is no library preparation
+
+    Returns:
+        dict: library_preparation item from portal
+    """
+    library_preparation = library.get("library_preparation")
+    if not library_preparation:
+        raise Exception(f"No library preparation found for library {library['accession']}")
+
+    library_preparation_item = ff_utils.get_metadata(
+            library_preparation, add_on="frame=raw&datastore=database", key=smaht_key
+        )
+    return library_preparation_item
+
+
 def get_latest_mwf(mwf_name, smaht_key):
     """Get the latest version of the MWF with name `mwf_name`
 

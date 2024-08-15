@@ -26,8 +26,8 @@ def cli():
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def cram2fastq_out_to_fileset(mwfr_identifier, auth_env):
-    """Associate CRAM2FASTQ output with fileset"""
+def associate_conversion_output_with_fileset(mwfr_identifier, auth_env):
+    """Associate CRAM2FASTQ or BAM2FASTQ output with fileset"""
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.associate_conversion_output_with_fileset(mwfr_identifier, smaht_key)
 

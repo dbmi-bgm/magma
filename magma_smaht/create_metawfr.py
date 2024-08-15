@@ -22,6 +22,7 @@ from magma_smaht.utils import (
     get_latest_mwf,
     get_file_set,
     get_library_from_file_set,
+    get_library_preparation_from_library,
     get_sample_from_library,
     get_mwfr_file_input_arg,
     get_mwfr_parameter_input_arg,
@@ -30,6 +31,7 @@ from magma_smaht.utils import (
 # MetaWorkflow names are used to get the latest version.
 # We assume that they don't change!
 MWF_NAME_ILLUMINA = "Illumina_alignment_GRCh38"
+MWF_NAME_RNASEQ = "RNA-seq_bulk_short_reads_GRCh38"
 MWF_NAME_ONT = "ONT_alignment_GRCh38"
 MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
@@ -37,6 +39,7 @@ MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
 MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
 MWF_NAME_FASTQ_SHORT_READ = "short_reads_FASTQ_quality_metrics"
 MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
+MWF_NAME_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
@@ -52,6 +55,9 @@ GENOME_REFERENCE_FASTA = "genome_reference_fasta"
 SAMPLE_NAME = "sample_name"
 LENGTH_REQUIRED = "length_required"
 LIBRARY_ID = "library_id"
+GENOME_REFERENCE_STAR = "genome_reference_star"
+IS_STRANDED = "is_stranded"
+STRANDEDNESS = "strandedness"
 
 # Schema fields
 COMMON_FIELDS = "common_fields"
@@ -64,6 +70,8 @@ META_WORFLOW_RUN = "MetaWorkflowRun"
 ACCESSION = "accession"
 ALIASES = "aliases"
 UPLOADED = "uploaded"
+FIRST_STRANDED = "First Stranded"
+SECOND_STRANDED = "Second Stranded"
 
 
 ################################################
@@ -83,6 +91,56 @@ def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
     )
     # Illumina specific input
     mwfr_input.append(get_mwfr_parameter_input_arg(LENGTH_REQUIRED, length_required))
+    create_and_post_mwfr(
+        mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key
+    )
+
+
+def mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key):
+    """Creates a MetaWorflowRun item in the portal for RNA-Seq alignment of submitted files within a fileset"""
+
+    mwf = get_latest_mwf(MWF_NAME_RNASEQ, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    file_set = get_file_set(fileset_accession, smaht_key)
+    mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
+        file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
+    )
+    # RNA-Seq specific input
+    genome_reference_star_alias = f"smaht:ReferenceFile-star-index-no-alt-no-hla-gencode45-oh{sequence_length-1}_GCA_000001405.15_GRCh38_no_decoy"
+    search_reference_file = "?type=File" f"&aliases={genome_reference_star_alias}"
+    reference_files = ff_utils.search_metadata(
+        f"/search/{search_reference_file}", key=smaht_key
+    )
+    if len(reference_files) != 1:
+        raise Exception(
+            f"Did not find exactly one genome_reference_star reference file. Search was: {search_reference_file}"
+        )
+    genome_reference_star_file = reference_files[0]
+
+    mwfr_input.append(
+        get_mwfr_file_input_arg(
+            GENOME_REFERENCE_STAR,
+            [{"file": genome_reference_star_file[UUID]}],
+        )
+    )
+
+    # Get strandedness info
+    library = get_library_from_file_set(file_set, smaht_key)
+    library_preparation = get_library_preparation_from_library(library, smaht_key)
+    strand = library_preparation["strand"]
+
+    if strand in [FIRST_STRANDED, SECOND_STRANDED]:
+        strandedness_mapping = {FIRST_STRANDED: "rf", SECOND_STRANDED: "fr"}
+        mwfr_input.extend(
+            [
+                get_mwfr_parameter_input_arg(IS_STRANDED, "true"),
+                get_mwfr_parameter_input_arg(
+                    STRANDEDNESS, strandedness_mapping[strand]
+                ),
+            ]
+        )
+
     create_and_post_mwfr(
         mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key
     )
@@ -196,8 +254,35 @@ def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
         get_mwfr_file_input_arg(INPUT_FILES_CRAM, crams),
         get_mwfr_file_input_arg(GENOME_REFERENCE_FASTA, reference_genome),
     ]
-    # pprint.pprint(mwfr_input)
     create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_CRAM, mwfr_input, smaht_key)
+
+
+def mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key):
+    file_set = get_file_set(fileset_accession, smaht_key)
+    mwf = get_latest_mwf(MWF_NAME_BAM_TO_FASTQ_PAIRED_END, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    # Get submitted CRAMs in fileset (can be aligned or unaligned)
+    search_filter = (
+        f"?file_sets.uuid={file_set[UUID]}"
+        "&type=SubmittedFile"
+        "&file_format.display_title=bam"
+    )
+    files_to_run = ff_utils.search_metadata((f"search/{search_filter}"), key=smaht_key)
+    files_to_run.reverse()
+
+    if len(files_to_run) == 0:
+        print(f"No files to run for search {search_filter}")
+        return
+
+    bams = []
+    for dim, file in enumerate(files_to_run):
+        bams.append({"file": file[UUID], "dimension": f"{dim}"})
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bams),
+    ]
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 ################################################
@@ -205,10 +290,15 @@ def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
 ################################################
 
 
-def mwfr_fastqc(fileset_accession, smaht_key):
+def mwfr_fastqc(fileset_accession, check_lanes, smaht_key):
 
     file_set = get_file_set(fileset_accession, smaht_key)
-    mwf = get_latest_mwf(MWF_NAME_FASTQC, smaht_key)
+    if check_lanes:
+        print(f"Using MetaWorkflow {MWF_NAME_FASTQC}")
+        mwf = get_latest_mwf(MWF_NAME_FASTQC, smaht_key)
+    else:
+        print(f"Using MetaWorkflow {MWF_NAME_FASTQ_SHORT_READ}")
+        mwf = get_latest_mwf(MWF_NAME_FASTQ_SHORT_READ, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     # Get unaligned R2 reads in the fileset that don't have already QC
@@ -245,6 +335,11 @@ def mwfr_fastqc(fileset_accession, smaht_key):
 
     files_input_list = sorted(files_input, key=lambda x: x["dimension"])
 
+    # If we are not running the Illumina MWF, reformat to 1D list
+    if not check_lanes:
+        for i, inp in enumerate(files_input_list):
+            inp["dimension"] = f"{i}"
+
     mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, files_input_list)]
     create_and_post_mwfr(
         mwf[UUID], file_set, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key
@@ -252,7 +347,7 @@ def mwfr_fastqc(fileset_accession, smaht_key):
 
 
 def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
-    
+
     file_set = get_file_set(fileset_accession, smaht_key)
     mwf = get_latest_mwf(MWF_NAME_FASTQ_LONG_READ, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
@@ -391,9 +486,7 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
     sample = get_sample_from_library(library, smaht_key)
 
     search_filter = (
-        "?type=UnalignedReads"
-        f"&file_sets.uuid={file_set[UUID]}"
-        f"&status={UPLOADED}"
+        "?type=UnalignedReads" f"&file_sets.uuid={file_set[UUID]}" f"&status={UPLOADED}"
     )
     search_result = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
     search_result.reverse()
