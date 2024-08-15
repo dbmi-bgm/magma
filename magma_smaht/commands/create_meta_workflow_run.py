@@ -140,7 +140,7 @@ def align_ont(fileset_accession, auth_env):
     required=True,
     default=True,
     type=bool,
-    help="Wether to check lanes or not (different MWFs)",
+    help="Whether to check lanes or not (different MWFs)",
 )
 @click.option(
     "-e",
