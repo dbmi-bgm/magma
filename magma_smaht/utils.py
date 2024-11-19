@@ -79,7 +79,7 @@ def chunk_ids(ids):
     result = []
     chunk_size = 5
     for idx in range(0, len(ids), chunk_size):
-        result.append(ids[idx: idx + chunk_size])
+        result.append(ids[idx : idx + chunk_size])
     return result
 
 
@@ -173,32 +173,43 @@ def get_library_from_file_set(file_set, smaht_key):
     )
     return library
 
-def get_sample_from_library(library, smaht_key):
-    """Get the sample that is associated with a library
+
+def get_samples_from_library(library, smaht_key):
+    """Get the samples that are associated with a library
 
     Args:
         library (dict): library item from portal
         smaht_key (dict): SMaHT key
 
-    Raises:
-        Exception: Raises an exception when there are multiple samples associated
-
     Returns:
-        dict: Sample item from portal
+        list: Sample items from portal
     """
-    samples = []
+    sample_uuids = []
     analytes = library.get("analytes", [])
     for analyte in analytes:
         item = ff_utils.get_metadata(
             analyte, add_on="frame=raw&datastore=database", key=smaht_key
         )
-        samples += item.get("samples", [])
-    if len(set(samples)) > 1:
-        raise Exception(f"Multiple samples found for library {library['accession']}")
-    sample = ff_utils.get_metadata(
-        samples[0], add_on="frame=raw&datastore=database", key=smaht_key
-    )
-    return sample
+        sample_uuids += item.get("samples", [])
+
+    samples = []
+    for uuid in sample_uuids:
+        sample = ff_utils.get_metadata(
+            uuid, add_on="frame=raw&datastore=database", key=smaht_key
+        )
+        samples.append(sample)
+
+    return samples
+
+
+def get_sample_name_for_mwfr(samples):
+    """Get the sample_name that is added to the MWFR
+
+    Args:
+        samples (list): List of samples from portal
+    """
+    accessions = map(lambda s: s["accession"], samples)
+    return "_".join(accessions)
 
 
 def get_library_preparation_from_library(library, smaht_key):
@@ -216,11 +227,13 @@ def get_library_preparation_from_library(library, smaht_key):
     """
     library_preparation = library.get("library_preparation")
     if not library_preparation:
-        raise Exception(f"No library preparation found for library {library['accession']}")
+        raise Exception(
+            f"No library preparation found for library {library['accession']}"
+        )
 
     library_preparation_item = ff_utils.get_metadata(
-            library_preparation, add_on="frame=raw&datastore=database", key=smaht_key
-        )
+        library_preparation, add_on="frame=raw&datastore=database", key=smaht_key
+    )
     return library_preparation_item
 
 
@@ -236,17 +249,19 @@ def get_latest_mwf(mwf_name, smaht_key):
     """
     query = f"/search/?type=MetaWorkflow&name={mwf_name}"
     search_results = ff_utils.search_metadata(query, key=smaht_key)
-    
+
     if len(search_results) == 0:
         return None
-    
+
     latest_result = search_results[0]
     if len(search_results) == 1:
         return latest_result
-    
+
     # There are multiple MWFs. Get the latest version
     for search_result in search_results:
-        if version.parse(latest_result["version"]) < version.parse(search_result["version"]):
+        if version.parse(latest_result["version"]) < version.parse(
+            search_result["version"]
+        ):
             latest_result = search_result
     return latest_result
 

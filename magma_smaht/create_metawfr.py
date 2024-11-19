@@ -23,7 +23,8 @@ from magma_smaht.utils import (
     get_file_set,
     get_library_from_file_set,
     get_library_preparation_from_library,
-    get_sample_from_library,
+    get_samples_from_library,
+    get_sample_name_for_mwfr,
     get_mwfr_file_input_arg,
     get_mwfr_parameter_input_arg,
 )
@@ -107,7 +108,7 @@ def mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key):
         file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
     # RNA-Seq specific input
-    genome_reference_star_alias = f"smaht:ReferenceFile-star-index-no-alt-no-hla-gencode45-oh{sequence_length-1}_GCA_000001405.15_GRCh38_no_decoy"
+    genome_reference_star_alias = f"smaht:ReferenceFile-star-index-no-alt-no-hla-gencode47-oh{sequence_length-1}_GCA_000001405.15_GRCh38_no_decoy"
     search_reference_file = "?type=File" f"&aliases={genome_reference_star_alias}"
     reference_files = ff_utils.search_metadata(
         f"/search/{search_reference_file}", key=smaht_key
@@ -181,7 +182,9 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     # Collect Input
     file_set = get_file_set(fileset_accession, smaht_key)
     library = get_library_from_file_set(file_set, smaht_key)
-    sample = get_sample_from_library(library, smaht_key)
+    samples = get_samples_from_library(library, smaht_key)
+    sample_name = get_sample_name_for_mwfr(samples)
+
 
     # We are only retrieving the fastq files and get the bams from the derived_from property
     search_filter = (
@@ -204,7 +207,7 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     mwfr_input = [
         get_mwfr_file_input_arg(INPUT_FILES_FASTQ_GZ, fastqs),
         get_mwfr_file_input_arg(INPUT_FILES_BAM, bams),
-        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample[ACCESSION]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample_name),
         get_mwfr_parameter_input_arg(LIBRARY_ID, library[ACCESSION]),
     ]
 
@@ -308,7 +311,7 @@ def mwfr_fastqc(fileset_accession, check_lanes, smaht_key):
         f"&status={UPLOADED}"
         "&file_format.display_title=fastq_gz"
         "&read_pair_number=R2"
-        "&quality_metrics=No+value"
+        #"&quality_metrics=No+value"
     )
 
     files_to_run_r2 = ff_utils.search_metadata(
@@ -375,6 +378,23 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
 
     mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_BAM, files_input)]
     create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+####
+def mwfr_custom_qc(file_accession, smaht_key):
+    #mwf_name = "CUSTOM_long-reads_mosdepth_verifybamid2"
+    mwf_name = "CUSTOM_short-reads_mosdepth_verifybamid2"
+    mwf = get_latest_mwf(mwf_name, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+    bam_meta = get_metadata(file_accession, smaht_key)
+    bam = [{"file": bam_meta[UUID], "dimension": "0"}]
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
+    ]
+
+    create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+###
 
 
 def mwfr_bamqc_short_read(file_accession, smaht_key):
@@ -452,7 +472,8 @@ def get_core_alignment_mwfr_input_from_readpairs(
 ):
 
     library = get_library_from_file_set(file_set, smaht_key)
-    sample = get_sample_from_library(library, smaht_key)
+    samples = get_samples_from_library(library, smaht_key)
+    sample_name = get_sample_name_for_mwfr(samples)
 
     # We are only retrieving the R2 reads and get the R1 read from the paired_with property
     search_filter = (
@@ -474,7 +495,7 @@ def get_core_alignment_mwfr_input_from_readpairs(
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg_1, files_r1),
         get_mwfr_file_input_arg(file_input_arg_2, files_r2),
-        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample[ACCESSION]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample_name),
         get_mwfr_parameter_input_arg(LIBRARY_ID, library[ACCESSION]),
     ]
     return mwfr_input
@@ -483,7 +504,8 @@ def get_core_alignment_mwfr_input_from_readpairs(
 def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 
     library = get_library_from_file_set(file_set, smaht_key)
-    sample = get_sample_from_library(library, smaht_key)
+    samples = get_samples_from_library(library, smaht_key)
+    sample_name = get_sample_name_for_mwfr(samples)
 
     search_filter = (
         "?type=UnalignedReads" f"&file_sets.uuid={file_set[UUID]}" f"&status={UPLOADED}"
@@ -498,7 +520,7 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
 
     mwfr_input = [
         get_mwfr_file_input_arg(file_input_arg, files),
-        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample[ACCESSION]),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, sample_name),
         get_mwfr_parameter_input_arg(LIBRARY_ID, library[ACCESSION]),
     ]
     return mwfr_input

@@ -58,6 +58,29 @@ def reset_failed_mwfrs(mwfr_uuids, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
+    "-m",
+    "--mwfr-uuids",
+    required=True,
+    type=str,
+    multiple=True,
+    help="List of MWFRs to reset",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def reset_mwfrs(mwfr_uuids, auth_env):
+    """Reset a list of MetaWorkflowRuns"""
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.reset_mwfrs(mwfr_uuids, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
     "-e",
     "--auth-env",
     required=True,
@@ -68,6 +91,35 @@ def reset_all_failed_mwfrs(auth_env):
     """Reset all failed MetaWorkflowRuns on the portal"""
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.reset_all_failed_mwfrs(smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--file-accession",
+    required=True,
+    type=str,
+    help="File accession",
+)
+@click.option(
+    "-m",
+    "--mode",
+    required=True,
+    type=click.Choice(['keep_oldest', 'keep_newest']),
+    help="Merge mode",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def merge_qc_items(file_accession, mode, auth_env):
+    """Reset a list of MetaWorkflowRuns"""
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.merge_qc_items(file_accession, mode, smaht_key)
 
 
 @cli.command()

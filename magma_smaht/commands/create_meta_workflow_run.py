@@ -14,6 +14,7 @@ from magma_smaht.create_metawfr import (
     mwfr_ultra_long_bamqc,
     mwfr_long_read_bamqc,
     mwfr_short_read_fastqc,
+    mwfr_custom_qc
 )
 from magma_smaht.utils import get_auth_key
 
@@ -203,6 +204,22 @@ def qc_short_read_bam(file_accession, auth_env):
     """QC MWFR for aligned short-read BAMs"""
     smaht_key = get_auth_key(auth_env)
     mwfr_bamqc_short_read(file_accession, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option("-f", "--file-accession", required=True, type=str, help="File accession")
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def custom_qc(file_accession, auth_env):
+    """Custom QC MWFR """
+    smaht_key = get_auth_key(auth_env)
+    mwfr_custom_qc(file_accession, smaht_key)
 
 
 @cli.command()
