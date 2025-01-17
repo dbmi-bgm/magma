@@ -3,11 +3,20 @@
 Change Log
 ==========
 
+3.8.0
+=====
+* Added possibility to overwrite exsting QCs when running a standalone QC workflow.
+* In QC workflows, it is now possible to specify multiple files or filesets at once. MetaworkflowRuns are created for each file or fileset.
+* Added a `custom_qc`` function. It has currently no functionality, but it can be used when custom MWFs are created by bioinformatics and need to be run
+* Added function to reset a list of MetaWorkflowRuns
+* Added function to merge QC items.
+* Updated RNA-specific input to Gencode 47
+
+
 3.7.0
 =====
 * Add support for BAM2FASTQ MetaWorkflowRun
 * Add RNA-Seq alignment MetaWorkflowRun
-
 
 
 3.6.2
