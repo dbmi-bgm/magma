@@ -185,7 +185,6 @@ def mwfr_ont_alignment(fileset_accession, smaht_key):
     samples = get_samples_from_library(library, smaht_key)
     sample_name = get_sample_name_for_mwfr(samples)
 
-
     # We are only retrieving the fastq files and get the bams from the derived_from property
     search_filter = (
         "?type=UnalignedReads"
@@ -293,7 +292,7 @@ def mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key):
 ################################################
 
 
-def mwfr_fastqc(fileset_accession, check_lanes, smaht_key):
+def mwfr_fastqc(fileset_accession, check_lanes, replace_existing_qc, smaht_key):
 
     file_set = get_file_set(fileset_accession, smaht_key)
     if check_lanes:
@@ -311,7 +310,7 @@ def mwfr_fastqc(fileset_accession, check_lanes, smaht_key):
         f"&status={UPLOADED}"
         "&file_format.display_title=fastq_gz"
         "&read_pair_number=R2"
-        #"&quality_metrics=No+value"
+        # "&quality_metrics=No+value"
     )
 
     files_to_run_r2 = ff_utils.search_metadata(
@@ -331,6 +330,20 @@ def mwfr_fastqc(fileset_accession, check_lanes, smaht_key):
             {"file": file_r2["paired_with"][UUID], "dimension": f"0,{dim}"}
         )
 
+        if replace_existing_qc:
+            print(f"QC reset for {file_r2[UUID]}")
+            ff_utils.patch_metadata(
+                {},
+                obj_id=f"{file_r2[UUID]}?delete_fields=quality_metrics",
+                key=smaht_key,
+            )
+            print(f"QC reset for {file_r2['paired_with'][UUID]}")
+            ff_utils.patch_metadata(
+                {},
+                obj_id=f"{file_r2['paired_with'][UUID]}?delete_fields=quality_metrics",
+                key=smaht_key,
+            )
+
     # # Manual override
     # files_input = []
     # files_input.append({"file": "577b4259-81f5-4b0c-9ffc-254696b37493", "dimension": f"1,0"}) # R2
@@ -349,7 +362,7 @@ def mwfr_fastqc(fileset_accession, check_lanes, smaht_key):
     )
 
 
-def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
+def mwfr_ubam_qc_long_read(fileset_accession, replace_existing_qc, smaht_key):
 
     file_set = get_file_set(fileset_accession, smaht_key)
     mwf = get_latest_mwf(MWF_NAME_FASTQ_LONG_READ, smaht_key)
@@ -360,7 +373,7 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
         "?type=UnalignedReads"
         f"&status={UPLOADED}"
         "&file_format.display_title=bam"
-        "&quality_metrics=No+value"
+        # "&quality_metrics=No+value"
         f"&file_sets.uuid={file_set[UUID]}"
     )
 
@@ -371,6 +384,13 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
         print(f"No files to run for search {search_filter}")
         return
 
+    if replace_existing_qc:
+        for bam in bams:
+            print(f"QC reset for {bam['uuid']}")
+            ff_utils.patch_metadata(
+                {}, obj_id=f"{bam['uuid']}?delete_fields=quality_metrics", key=smaht_key
+            )
+
     # Create files list for input args
     files_input = []
     for dim, bam in enumerate(bams):
@@ -379,20 +399,24 @@ def mwfr_ubam_qc_long_read(fileset_accession, smaht_key):
     mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_BAM, files_input)]
     create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
+
 ####
 def mwfr_custom_qc(file_accession, smaht_key):
-    #mwf_name = "CUSTOM_long-reads_mosdepth_verifybamid2"
-    mwf_name = "CUSTOM_short-reads_mosdepth_verifybamid2"
-    mwf = get_latest_mwf(mwf_name, smaht_key)
-    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
-    bam_meta = get_metadata(file_accession, smaht_key)
-    bam = [{"file": bam_meta[UUID], "dimension": "0"}]
+    # Placeholder for custom QC runs
+    return
+    # mwf_name = "CUSTOM_long-reads_mosdepth_verifybamid2"
+    # # mwf_name = "CUSTOM_short-reads_mosdepth_verifybamid2"
+    # mwf = get_latest_mwf(mwf_name, smaht_key)
+    # print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+    # bam_meta = get_metadata(file_accession, smaht_key)
+    # bam = [{"file": bam_meta[UUID], "dimension": "0"}]
 
-    mwfr_input = [
-        get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
-    ]
+    # mwfr_input = [
+    #     get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
+    # ]
 
-    create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+    # create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
 
 ###
 
@@ -410,7 +434,7 @@ def mwfr_bamqc_short_read(file_accession, smaht_key):
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
-def mwfr_ultra_long_bamqc(file_accession, smaht_key):
+def mwfr_ultra_long_bamqc(file_accession, replace_existing_qc, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_ULTRA_LONG_BAMQC, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
     bam_meta = get_metadata(file_accession, smaht_key)
@@ -420,10 +444,18 @@ def mwfr_ultra_long_bamqc(file_accession, smaht_key):
         get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
     ]
 
+    if replace_existing_qc:
+        print(f"QC reset for {file_accession}")
+        ff_utils.patch_metadata(
+            {},
+            obj_id=f"{bam_meta[UUID]}?delete_fields=quality_metrics",
+            key=smaht_key,
+        )
+
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
-def mwfr_long_read_bamqc(file_accession, smaht_key):
+def mwfr_long_read_bamqc(file_accession, replace_existing_qc, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_LONG_READ_BAMQC, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
     bam_meta = get_metadata(file_accession, smaht_key)
@@ -432,6 +464,14 @@ def mwfr_long_read_bamqc(file_accession, smaht_key):
     mwfr_input = [
         get_mwfr_file_input_arg(INPUT_FILES_BAM, bam),
     ]
+
+    if replace_existing_qc:
+        print(f"QC reset for {file_accession}")
+        ff_utils.patch_metadata(
+            {},
+            obj_id=f"{bam_meta[UUID]}?delete_fields=quality_metrics",
+            key=smaht_key,
+        )
 
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
 

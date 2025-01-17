@@ -144,7 +144,7 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
     file = ff_utils.get_metadata(file_accession, smaht_key)
     file_uuid = file["uuid"]
     file_qms = file.get("quality_metrics", [])
-    if len(file_qms) < 0:
+    if len(file_qms) < 2:
         print(f"ERROR: Not enough QM items present for merging.")
         return
     

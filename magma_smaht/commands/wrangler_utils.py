@@ -97,10 +97,11 @@ def reset_all_failed_mwfrs(auth_env):
 @click.help_option("--help", "-h")
 @click.option(
     "-f",
-    "--file-accession",
+    "--file-accessions",
     required=True,
     type=str,
-    help="File accession",
+    multiple=True,
+    help="File accessions",
 )
 @click.option(
     "-m",
@@ -116,10 +117,17 @@ def reset_all_failed_mwfrs(auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def merge_qc_items(file_accession, mode, auth_env):
-    """Reset a list of MetaWorkflowRuns"""
+def merge_qc_items(file_accessions, mode, auth_env):
+    """
+    Merged QC items of a file.
+    Mode "keep_oldest" will merge the qc values and patch them to the oldest qc_item. The other qc_items will be removed from the file
+    Mode "keep_newest" will merge the qc values and patch them to the newest qc_item. The other qc_items will be removed from the file
+    In general, QC values of newer QC items will overwrite existing QC values of older items
+    """
     smaht_key = get_auth_key(auth_env)
-    wrangler_utils.merge_qc_items(file_accession, mode, smaht_key)
+    for f in file_accessions:
+        print(f"Working on {f}")
+        wrangler_utils.merge_qc_items(f, mode, smaht_key)
 
 
 @cli.command()
