@@ -11,6 +11,7 @@ Change Log
 * Added function to reset a list of MetaWorkflowRuns
 * Added function to merge QC items.
 * Updated RNA-specific input to Gencode 47
+* Added function to archive unaligned reads within a fileset
 
 
 3.7.0

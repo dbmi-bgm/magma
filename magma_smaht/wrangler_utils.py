@@ -11,6 +11,10 @@ import pprint
 from .create_metawfr import MWF_NAME_CRAM_TO_FASTQ_PAIRED_END
 from .reset_metawfr import reset_failed, reset_all
 
+from magma_smaht.utils import (
+    get_file_set,
+)
+
 JsonObject = Dict[str, Any]
 
 WF_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
@@ -130,7 +134,7 @@ def reset_all_failed_mwfrs(smaht_key: dict):
 
 
 def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
-    """Merged QC items of a file.
+    """Merge QC items of a file.
     Mode "keep_oldest" will merge the qc values and patch them to the oldest qc_item. The other qc_items will be removed from the file
     Mode "keep_newest" will merge the qc values and patch them to the newest qc_item. The other qc_items will be removed from the file
     In general, QC values of newer QC items will overwrite existing QC values of older items
@@ -140,15 +144,17 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
         mode (str): "keep_oldest" or "keep_newest"
         smaht_key (dict): Auth key
     """
-    qc_values_dict = {} # This will hold the merged values
+    qc_values_dict = {}  # This will hold the merged values
     file = ff_utils.get_metadata(file_accession, smaht_key)
     file_uuid = file["uuid"]
     file_qms = file.get("quality_metrics", [])
     if len(file_qms) < 2:
         print(f"ERROR: Not enough QM items present for merging.")
         return
-    
-    qm_uuid_to_keep = file_qms[0]["uuid"] if mode == "keep_oldest" else file_qms[-1]["uuid"]
+
+    qm_uuid_to_keep = (
+        file_qms[0]["uuid"] if mode == "keep_oldest" else file_qms[-1]["uuid"]
+    )
 
     for qm in file_qms:
         qm_uuid = qm["uuid"]
@@ -158,10 +164,8 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
             derived_from = qcv["derived_from"]
             qc_values_dict[derived_from] = qcv
 
-    #pprint.pprint(qc_values_dict)
     qc_values_list = list(qc_values_dict.values())
-    #pprint.pprint(qc_values_list)
-    
+
     try:
         patch_body = {"qc_values": qc_values_list}
         ff_utils.patch_metadata(patch_body, obj_id=qm_uuid_to_keep, key=smaht_key)
@@ -171,6 +175,27 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
         raise Exception(f"Item could not be PATCHed: {str(e)}")
     print("Merging done.")
 
+
+def archive_unaligned_reads(fileset_accession: str, smaht_key: dict):
+    """Archive (submitted) unaligned reads of a fileset.
+    Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=short_term_archive.
+
+    Args:
+        fileset_accession (str): _description_
+        smaht_key (dict): _description_
+    """
+    file_set = get_file_set(fileset_accession, smaht_key)
+
+    search_filter = (
+        "?type=UnalignedReads" f"&status=uploaded" f"&file_sets.uuid={file_set[UUID]}"
+    )
+    unaligned_reads = ff_utils.search_metadata(
+        f"/search/{search_filter}", key=smaht_key
+    )
+    for unaligned_read in unaligned_reads:
+        patch_body = {"s3_lifecycle_category": "short_term_archive"}
+        ff_utils.patch_metadata(patch_body, obj_id=unaligned_read[UUID], key=smaht_key)
+        print(f" - Archived file {unaligned_read['display_title']}")
 
 
 def print_error_and_exit(error):

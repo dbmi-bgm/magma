@@ -119,7 +119,7 @@ def reset_all_failed_mwfrs(auth_env):
 )
 def merge_qc_items(file_accessions, mode, auth_env):
     """
-    Merged QC items of a file.
+    Merge QC items of a file.
     Mode "keep_oldest" will merge the qc values and patch them to the oldest qc_item. The other qc_items will be removed from the file
     Mode "keep_newest" will merge the qc values and patch them to the newest qc_item. The other qc_items will be removed from the file
     In general, QC values of newer QC items will overwrite existing QC values of older items
@@ -128,6 +128,34 @@ def merge_qc_items(file_accessions, mode, auth_env):
     for f in file_accessions:
         print(f"Working on {f}")
         wrangler_utils.merge_qc_items(f, mode, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="Fileset accessions",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def archive_unaligned_reads(fileset_accessions, auth_env):
+    """
+    Archive (submitted) unaligned reads of a fileset. 
+    Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=short_term_archive.
+    """
+    smaht_key = get_auth_key(auth_env)
+    for f in fileset_accessions:
+        print(f"Working on Fileset {f}")
+        wrangler_utils.archive_unaligned_reads(f, smaht_key)
 
 
 @cli.command()
