@@ -14,6 +14,7 @@ from magma_smaht.create_metawfr import (
     mwfr_ultra_long_bamqc,
     mwfr_long_read_bamqc,
     mwfr_short_read_fastqc,
+    mwfr_custom_qc,
 )
 from magma_smaht.utils import get_auth_key
 
@@ -132,15 +133,28 @@ def align_ont(fileset_accession, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="Fileset accession",
 )
 @click.option(
     "-c",
     "--check-lanes",
-    required=True,
-    default=True,
-    type=bool,
+    default=False,
+    is_flag=True,
+    show_default=True,
     help="Whether to check lanes or not (different MWFs)",
+)
+@click.option(
+    "-r",
+    "--replace-qc",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Replace existing QC items.",
 )
 @click.option(
     "-e",
@@ -149,10 +163,12 @@ def align_ont(fileset_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def qc_short_read_fastq_illumina(fileset_accession, check_lanes, auth_env):
+def qc_short_read_fastq_illumina(fileset_accessions, check_lanes, replace_qc, auth_env):
     """QC MWFR for paired short-read Illumina FASTQs"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_fastqc(fileset_accession, check_lanes, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_fastqc(fileset_accession, check_lanes, replace_qc, smaht_key)
 
 
 @cli.command()
@@ -174,7 +190,20 @@ def qc_short_read_fastq(file_accession, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="Fileset accession",
+)
+@click.option(
+    "-r",
+    "--replace-qc",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Replace existing QC items.",
 )
 @click.option(
     "-e",
@@ -183,10 +212,12 @@ def qc_short_read_fastq(file_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def qc_long_read_ubam(fileset_accession, auth_env):
+def qc_long_read_ubam(fileset_accessions, replace_qc, auth_env):
     """QC MWFR for unaligned long-read BAMs"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_ubam_qc_long_read(fileset_accession, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_ubam_qc_long_read(fileset_accession, replace_qc, smaht_key)
 
 
 @cli.command()
@@ -215,15 +246,30 @@ def qc_short_read_bam(file_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def qc_ultra_long_bam(file_accession, auth_env):
-    """QC MWFR for aligned, ultra-long BAMs (ONT)"""
+def custom_qc(file_accession, auth_env):
+    """Custom QC MWFR"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_ultra_long_bamqc(file_accession, smaht_key)
+    mwfr_custom_qc(file_accession, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
-@click.option("-f", "--file-accession", required=True, type=str, help="File accession")
+@click.option(
+    "-f",
+    "--file-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="File accession(s)",
+)
+@click.option(
+    "-r",
+    "--replace-qc",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Replace existing QC items.",
+)
 @click.option(
     "-e",
     "--auth-env",
@@ -231,10 +277,38 @@ def qc_ultra_long_bam(file_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def qc_long_read_bam(file_accession, auth_env):
+def qc_ultra_long_bam(file_accessions, replace_qc, auth_env):
+    """QC MWFR for aligned, ultra-long BAMs (ONT)"""
+    smaht_key = get_auth_key(auth_env)
+    for file_accession in file_accessions:
+        print(f"Working on File {file_accession}")
+        mwfr_ultra_long_bamqc(file_accession, replace_qc, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option("-f", "--file-accessions", required=True, type=str, multiple=True, help="File accession(s)")
+@click.option(
+    "-r",
+    "--replace-qc",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Replace existing QC items.",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def qc_long_read_bam(file_accessions, replace_qc, auth_env):
     """QC MWFR for aligned, long-read BAMs (PacBio)"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_long_read_bamqc(file_accession, smaht_key)
+    for file_accession in file_accessions:
+        print(f"Working on File {file_accession}")
+        mwfr_long_read_bamqc(file_accession, replace_qc, smaht_key)
 
 
 @cli.command()

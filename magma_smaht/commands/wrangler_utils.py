@@ -58,6 +58,29 @@ def reset_failed_mwfrs(mwfr_uuids, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
+    "-m",
+    "--mwfr-uuids",
+    required=True,
+    type=str,
+    multiple=True,
+    help="List of MWFRs to reset",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def reset_mwfrs(mwfr_uuids, auth_env):
+    """Reset a list of MetaWorkflowRuns"""
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.reset_mwfrs(mwfr_uuids, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
     "-e",
     "--auth-env",
     required=True,
@@ -68,6 +91,71 @@ def reset_all_failed_mwfrs(auth_env):
     """Reset all failed MetaWorkflowRuns on the portal"""
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.reset_all_failed_mwfrs(smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--file-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="File accessions",
+)
+@click.option(
+    "-m",
+    "--mode",
+    required=True,
+    type=click.Choice(['keep_oldest', 'keep_newest']),
+    help="Merge mode",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def merge_qc_items(file_accessions, mode, auth_env):
+    """
+    Merge QC items of a file.
+    Mode "keep_oldest" will merge the qc values and patch them to the oldest qc_item. The other qc_items will be removed from the file
+    Mode "keep_newest" will merge the qc values and patch them to the newest qc_item. The other qc_items will be removed from the file
+    In general, QC values of newer QC items will overwrite existing QC values of older items
+    """
+    smaht_key = get_auth_key(auth_env)
+    for f in file_accessions:
+        print(f"Working on {f}")
+        wrangler_utils.merge_qc_items(f, mode, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="Fileset accessions",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def archive_unaligned_reads(fileset_accessions, auth_env):
+    """
+    Archive (submitted) unaligned reads of a fileset. 
+    Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=short_term_archive.
+    """
+    smaht_key = get_auth_key(auth_env)
+    for f in fileset_accessions:
+        print(f"Working on Fileset {f}")
+        wrangler_utils.archive_unaligned_reads(f, smaht_key)
 
 
 @cli.command()
