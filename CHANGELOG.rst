@@ -6,6 +6,7 @@ Change Log
 3.9.0
 =====
 * Added functionality to run sample identity checks
+* Add `dry_run` option to `archive_unaligned_reads` command
 
 
 3.8.0
