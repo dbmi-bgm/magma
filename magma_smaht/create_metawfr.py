@@ -497,8 +497,6 @@ def mwfr_short_read_fastqc(file_accession, smaht_key):
 
 def mwfr_sample_identity_check(files, donor, smaht_key):
 
-    #MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check_RENAME"
-
     mwf = get_latest_mwf(MWF_SAMPLE_IDENTITY_CHECK, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
@@ -519,12 +517,11 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
         print(f"No previous identity check found for donor {donor}")
 
     bams = []
-    # Maps the new shard numbers to the old ones, if they were present in the previous run
-    dimension_mapping = {}
     for id in previous_bam_ids + list(files):
         bam_meta = get_item(id, smaht_key)
         bams.append(bam_meta)
 
+    dimension_mapping = {} # Maps the new shard numbers to the old ones, if they were present in the previous run
     bam_inputs, bam_accessions = [], []
     for dim, bam in enumerate(bams):
         if bam[UUID] in previous_bam_dimension:

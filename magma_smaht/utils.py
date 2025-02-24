@@ -128,7 +128,7 @@ def get_auth_key(env_key: str) -> JsonObject:
         )
     return key
 
-# The QC visualization assume that sample identity MWFRs are tagged as follows:
+# The QC visualization assumes that sample identity MWFRs are tagged as follows:
 def get_tag_for_sample_identity_check(donor_accession):
     return f"sample_identity_check_for_donor_{donor_accession}"
 
@@ -271,7 +271,6 @@ def get_donors_from_mwfr(mwfr, smaht_key):
     file_sets = mwfr.get("file_sets")
     if not file_sets:
         raise Exception(f"No file sets found for MWF {mwfr['uuid']}")
-    import pprint
 
     file_set =  get_file_set(file_sets[0]['uuid'], smaht_key)
     library = get_library_from_file_set(file_set, smaht_key)
