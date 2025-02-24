@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.9.0
+=====
+* Added functionality to run sample identity checks
+
+
 3.8.0
 =====
 * Added possibility to overwrite exsting QCs when running a standalone QC workflow.
