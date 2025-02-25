@@ -27,6 +27,10 @@ from magma_smaht.utils import (
     get_sample_name_for_mwfr,
     get_mwfr_file_input_arg,
     get_mwfr_parameter_input_arg,
+    get_wfr_from_mwfr,
+    get_tag_for_sample_identity_check,
+    get_item,
+    get_latest_somalier_run_for_donor
 )
 
 # MetaWorkflow names are used to get the latest version.
@@ -44,6 +48,7 @@ MWF_NAME_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
+MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
@@ -54,6 +59,7 @@ INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
 INPUT_FILES_CRAM = "input_files_cram"
 GENOME_REFERENCE_FASTA = "genome_reference_fasta"
 SAMPLE_NAME = "sample_name"
+SAMPLE_NAMES = "sample_names"
 LENGTH_REQUIRED = "length_required"
 LIBRARY_ID = "library_id"
 GENOME_REFERENCE_STAR = "genome_reference_star"
@@ -249,7 +255,7 @@ def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
         if reference_genome_uuid and current_ref_genome[UUID] != reference_genome_uuid:
             raise Exception(f"Multiple reference genomes detected.")
         reference_genome_uuid = current_ref_genome[UUID]
-    reference_genome_item = ff_utils.get_metadata(reference_genome_uuid, smaht_key)
+    reference_genome_item = ff_utils.get_item(reference_genome_uuid, smaht_key)
     reference_genome_file = reference_genome_item["files"][0][UUID]
     reference_genome = [{"file": reference_genome_file}]
     mwfr_input = [
@@ -408,7 +414,7 @@ def mwfr_custom_qc(file_accession, smaht_key):
     # # mwf_name = "CUSTOM_short-reads_mosdepth_verifybamid2"
     # mwf = get_latest_mwf(mwf_name, smaht_key)
     # print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
-    # bam_meta = get_metadata(file_accession, smaht_key)
+    # bam_meta = get_item(file_accession, smaht_key)
     # bam = [{"file": bam_meta[UUID], "dimension": "0"}]
 
     # mwfr_input = [
@@ -424,7 +430,7 @@ def mwfr_custom_qc(file_accession, smaht_key):
 def mwfr_bamqc_short_read(file_accession, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_BAMQC_SHORT_READ, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
-    bam_meta = get_metadata(file_accession, smaht_key)
+    bam_meta = get_item(file_accession, smaht_key)
     bam = [{"file": bam_meta[UUID], "dimension": "0"}]
 
     mwfr_input = [
@@ -437,7 +443,7 @@ def mwfr_bamqc_short_read(file_accession, smaht_key):
 def mwfr_ultra_long_bamqc(file_accession, replace_existing_qc, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_ULTRA_LONG_BAMQC, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
-    bam_meta = get_metadata(file_accession, smaht_key)
+    bam_meta = get_item(file_accession, smaht_key)
     bam = [{"file": bam_meta[UUID], "dimension": "0"}]
 
     mwfr_input = [
@@ -458,7 +464,7 @@ def mwfr_ultra_long_bamqc(file_accession, replace_existing_qc, smaht_key):
 def mwfr_long_read_bamqc(file_accession, replace_existing_qc, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_LONG_READ_BAMQC, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
-    bam_meta = get_metadata(file_accession, smaht_key)
+    bam_meta = get_item(file_accession, smaht_key)
     bam = [{"file": bam_meta[UUID], "dimension": "0"}]
 
     mwfr_input = [
@@ -479,7 +485,7 @@ def mwfr_long_read_bamqc(file_accession, replace_existing_qc, smaht_key):
 def mwfr_short_read_fastqc(file_accession, smaht_key):
     mwf = get_latest_mwf(MWF_NAME_FASTQ_SHORT_READ, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
-    fastq_meta = get_metadata(file_accession, smaht_key)
+    fastq_meta = get_item(file_accession, smaht_key)
     fastq = [{"file": fastq_meta[UUID], "dimension": "0"}]
 
     mwfr_input = [
@@ -487,6 +493,69 @@ def mwfr_short_read_fastqc(file_accession, smaht_key):
     ]
 
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_FASTQ_GZ, mwfr_input, smaht_key)
+
+
+def mwfr_sample_identity_check(files, donor, smaht_key):
+
+    mwf = get_latest_mwf(MWF_SAMPLE_IDENTITY_CHECK, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    previous_bam_ids = []
+    previous_bam_dimension = {}
+    previous_mwfr = get_latest_somalier_run_for_donor(donor, smaht_key)
+    if previous_mwfr:
+        print(f"Importing data from previous MetaWorkflowRun for donor {donor}")
+        # We want the raw frame - that's why we get it here again
+        previous_mwfr = get_item(previous_mwfr[0][UUID], smaht_key)
+        for input in previous_mwfr["input"]:
+            if input["argument_name"] == INPUT_FILES_BAM:
+                previous_bam_dimension = {
+                    file["file"]: file["dimension"] for file in input["files"]
+                }
+                previous_bam_ids = [file["file"] for file in input["files"]]
+    else:
+        print(f"No previous identity check found for donor {donor}")
+
+    bams = []
+    for id in previous_bam_ids + list(files):
+        bam_meta = get_item(id, smaht_key)
+        bams.append(bam_meta)
+
+    dimension_mapping = {} # Maps the new shard numbers to the old ones, if they were present in the previous run
+    bam_inputs, bam_accessions = [], []
+    for dim, bam in enumerate(bams):
+        if bam[UUID] in previous_bam_dimension:
+            dimension_mapping[str(dim)] = previous_bam_dimension[bam[UUID]]
+        bam_accessions.append(bam[ACCESSION])
+        bam_inputs.append({"file": bam[UUID], "dimension": f"{dim}"})
+
+    mwfr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_BAM, bam_inputs),
+        get_mwfr_parameter_input_arg(SAMPLE_NAMES, bam_accessions),
+    ]
+    mwfr = mwfr_from_input(mwf[UUID], mwfr_input, INPUT_FILES_BAM, smaht_key)
+
+    # Copy completed wfrs from previous mwfr
+    for workflow_run in mwfr["workflow_runs"]:
+        props_to_copy = ["job_id", "output", "status", "workflow_run"]
+        if (
+            workflow_run["name"] in ["ReplaceReadGroups", "somalier_extract"]
+            and workflow_run["shard"] in dimension_mapping
+        ):
+            old_shard = dimension_mapping[workflow_run["shard"]]
+            previous_workflow_run = get_wfr_from_mwfr(previous_mwfr, workflow_run["name"], old_shard)
+            for prop in props_to_copy:
+                workflow_run[prop] = previous_workflow_run[prop]
+            if workflow_run["name"] == "ReplaceReadGroups":
+                workflow_run["status"] = "completed"
+       
+
+    mwfr["tags"] = [get_tag_for_sample_identity_check(donor)]
+    #mwfr["final_status"] = "stopped"
+
+    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    mwfr_accession = post_response["@graph"][0]["accession"]
+    print(f"Posted MetaWorkflowRun {mwfr_accession}.")
 
 
 ################################################
@@ -618,7 +687,7 @@ def mwfr_from_input(
                     }, ...]
     """
 
-    metawf_meta = get_metadata(metawf_uuid, ff_key)
+    metawf_meta = get_item(metawf_uuid, ff_key)
 
     for arg in input:
         if arg["argument_name"] == input_arg:
@@ -661,8 +730,3 @@ def generate_input_structure(files):
         print("More than 2 input dimensions are currently no supported")
         exit()
 
-
-def get_metadata(identifier, key):
-    return ff_utils.get_metadata(
-        identifier, add_on="frame=raw&datastore=database", key=key
-    )

@@ -13,6 +13,11 @@ from .reset_metawfr import reset_failed, reset_all
 
 from magma_smaht.utils import (
     get_file_set,
+    get_donors_from_mwfr,
+    get_item,
+    get_tag_for_sample_identity_check,
+    get_wfr_from_mwfr,
+    get_latest_somalier_run_for_donor,
 )
 
 JsonObject = Dict[str, Any]
@@ -25,6 +30,7 @@ SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
 # Portal constants
 COMPLETED = "completed"
 UUID = "uuid"
+ACCESSION = "accession"
 
 
 def associate_conversion_output_with_fileset(
@@ -176,9 +182,9 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
     print("Merging done.")
 
 
-def archive_unaligned_reads(fileset_accession: str, smaht_key: dict):
+def archive_unaligned_reads(fileset_accession: str, dry_run: bool, smaht_key: dict):
     """Archive (submitted) unaligned reads of a fileset.
-    Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=short_term_archive.
+    Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=long_term_archive.
 
     Args:
         fileset_accession (str): _description_
@@ -192,10 +198,123 @@ def archive_unaligned_reads(fileset_accession: str, smaht_key: dict):
     unaligned_reads = ff_utils.search_metadata(
         f"/search/{search_filter}", key=smaht_key
     )
+    if dry_run:
+        print(f" - Patching {len(unaligned_reads)} files. DRY RUN - NOTHING PATCHED")
+    else:
+        print(f" - Patching {len(unaligned_reads)} files")
+
     for unaligned_read in unaligned_reads:
-        patch_body = {"s3_lifecycle_category": "short_term_archive"}
-        ff_utils.patch_metadata(patch_body, obj_id=unaligned_read[UUID], key=smaht_key)
+        if not dry_run:
+            patch_body = {"s3_lifecycle_category": "long_term_archive"}
+            ff_utils.patch_metadata(patch_body, obj_id=unaligned_read[UUID], key=smaht_key)
         print(f" - Archived file {unaligned_read['display_title']}")
+
+
+def sample_identity_check_status(num_files: int, smaht_key: dict):
+    """Check output files that are not input of sample_identity_check metaworkflow runs.
+
+
+    Args:
+        num_files (int): Number of files to check
+        smaht_key (dict): Auth key
+    """
+
+    # Check for sample identity checks in progress. We should only run new sample identity workflows if the prvious ones completed
+    search_filter = (
+        "?type=MetaWorkflowRun"
+        "&meta_workflow.name=sample_identity_check"
+        "&final_status=running&final_status=pending"
+    )
+    current_checks = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
+    if current_checks:
+        print(
+            f"WARNING: THERE ARE CURRENTLY ACTIVE RUNS. ONLY RUN NEW WORKFLOWS WHEN THE PREVIOUS ONES COMPLETED"
+        )
+
+    search_filter = (
+        "?type=OutputFile"
+        "&sequencing_center.display_title=UWSC+GCC"
+        "&sequencing_center.display_title=WASHU+GCC"
+        "&sequencing_center.display_title=BROAD+GCC"
+        "&sequencing_center.display_title=NYGC+GCC"
+        "&sequencing_center.display_title=BCM+GCC"
+        "&status=uploaded&status=released"
+        "&file_format.display_title=bam"
+        "&output_status=Final Output"
+        f"&limit={num_files}"
+        "&sort=date_created"
+        "&meta_workflow_run_inputs.meta_workflow.name%21=sample_identity_check"
+    )
+    output_files = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
+    donors = {}
+    status = {}
+    for output in output_files:
+        mwfrs = output.get("meta_workflow_run_outputs")
+        if not mwfrs:
+            print(
+                f"Warning: No MetaWorkflowRunOutputs found for file {output['display_title']}"
+            )
+            continue
+        mwfr = mwfrs[0]
+        mwfr = get_item(mwfr[UUID], smaht_key, frame="embedded")
+
+        # Only consider files that are outputs for alignment workflows
+        if "Alignment" not in mwfr["meta_workflow"]["category"]:
+            print(
+                f"Warning: File {output['accession']} is not result of an alignment MWF. Skipping."
+            )
+            continue
+
+        donors_from_mwf = get_donors_from_mwfr(mwfr, smaht_key)
+        if len(donors_from_mwf) > 1:
+            print(
+                f"Warning: Expected 1 donor but found {len(donors_from_mwf)} for file {output['accession']}"
+            )
+            continue
+
+        if len(donors_from_mwf) == 0:  # Probably HAPMAP
+            print(
+                f"Warning: No donors found for file {output['accession']} ({output['display_title']}). HAPMAP?"
+            )
+            continue
+        donor = donors_from_mwf[0]
+        donor_uuid = donor[UUID]
+        donors[donor_uuid] = donor
+
+        if donor_uuid not in status:
+            status[donor_uuid] = []
+        status[donor_uuid].append(output[ACCESSION])
+
+    print("The Sample Identity Check has not been run on the following files:")
+    for donor_uuid in status:
+        donor = donors[donor_uuid]
+        donor_display_title = donor["display_title"]
+        header = f"\nDonor: {donor_display_title} ({donor[ACCESSION]})"
+        print("_" * len(header))
+        print(header)
+
+        for file in status[donor_uuid]:
+            print(f" - {file}")
+
+        latest_run = get_latest_somalier_run_for_donor(donor[ACCESSION], smaht_key)
+        if not latest_run:
+            print(
+                f"\nINFO: Sample identity check has never run for donor {donor_display_title}"
+            )
+        else:
+            latest_run = latest_run[0]
+            somalier_relate = get_wfr_from_mwfr(latest_run, "somalier_relate", 0)
+            qc_result = somalier_relate["output"][0]["file"]["quality_metrics"][0][
+                "overall_quality_status"
+            ]
+            print(
+                f"\nINFO: Latest run result was: {qc_result} (MWFR: {latest_run[ACCESSION]})"
+            )
+
+        print(f"\nRun the following command to perform this QC check:")
+        print(
+            f"create-mwfr-smaht sample-identity-check -e data -d {donor[ACCESSION]} -f {' -f '.join(status[donor_uuid])}\n"
+        )
 
 
 def print_error_and_exit(error):

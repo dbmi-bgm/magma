@@ -141,13 +141,21 @@ def merge_qc_items(file_accessions, mode, auth_env):
     help="Fileset accessions",
 )
 @click.option(
+    "-d",
+    "--dry-run",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Dry run",
+)
+@click.option(
     "-e",
     "--auth-env",
     required=True,
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def archive_unaligned_reads(fileset_accessions, auth_env):
+def archive_unaligned_reads(fileset_accessions, dry_run, auth_env):
     """
     Archive (submitted) unaligned reads of a fileset. 
     Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=short_term_archive.
@@ -155,7 +163,32 @@ def archive_unaligned_reads(fileset_accessions, auth_env):
     smaht_key = get_auth_key(auth_env)
     for f in fileset_accessions:
         print(f"Working on Fileset {f}")
-        wrangler_utils.archive_unaligned_reads(f, smaht_key)
+        wrangler_utils.archive_unaligned_reads(f, dry_run, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-n",
+    "--num-files",
+    required=True,
+    type=int,
+    help="Number of files to check",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def sample_identity_check_status(num_files, auth_env):
+    """
+    Check which files need to be checked for sample identity.
+    """
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.sample_identity_check_status(num_files, smaht_key)
+        
 
 
 @cli.command()

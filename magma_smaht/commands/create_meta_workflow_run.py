@@ -15,6 +15,7 @@ from magma_smaht.create_metawfr import (
     mwfr_long_read_bamqc,
     mwfr_short_read_fastqc,
     mwfr_custom_qc,
+    mwfr_sample_identity_check
 )
 from magma_smaht.utils import get_auth_key
 
@@ -287,7 +288,14 @@ def qc_ultra_long_bam(file_accessions, replace_qc, auth_env):
 
 @cli.command()
 @click.help_option("--help", "-h")
-@click.option("-f", "--file-accessions", required=True, type=str, multiple=True, help="File accession(s)")
+@click.option(
+    "-f",
+    "--file-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="File accession(s)",
+)
 @click.option(
     "-r",
     "--replace-qc",
@@ -345,6 +353,27 @@ def conversion_bam_to_fastq(fileset_accession, auth_env):
     """Conversion MWFR for BAM to FASTQ (paired-end)"""
     smaht_key = get_auth_key(auth_env)
     mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f", "--files", required=True, type=str, multiple=True, help="BAM file accessions"
+)
+@click.option(
+    "-d", "--donor", required=True, type=str, help="Accession of the associated donor"
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def sample_identity_check(files, donor, auth_env):
+    """Sample Identity Check accross BAMs. Run `sample_identity_check_status` before this."""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_sample_identity_check(files, donor, smaht_key)
 
 
 if __name__ == "__main__":

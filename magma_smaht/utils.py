@@ -128,6 +128,10 @@ def get_auth_key(env_key: str) -> JsonObject:
         )
     return key
 
+# The QC visualization assumes that sample identity MWFRs are tagged as follows:
+def get_tag_for_sample_identity_check(donor_accession):
+    return f"sample_identity_check_for_donor_{donor_accession}"
+
 
 def keep_last_item(items: Sequence) -> Sequence:
     if len(items) <= 1:
@@ -201,6 +205,23 @@ def get_samples_from_library(library, smaht_key):
 
     return samples
 
+def get_sample_sources_from_sample(sample, smaht_key):
+    """Get sample sources from a sample
+
+    Args:
+        sample (dict): Sample item from portal
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        list[dict]: sample source items from portal
+    """
+    sample_sources = sample.get("sample_sources", [])
+    sample_sources_items = []
+    for sample_source in sample_sources:
+        item = get_item(sample_source, smaht_key, frame='embedded')
+        sample_sources_items.append(item)
+    return sample_sources_items
+
 
 def get_sample_name_for_mwfr(samples):
     """Get the sample_name that is added to the MWFR
@@ -235,6 +256,57 @@ def get_library_preparation_from_library(library, smaht_key):
         library_preparation, add_on="frame=raw&datastore=database", key=smaht_key
     )
     return library_preparation_item
+
+
+def get_donors_from_mwfr(mwfr, smaht_key):
+    """Get the donor that is associated with the MWFR
+
+    Args:
+        mwfr (dict): MWFR item from portal
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        dict: Donor item from portal
+    """
+    file_sets = mwfr.get("file_sets")
+    if not file_sets:
+        raise Exception(f"No file sets found for MWF {mwfr['uuid']}")
+
+    file_set =  get_file_set(file_sets[0]['uuid'], smaht_key)
+    library = get_library_from_file_set(file_set, smaht_key)
+    samples = get_samples_from_library(library, smaht_key)
+    donor_ids = []
+    for sample in samples:
+        sample_sources = get_sample_sources_from_sample(sample, smaht_key)
+        for sample_source in sample_sources:
+            
+            if sample_source.get("code") == "HAPMAP6":
+                continue
+
+            if "donor" in sample_source:
+                donor_ids.append(sample_source['donor']['uuid'])
+            elif "cell_line" in sample_source:
+                cell_lines = sample_source["cell_line"]
+                for cell_line in cell_lines:
+                    cell_line_item = get_item(cell_line['uuid'], smaht_key, frame='embedded')
+                    if "donor" in cell_line_item:
+                        donor_ids.append(cell_line_item['donor']['uuid'])
+                    elif "source_donor" in cell_line_item:
+                        donor_ids.append(cell_line_item['source_donor']['uuid'])
+                    else:
+                        print(f"Can't get donor from sample source {sample_source['uuid']}")
+                        continue
+            else:
+                print(f"Can't get donor from sample source {sample_source['uuid']}")
+                continue
+               
+
+    donors = []
+    donor_ids = list(set(donor_ids))
+    for donor_id in donor_ids:
+        donor = get_item(donor_id, smaht_key, frame='object')
+        donors.append(donor)
+    return donors
 
 
 def get_latest_mwf(mwf_name, smaht_key):
@@ -276,3 +348,35 @@ def get_mwfr_parameter_input_arg(argument_name, value):
         "argument_type": "parameter",
         "value": value,
     }
+
+def get_wfr_from_mwfr(mwfr, wfr_name, shard):
+    workflow_run = next(
+        (
+            item
+            for item in mwfr["workflow_runs"]
+            if item["name"] == wfr_name and item["shard"] == str(shard)
+        ),
+        None,
+    )
+    if not workflow_run:
+        raise Exception(
+            f"No {wfr_name} workflow run not found for shard {shard}"
+        )
+    return workflow_run
+
+def get_latest_somalier_run_for_donor(donor_accession, key):
+    search_filter = (
+        "?type=MetaWorkflowRun"
+        f"&meta_workflow.name=sample_identity_check"
+        f"&tags={get_tag_for_sample_identity_check(donor_accession)}"
+        "&final_status=completed"
+        "&sort=-date_created"
+        "&limit=1"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_item(identifier, key, frame="raw"):
+    return ff_utils.get_metadata(
+        identifier, add_on=f"frame={frame}&datastore=database", key=key
+    )
