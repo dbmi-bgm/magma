@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+# Portal Constants
+
+# MetaWorkflow names are used to get the latest version.
+# We assume that they don't change!
+MWF_NAME_ILLUMINA = "Illumina_alignment_GRCh38"
+MWF_NAME_RNASEQ = "RNA-seq_bulk_short_reads_GRCh38"
+MWF_NAME_ONT = "ONT_alignment_GRCh38"
+MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
+MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
+MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
+MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
+MWF_NAME_FASTQ_SHORT_READ = "short_reads_FASTQ_quality_metrics"
+MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
+MWF_NAME_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
+MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
+MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
+MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
+MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check"
+
+# Input argument names
+INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
+INPUT_FILES_R2_FASTQ_GZ = "input_files_r2_fastq_gz"
+INPUT_FILES_BAM = "input_files_bam"
+INPUT_FILES = "input_files"
+INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
+INPUT_FILES_CRAM = "input_files_cram"
+GENOME_REFERENCE_FASTA = "genome_reference_fasta"
+SAMPLE_NAME = "sample_name"
+SAMPLE_NAMES = "sample_names"
+LENGTH_REQUIRED = "length_required"
+LIBRARY_ID = "library_id"
+GENOME_REFERENCE_STAR = "genome_reference_star"
+IS_STRANDED = "is_stranded"
+STRANDEDNESS = "strandedness"
+
+# Schema fields
+COMMON_FIELDS = "common_fields"
+UUID = "uuid"
+COMPLETED = "completed"
+DESCRIPTION = "description"
+TAGS = "tags"
+SUBMISSION_CENTERS = "submission_centers"
+SEQUENCING_CENTER = "sequencing_center"
+CONSORTIA = "consortia"
+FILE_SETS = "file_sets"
+META_WORFLOW_RUN = "MetaWorkflowRun"
+ACCESSION = "accession"
+ALIASES = "aliases"
+UPLOADED = "uploaded"
+FIRST_STRANDED = "First Stranded"
+SECOND_STRANDED = "Second Stranded"

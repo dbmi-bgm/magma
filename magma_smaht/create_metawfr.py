@@ -12,12 +12,12 @@
 
 import json, uuid
 from dcicutils import ff_utils
+from magma_smaht.utils import mwfr_from_input
 import pprint
 
 pp = pprint.PrettyPrinter(indent=2)
 
 # magma
-from magma_smaht.metawfl import MetaWorkflow
 from magma_smaht.utils import (
     get_latest_mwf,
     get_file_set,
@@ -30,55 +30,49 @@ from magma_smaht.utils import (
     get_wfr_from_mwfr,
     get_tag_for_sample_identity_check,
     get_item,
-    get_latest_somalier_run_for_donor
+    get_latest_somalier_run_for_donor,
 )
 
-# MetaWorkflow names are used to get the latest version.
-# We assume that they don't change!
-MWF_NAME_ILLUMINA = "Illumina_alignment_GRCh38"
-MWF_NAME_RNASEQ = "RNA-seq_bulk_short_reads_GRCh38"
-MWF_NAME_ONT = "ONT_alignment_GRCh38"
-MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
-MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
-MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
-MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
-MWF_NAME_FASTQ_SHORT_READ = "short_reads_FASTQ_quality_metrics"
-MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
-MWF_NAME_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
-MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
-MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
-MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
-MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check"
-
-# Input argument names
-INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
-INPUT_FILES_R2_FASTQ_GZ = "input_files_r2_fastq_gz"
-INPUT_FILES_BAM = "input_files_bam"
-INPUT_FILES = "input_files"
-INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
-INPUT_FILES_CRAM = "input_files_cram"
-GENOME_REFERENCE_FASTA = "genome_reference_fasta"
-SAMPLE_NAME = "sample_name"
-SAMPLE_NAMES = "sample_names"
-LENGTH_REQUIRED = "length_required"
-LIBRARY_ID = "library_id"
-GENOME_REFERENCE_STAR = "genome_reference_star"
-IS_STRANDED = "is_stranded"
-STRANDEDNESS = "strandedness"
-
-# Schema fields
-COMMON_FIELDS = "common_fields"
-UUID = "uuid"
-SUBMISSION_CENTERS = "submission_centers"
-SEQUENCING_CENTER = "sequencing_center"
-CONSORTIA = "consortia"
-FILE_SETS = "file_sets"
-META_WORFLOW_RUN = "MetaWorkflowRun"
-ACCESSION = "accession"
-ALIASES = "aliases"
-UPLOADED = "uploaded"
-FIRST_STRANDED = "First Stranded"
-SECOND_STRANDED = "Second Stranded"
+from magma_smaht.constants import (
+    MWF_NAME_ILLUMINA,
+    MWF_NAME_RNASEQ,
+    MWF_NAME_ONT,
+    MWF_NAME_PACBIO,
+    MWF_NAME_HIC,
+    MWF_NAME_FASTQC,
+    MWF_NAME_FASTQ_LONG_READ,
+    MWF_NAME_FASTQ_SHORT_READ,
+    MWF_NAME_CRAM_TO_FASTQ_PAIRED_END,
+    MWF_NAME_BAM_TO_FASTQ_PAIRED_END,
+    MWF_NAME_BAMQC_SHORT_READ,
+    MWF_NAME_ULTRA_LONG_BAMQC,
+    MWF_NAME_LONG_READ_BAMQC,
+    MWF_SAMPLE_IDENTITY_CHECK,
+    INPUT_FILES_R1_FASTQ_GZ,
+    INPUT_FILES_R2_FASTQ_GZ,
+    INPUT_FILES_BAM,
+    INPUT_FILES_FASTQ_GZ,
+    INPUT_FILES_CRAM,
+    GENOME_REFERENCE_FASTA,
+    SAMPLE_NAME,
+    SAMPLE_NAMES,
+    LENGTH_REQUIRED,
+    LIBRARY_ID,
+    GENOME_REFERENCE_STAR,
+    IS_STRANDED,
+    STRANDEDNESS,
+    COMMON_FIELDS,
+    UUID,
+    SUBMISSION_CENTERS,
+    SEQUENCING_CENTER,
+    FILE_SETS,
+    META_WORFLOW_RUN,
+    ACCESSION,
+    ALIASES,
+    UPLOADED,
+    FIRST_STRANDED,
+    SECOND_STRANDED,
+)
 
 
 ################################################
@@ -521,7 +515,9 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
         bam_meta = get_item(id, smaht_key)
         bams.append(bam_meta)
 
-    dimension_mapping = {} # Maps the new shard numbers to the old ones, if they were present in the previous run
+    dimension_mapping = (
+        {}
+    )  # Maps the new shard numbers to the old ones, if they were present in the previous run
     bam_inputs, bam_accessions = [], []
     for dim, bam in enumerate(bams):
         if bam[UUID] in previous_bam_dimension:
@@ -543,15 +539,16 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
             and workflow_run["shard"] in dimension_mapping
         ):
             old_shard = dimension_mapping[workflow_run["shard"]]
-            previous_workflow_run = get_wfr_from_mwfr(previous_mwfr, workflow_run["name"], old_shard)
+            previous_workflow_run = get_wfr_from_mwfr(
+                previous_mwfr, workflow_run["name"], old_shard
+            )
             for prop in props_to_copy:
                 workflow_run[prop] = previous_workflow_run[prop]
             if workflow_run["name"] == "ReplaceReadGroups":
                 workflow_run["status"] = "completed"
-       
 
     mwfr["tags"] = [get_tag_for_sample_identity_check(donor)]
-    #mwfr["final_status"] = "stopped"
+    # mwfr["final_status"] = "stopped"
 
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
@@ -657,76 +654,4 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
 def filter_list_of_dicts(list_of_dics, property_target, target):
     return [w for w in list_of_dics if w[property_target] == target]
 
-
-def mwfr_from_input(
-    metawf_uuid,
-    input,
-    input_arg,
-    ff_key,
-    consortia=["smaht"],
-    submission_centers=["smaht_dac"],
-):
-    """Create a MetaWorkflowRun[json] from the given MetaWorkflow[portal]
-    and input arguments.
-
-    :param metawf_uuid: MetaWorkflow[portal] UUID
-    :type metawf_uuid: str
-    :param input: Input arguments as list, where each argument is a dictionary
-    :type list(dict)
-    :param input_arg: argument_name of the input argument to use
-        to calculate input structure
-    :type str
-    :param ff_key: Portal authorization key
-    :type ff_key: dict
-
-        e.g. input,
-            input = [{
-                    'argument_name': 'ARG_NAME',
-                    'argument_type': 'file',
-                    'files':[{'file': 'UUID', 'dimension': str(0)}]
-                    }, ...]
-    """
-
-    metawf_meta = get_item(metawf_uuid, ff_key)
-
-    for arg in input:
-        if arg["argument_name"] == input_arg:
-            input_structure = generate_input_structure(arg["files"])
-
-    mwf = MetaWorkflow(metawf_meta)
-    mwfr = mwf.write_run(input_structure)
-
-    mwfr[UUID] = str(uuid.uuid4())
-    mwfr[CONSORTIA] = consortia
-    mwfr[SUBMISSION_CENTERS] = submission_centers
-    mwfr["input"] = input
-
-    return mwfr
-
-
-def generate_input_structure(files):
-    dimension_first_file = files[0][
-        "dimension"
-    ]  # We assume that this is representative of the input structure
-    if dimension_first_file.count(",") == 0:
-        return list(range(len(files)))
-    elif dimension_first_file.count(",") == 1:
-        dimensions = list(map(lambda x: x["dimension"].split(","), files))
-        dimensions = list(map(lambda x: [int(x[0]), int(x[1])], dimensions))
-        # Example for dimensions: [[1, 0],[0, 0],[1, 1],[0, 1],[1, 2]]
-        dimensions_dict = {}
-        for dim in dimensions:
-            if dim[0] not in dimensions_dict:
-                dimensions_dict[dim[0]] = [dim[1]]
-            else:
-                dimensions_dict[dim[0]].append(dim[1])
-        # Example for dimensions_dict: {0: [0, 1], 1: [0, 1, 2]}
-        input_structure = []
-        for key in sorted(dimensions_dict.keys()):
-            input_structure.append(dimensions_dict[key])
-        # Example for input_structure: [[0, 1], [0, 1, 2]]
-        return input_structure
-    else:
-        print("More than 2 input dimensions are currently no supported")
-        exit()
 

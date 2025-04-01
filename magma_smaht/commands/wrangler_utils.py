@@ -96,6 +96,53 @@ def reset_all_failed_mwfrs(auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
+    "-r",
+    "--mwfr-uuid",
+    required=True,
+    type=str,
+    help="MetaWorkflowRun UUID or accession used as the basis for the new MWFR",
+)
+@click.option(
+    "-m",
+    "--mwf-uuid",
+    required=True,
+    type=str,
+    help="MetaWorkflow UUID or accession used as the basis for the new MWFR",
+)
+@click.option(
+    "-i",
+    "--input-arg",
+    required=True,
+    type=str,
+    help="argument_name of the input argument to use to calculate input structure, e.g. `input_files_bam`",
+)
+@click.option(
+    "-s",
+    "--steps-to-import",
+    required=True,
+    type=str,
+    help="Comma-separated list of workflow run names to import from the old MWFR",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def rerun_mwfr(mwfr_uuid: str, mwf_uuid : str, input_arg: str, steps_to_import: str, auth_env: str):
+    """Creates a new MetaWorkflowRun based on the MWF and MWFR specified. All workflow runs 
+    specified in steps_to_import will be imported from the given MWFR to the new MWFR. All
+    input variables and other properties will be copied over. The old MWFR will deleted.
+    """
+    smaht_key = get_auth_key(auth_env)
+    steps_to_import_list = steps_to_import.split(",")
+    wrangler_utils.rerun_mwfr(mwfr_uuid, mwf_uuid, input_arg, steps_to_import_list, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
     "-f",
     "--file-accessions",
     required=True,
