@@ -515,9 +515,8 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
         bam_meta = get_item(id, smaht_key)
         bams.append(bam_meta)
 
-    dimension_mapping = (
-        {}
-    )  # Maps the new shard numbers to the old ones, if they were present in the previous run
+    # Maps the new shard numbers to the old ones, if they were present in the previous run
+    dimension_mapping = {}
     bam_inputs, bam_accessions = [], []
     for dim, bam in enumerate(bams):
         if bam[UUID] in previous_bam_dimension:
