@@ -652,5 +652,3 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
 
 def filter_list_of_dicts(list_of_dics, property_target, target):
     return [w for w in list_of_dics if w[property_target] == target]
-
-

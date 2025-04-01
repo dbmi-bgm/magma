@@ -212,7 +212,7 @@ def rerun_mwfr(
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
 
     # Update the old MWFR to refer to the new one
-    patch_body = {DESCRIPTION: f"Rerun as {mwfr_accession}", TAGS: ["rerun"]}
+    patch_body = {DESCRIPTION: f"Rerun due to updated MetaWorkflow as {mwfr_accession}", TAGS: ["rerun"]}
     ff_utils.patch_metadata(patch_body, obj_id=mwfr_old_raw[UUID], key=smaht_key)
     print(f"Tagged old MWFR {mwfr_old_raw[ACCESSION]} as rerun.")
 
