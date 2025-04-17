@@ -249,8 +249,9 @@ def mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key):
         if reference_genome_uuid and current_ref_genome[UUID] != reference_genome_uuid:
             raise Exception(f"Multiple reference genomes detected.")
         reference_genome_uuid = current_ref_genome[UUID]
-    reference_genome_item = ff_utils.get_item(reference_genome_uuid, smaht_key)
-    reference_genome_file = reference_genome_item["files"][0][UUID]
+    reference_genome_item = get_item(reference_genome_uuid, smaht_key)
+    
+    reference_genome_file = reference_genome_item["files"][0]
     reference_genome = [{"file": reference_genome_file}]
     mwfr_input = [
         get_mwfr_file_input_arg(INPUT_FILES_CRAM, crams),

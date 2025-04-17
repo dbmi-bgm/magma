@@ -124,20 +124,26 @@ def reset_all_failed_mwfrs(auth_env):
     help="Comma-separated list of workflow run names to import from the old MWFR",
 )
 @click.option(
+    "--remove-file-qc",
+    required=False,
+    type=str,
+    help="Removes the QC item of the specified file",
+)
+@click.option(
     "-e",
     "--auth-env",
     required=True,
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def rerun_mwfr(mwfr_uuid: str, mwf_uuid : str, input_arg: str, steps_to_import: str, auth_env: str):
+def rerun_mwfr(mwfr_uuid: str, mwf_uuid : str, input_arg: str, steps_to_import: str, remove_file_qc: str, auth_env: str):
     """Creates a new MetaWorkflowRun based on the MWF and MWFR specified. All workflow runs 
     specified in steps_to_import will be imported from the given MWFR to the new MWFR. All
     input variables and other properties will be copied over. The old MWFR will deleted.
     """
     smaht_key = get_auth_key(auth_env)
     steps_to_import_list = steps_to_import.split(",")
-    wrangler_utils.rerun_mwfr(mwfr_uuid, mwf_uuid, input_arg, steps_to_import_list, smaht_key)
+    wrangler_utils.rerun_mwfr(mwfr_uuid, mwf_uuid, input_arg, steps_to_import_list, remove_file_qc, smaht_key)
 
 
 @cli.command()
@@ -175,6 +181,48 @@ def merge_qc_items(file_accessions, mode, auth_env):
     for f in file_accessions:
         print(f"Working on {f}")
         wrangler_utils.merge_qc_items(f, mode, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--file-accession",
+    required=True,
+    type=str,
+    help="File accession",
+)
+@click.option(
+    "-k",
+    "--keep-index",
+    required=True,
+    type=int,
+    help="Index of the QC item to keep",
+)
+@click.option(
+    "-r",
+    "--release",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Release the remaining QC item",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def replace_qc_item(file_accession, keep_index, release, auth_env):
+    """
+    Replace the QC item of a file with the one at the given index.
+    If a file has multiple QC items, this command will remove all but the one with given index.
+    Can be useful if QC has been rerun and the old QC item is no longer needed. This function also
+    releases the remaining QC item if the release flag is set.
+    """
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.replace_qc_item(file_accession, keep_index, release, smaht_key)
 
 
 @cli.command()

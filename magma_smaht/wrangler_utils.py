@@ -33,6 +33,9 @@ from magma_smaht.constants import (
     META_WORFLOW_RUN,
     DESCRIPTION,
     TAGS,
+    STATUS,
+    DELETED,
+    FAILED_JOBS
 )
 
 JsonObject = Dict[str, Any]
@@ -154,6 +157,7 @@ def rerun_mwfr(
     mwf_uuid: str,
     input_arg: str,
     steps_to_import: list,
+    remove_file_qc: str,
     smaht_key: dict,
 ):
     """Creates a new MetaWorkflowRun based on the MWF and MWFR specified. All workflow runs
@@ -181,7 +185,7 @@ def rerun_mwfr(
     input = mwfr_old_raw["input"]
     mwfr = mwfr_from_input(mwf[UUID], input, input_arg, smaht_key)
 
-    props_to_copy = [COMMON_FIELDS, CONSORTIA, FILE_SETS, SUBMISSION_CENTERS]
+    props_to_copy = [COMMON_FIELDS, CONSORTIA, FILE_SETS, SUBMISSION_CENTERS, FAILED_JOBS]
     for prop in props_to_copy:
         if prop in mwfr_old_raw:
             mwfr[prop] = mwfr_old_raw[prop]
@@ -206,15 +210,28 @@ def rerun_mwfr(
                     f"WorkflowRun {wfr_name} (shard {wfr_shard}) not found in old MWFR"
                 )
 
-
+    mwfr[DESCRIPTION] = f"Rerun of MetaWorkflow {mwfr_old_raw[ACCESSION]}"
+    #mwfr["final_status"] = "stopped"
+    # pprint.pprint(mwfr)
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
 
     # Update the old MWFR to refer to the new one
-    patch_body = {DESCRIPTION: f"Rerun due to updated MetaWorkflow as {mwfr_accession}", TAGS: ["rerun"]}
+    patch_body = {
+        DESCRIPTION: f"This MetaWorkflowRun has been rerun due to an updated MetaWorkflow as {mwfr_accession}",
+        TAGS: ["rerun"],
+        STATUS: DELETED
+    }
     ff_utils.patch_metadata(patch_body, obj_id=mwfr_old_raw[UUID], key=smaht_key)
     print(f"Tagged old MWFR {mwfr_old_raw[ACCESSION]} as rerun.")
+
+    if remove_file_qc:
+        # Unlink the old QC items for the given file
+        file_accession = remove_file_qc
+        ff_utils.patch_metadata(
+            {}, obj_id=f"{file_accession}?delete_fields=quality_metrics", key=smaht_key
+        )
 
 
 def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
@@ -259,6 +276,36 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
         raise Exception(f"Item could not be PATCHed: {str(e)}")
     print("Merging done.")
 
+
+def replace_qc_item(file_accession: str, keep_index: int, release: bool, smaht_key:dict):
+    file = ff_utils.get_metadata(file_accession, smaht_key)
+    file_uuid = file["uuid"]
+    file_qms = file.get("quality_metrics", [])
+    if len(file_qms) < 2 or keep_index > len(file_qms):
+        print(f"ERROR: Not enough QM items present.")
+        return
+    
+    qm_uuid_to_keep = file_qms[keep_index][UUID]
+    try:
+        patch_body = {"quality_metrics": [qm_uuid_to_keep]}
+        ff_utils.patch_metadata(patch_body, obj_id=file_uuid, key=smaht_key)
+        print("QC item replaced.")
+    except Exception as e:
+        raise Exception(f"Item could not be PATCHed: {str(e)}")
+    
+    if release:
+        qm_item = ff_utils.get_metadata(qm_uuid_to_keep, smaht_key)
+        zip_url = qm_item["url"]
+        zip_uuid = zip_url.split("/")[3]
+        try:
+            patch_body = {"status": "released"}
+            ff_utils.patch_metadata(patch_body, obj_id=qm_uuid_to_keep, key=smaht_key)
+            ff_utils.patch_metadata(patch_body, obj_id=zip_uuid, key=smaht_key)
+            print(f"QC item {qm_item[ACCESSION]} released.")
+            print(f"Zip file {zip_uuid} released.")
+        except Exception as e:
+            raise Exception(f"Item could not be PATCHed: {str(e)}")
+        
 
 def archive_unaligned_reads(fileset_accession: str, dry_run: bool, smaht_key: dict):
     """Archive (submitted) unaligned reads of a fileset.
