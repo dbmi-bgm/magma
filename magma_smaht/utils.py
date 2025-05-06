@@ -452,7 +452,7 @@ def generate_input_structure(files):
         # Example for input_structure: [[0, 1], [0, 1, 2]]
         return input_structure
     else:
-        print("More than 2 input dimensions are currently no supported")
+        print("More than 2 input dimensions are currently not supported")
         exit()
 
 
