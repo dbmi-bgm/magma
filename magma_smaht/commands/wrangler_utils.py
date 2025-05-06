@@ -136,14 +136,23 @@ def reset_all_failed_mwfrs(auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def rerun_mwfr(mwfr_uuid: str, mwf_uuid : str, input_arg: str, steps_to_import: str, remove_file_qc: str, auth_env: str):
-    """Creates a new MetaWorkflowRun based on the MWF and MWFR specified. All workflow runs 
+def rerun_mwfr(
+    mwfr_uuid: str,
+    mwf_uuid: str,
+    input_arg: str,
+    steps_to_import: str,
+    remove_file_qc: str,
+    auth_env: str,
+):
+    """Creates a new MetaWorkflowRun based on the MWF and MWFR specified. All workflow runs
     specified in steps_to_import will be imported from the given MWFR to the new MWFR. All
     input variables and other properties will be copied over. The old MWFR will deleted.
     """
     smaht_key = get_auth_key(auth_env)
     steps_to_import_list = steps_to_import.split(",")
-    wrangler_utils.rerun_mwfr(mwfr_uuid, mwf_uuid, input_arg, steps_to_import_list, remove_file_qc, smaht_key)
+    wrangler_utils.rerun_mwfr(
+        mwfr_uuid, mwf_uuid, input_arg, steps_to_import_list, remove_file_qc, smaht_key
+    )
 
 
 @cli.command()
@@ -160,7 +169,7 @@ def rerun_mwfr(mwfr_uuid: str, mwf_uuid : str, input_arg: str, steps_to_import: 
     "-m",
     "--mode",
     required=True,
-    type=click.Choice(['keep_oldest', 'keep_newest']),
+    type=click.Choice(["keep_oldest", "keep_newest"]),
     help="Merge mode",
 )
 @click.option(
@@ -252,7 +261,7 @@ def replace_qc_item(file_accession, keep_index, release, auth_env):
 )
 def archive_unaligned_reads(fileset_accessions, dry_run, auth_env):
     """
-    Archive (submitted) unaligned reads of a fileset. 
+    Archive (submitted) unaligned reads of a fileset.
     Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=short_term_archive.
     """
     smaht_key = get_auth_key(auth_env)
@@ -283,7 +292,6 @@ def sample_identity_check_status(num_files, auth_env):
     """
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.sample_identity_check_status(num_files, smaht_key)
-        
 
 
 @cli.command()
@@ -316,10 +324,10 @@ def sample_identity_check_status(num_files, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def set_property(identifier,property_key,property_value,auth_env):
-    """Set item property to value by uuid. """
+def set_property(identifier, property_key, property_value, auth_env):
+    """Set item property to value by uuid."""
     smaht_key = get_auth_key(auth_env)
-    wrangler_utils.set_property(identifier,property_key,property_value,smaht_key)
+    wrangler_utils.set_property(identifier, property_key, property_value, smaht_key)
 
 
 if __name__ == "__main__":
