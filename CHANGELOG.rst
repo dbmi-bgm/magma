@@ -3,6 +3,13 @@
 Change Log
 ==========
 
+3.10.0
+=====
+* Added functionality to rerun a MetaWorkflowRun with imported steps from a previous run
+* Added functionality to replace multiple QC items present for a file with an existing one and release it if necessary
+* Some refactoring and code formatting
+
+
 3.9.0
 =====
 * Added functionality to run sample identity checks
