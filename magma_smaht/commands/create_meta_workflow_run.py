@@ -15,7 +15,7 @@ from magma_smaht.create_metawfr import (
     mwfr_long_read_bamqc,
     mwfr_short_read_fastqc,
     mwfr_custom_qc,
-    mwfr_sample_identity_check
+    mwfr_sample_identity_check,
 )
 from magma_smaht.utils import get_auth_key
 
@@ -30,7 +30,12 @@ def cli():
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accessions",
 )
 @click.option(
     "-l",
@@ -46,16 +51,23 @@ def cli():
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def align_illumina(fileset_accession, length_required, auth_env):
+def align_illumina(fileset_accessions, length_required, auth_env):
     """Alignment MWFR for Illumina data"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_illumina_alignment(fileset_accession, length_required, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_illumina_alignment(fileset_accession, length_required, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accessions",
 )
 @click.option(
     "-l",
@@ -71,16 +83,23 @@ def align_illumina(fileset_accession, length_required, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def align_rnaseq(fileset_accession, sequence_length, auth_env):
+def align_rnaseq(fileset_accessions, sequence_length, auth_env):
     """Alignment MWFR for RNA-Seq data"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accessions",
 )
 @click.option(
     "-e",
@@ -89,16 +108,23 @@ def align_rnaseq(fileset_accession, sequence_length, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def align_pacbio(fileset_accession, auth_env):
+def align_pacbio(fileset_accessions, auth_env):
     """Alignment MWFR for PacBio data"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_pacbio_alignment(fileset_accession, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_pacbio_alignment(fileset_accession, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accessions",
 )
 @click.option(
     "-e",
@@ -107,16 +133,23 @@ def align_pacbio(fileset_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def align_hic(fileset_accession, auth_env):
+def align_hic(fileset_accessions, auth_env):
     """Alignment MWFR for HIC data"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_hic_alignment(fileset_accession, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_hic_alignment(fileset_accession, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accessions",
 )
 @click.option(
     "-e",
@@ -125,10 +158,12 @@ def align_hic(fileset_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def align_ont(fileset_accession, auth_env):
+def align_ont(fileset_accessions, auth_env):
     """Alignment MWFR for ONT data"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_ont_alignment(fileset_accession, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_ont_alignment(fileset_accession, smaht_key)
 
 
 @cli.command()
@@ -139,7 +174,7 @@ def align_ont(fileset_accession, auth_env):
     required=True,
     type=str,
     multiple=True,
-    help="Fileset accession",
+    help="Fileset accessions",
 )
 @click.option(
     "-c",
@@ -196,7 +231,7 @@ def qc_short_read_fastq(file_accession, auth_env):
     required=True,
     type=str,
     multiple=True,
-    help="Fileset accession",
+    help="Fileset accessions",
 )
 @click.option(
     "-r",

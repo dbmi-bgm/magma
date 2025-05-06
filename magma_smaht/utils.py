@@ -9,9 +9,16 @@
 ################################################
 #   Libraries
 ################################################
-import json
+import json, uuid
 from pathlib import Path
 from typing import Any, Dict, Sequence
+from magma_smaht.metawfl import MetaWorkflow
+from magma_smaht.constants import (
+    UUID,
+    CONSORTIA,
+    SUBMISSION_CENTERS,
+)
+
 from packaging import version
 
 from dcicutils import ff_utils
@@ -374,6 +381,80 @@ def get_latest_somalier_run_for_donor(donor_accession, key):
         "&limit=1"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def mwfr_from_input(
+    metawf_uuid,
+    input,
+    input_arg,
+    ff_key,
+    consortia=["smaht"],
+    submission_centers=["smaht_dac"],
+):
+    """Create a MetaWorkflowRun[json] from the given MetaWorkflow[portal]
+    and input arguments.
+
+    :param metawf_uuid: MetaWorkflow[portal] UUID
+    :type metawf_uuid: str
+    :param input: Input arguments as list, where each argument is a dictionary
+    :type list(dict)
+    :param input_arg: argument_name of the input argument to use
+        to calculate input structure
+    :type str
+    :param ff_key: Portal authorization key
+    :type ff_key: dict
+
+        e.g. input,
+            input = [{
+                    'argument_name': 'ARG_NAME',
+                    'argument_type': 'file',
+                    'files':[{'file': 'UUID', 'dimension': str(0)}]
+                    }, ...]
+    """
+
+    metawf_meta = get_item(metawf_uuid, ff_key)
+
+    for arg in input:
+        if arg["argument_name"] == input_arg:
+            input_structure = generate_input_structure(arg["files"])
+
+    mwf = MetaWorkflow(metawf_meta)
+    mwfr = mwf.write_run(input_structure)
+
+    mwfr[UUID] = str(uuid.uuid4())
+    mwfr[CONSORTIA] = consortia
+    mwfr[SUBMISSION_CENTERS] = submission_centers
+    mwfr["input"] = input
+
+    return mwfr
+
+
+def generate_input_structure(files):
+    dimension_first_file = files[0][
+        "dimension"
+    ]  # We assume that this is representative of the input structure
+    if dimension_first_file.count(",") == 0:
+        return list(range(len(files)))
+    elif dimension_first_file.count(",") == 1:
+        dimensions = list(map(lambda x: x["dimension"].split(","), files))
+        dimensions = list(map(lambda x: [int(x[0]), int(x[1])], dimensions))
+        # Example for dimensions: [[1, 0],[0, 0],[1, 1],[0, 1],[1, 2]]
+        dimensions_dict = {}
+        for dim in dimensions:
+            if dim[0] not in dimensions_dict:
+                dimensions_dict[dim[0]] = [dim[1]]
+            else:
+                dimensions_dict[dim[0]].append(dim[1])
+        # Example for dimensions_dict: {0: [0, 1], 1: [0, 1, 2]}
+        input_structure = []
+        for key in sorted(dimensions_dict.keys()):
+            input_structure.append(dimensions_dict[key])
+        # Example for input_structure: [[0, 1], [0, 1, 2]]
+        return input_structure
+    else:
+        print("More than 2 input dimensions are currently not supported")
+        exit()
+
 
 
 def get_item(identifier, key, frame="raw"):

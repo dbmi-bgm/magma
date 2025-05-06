@@ -18,6 +18,24 @@ from magma_smaht.utils import (
     get_tag_for_sample_identity_check,
     get_wfr_from_mwfr,
     get_latest_somalier_run_for_donor,
+    generate_input_structure,
+    mwfr_from_input,
+)
+
+from magma_smaht.constants import (
+    COMPLETED,
+    UUID,
+    ACCESSION,
+    COMMON_FIELDS,
+    FILE_SETS,
+    CONSORTIA,
+    SUBMISSION_CENTERS,
+    META_WORFLOW_RUN,
+    DESCRIPTION,
+    TAGS,
+    STATUS,
+    DELETED,
+    FAILED_JOBS
 )
 
 JsonObject = Dict[str, Any]
@@ -26,11 +44,6 @@ WF_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 WF_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 
 SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
-
-# Portal constants
-COMPLETED = "completed"
-UUID = "uuid"
-ACCESSION = "accession"
 
 
 def associate_conversion_output_with_fileset(
@@ -139,6 +152,88 @@ def reset_all_failed_mwfrs(smaht_key: dict):
         reset_failed(item["uuid"], smaht_key)
 
 
+def rerun_mwfr(
+    mwfr_uuid: str,
+    mwf_uuid: str,
+    input_arg: str,
+    steps_to_import: list,
+    remove_file_qc: str,
+    smaht_key: dict,
+):
+    """Creates a new MetaWorkflowRun based on the MWF and MWFR specified. All workflow runs
+    specified in steps_to_import will be imported from the given MWFR to the new MWFR. All
+    input variables and other properties will be copied over. The old MWFR will tagged as `rerun` and
+    the description will point to the new MWFR.
+
+    Args:
+        mwfr_uuid (string): Accession or UUID of the MWFR to copy from
+        mwf_uuid (string): Accession or UUID of the new MWF to derive the MWFR from
+        input_arg (string): argument_name of the input argument to use to calculate input structure
+        steps_to_import (list): List of workflow run names to import from the old MWFR
+        smaht_key (dict): SMaHT key
+    """
+
+    mwfr_old_embedded = get_item(mwfr_uuid, smaht_key, frame="embedded")
+    mwfr_old_raw = get_item(mwfr_uuid, smaht_key)
+    mwf = get_item(mwf_uuid, smaht_key)
+
+    if mwf["name"] != mwfr_old_embedded["meta_workflow"]["name"]:
+        raise Exception(
+            f"MetaWorkflow {mwf['name']} does not match the old MWFR {mwfr_old_embedded['meta_workflow']['name']}"
+        )
+
+    input = mwfr_old_raw["input"]
+    mwfr = mwfr_from_input(mwf[UUID], input, input_arg, smaht_key)
+
+    props_to_copy = [COMMON_FIELDS, CONSORTIA, FILE_SETS, SUBMISSION_CENTERS, FAILED_JOBS]
+    for prop in props_to_copy:
+        if prop in mwfr_old_raw:
+            mwfr[prop] = mwfr_old_raw[prop]
+
+    # Index the old workflow runs for easy access
+    old_workflow_runs = {}
+    for workflow_run in mwfr_old_raw["workflow_runs"]:
+        wfr_name = workflow_run["name"]
+        wfr_shard = workflow_run["shard"]
+        old_workflow_runs[f"{wfr_name}_{wfr_shard}"] = workflow_run
+
+    # Copy completed steps from previous mwfr
+    for i, workflow_run in enumerate(mwfr["workflow_runs"]):
+        wfr_name = workflow_run["name"]
+        wfr_shard = workflow_run["shard"]
+        if wfr_name in steps_to_import:
+            old_workflow_run = old_workflow_runs.get(f"{wfr_name}_{wfr_shard}")
+            if old_workflow_run:
+                mwfr["workflow_runs"][i] = old_workflow_run
+            else:
+                raise Exception(
+                    f"WorkflowRun {wfr_name} (shard {wfr_shard}) not found in old MWFR"
+                )
+
+    mwfr[DESCRIPTION] = f"Rerun of MetaWorkflow {mwfr_old_raw[ACCESSION]}"
+    #mwfr["final_status"] = "stopped"
+    # pprint.pprint(mwfr)
+    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    mwfr_accession = post_response["@graph"][0]["accession"]
+    print(f"Posted MetaWorkflowRun {mwfr_accession}.")
+
+    # Update the old MWFR to refer to the new one
+    patch_body = {
+        DESCRIPTION: f"This MetaWorkflowRun has been rerun due to an updated MetaWorkflow as {mwfr_accession}",
+        TAGS: ["rerun"],
+        STATUS: DELETED
+    }
+    ff_utils.patch_metadata(patch_body, obj_id=mwfr_old_raw[UUID], key=smaht_key)
+    print(f"Tagged old MWFR {mwfr_old_raw[ACCESSION]} as rerun.")
+
+    if remove_file_qc:
+        # Unlink the old QC items for the given file
+        file_accession = remove_file_qc
+        ff_utils.patch_metadata(
+            {}, obj_id=f"{file_accession}?delete_fields=quality_metrics", key=smaht_key
+        )
+
+
 def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
     """Merge QC items of a file.
     Mode "keep_oldest" will merge the qc values and patch them to the oldest qc_item. The other qc_items will be removed from the file
@@ -182,6 +277,36 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
     print("Merging done.")
 
 
+def replace_qc_item(file_accession: str, keep_index: int, release: bool, smaht_key:dict):
+    file = ff_utils.get_metadata(file_accession, smaht_key)
+    file_uuid = file["uuid"]
+    file_qms = file.get("quality_metrics", [])
+    if len(file_qms) < 2 or keep_index > len(file_qms):
+        print(f"ERROR: Not enough QM items present.")
+        return
+    
+    qm_uuid_to_keep = file_qms[keep_index][UUID]
+    try:
+        patch_body = {"quality_metrics": [qm_uuid_to_keep]}
+        ff_utils.patch_metadata(patch_body, obj_id=file_uuid, key=smaht_key)
+        print("QC item replaced.")
+    except Exception as e:
+        raise Exception(f"Item could not be PATCHed: {str(e)}")
+    
+    if release:
+        qm_item = ff_utils.get_metadata(qm_uuid_to_keep, smaht_key)
+        zip_url = qm_item["url"]
+        zip_uuid = zip_url.split("/")[3]
+        try:
+            patch_body = {"status": "released"}
+            ff_utils.patch_metadata(patch_body, obj_id=qm_uuid_to_keep, key=smaht_key)
+            ff_utils.patch_metadata(patch_body, obj_id=zip_uuid, key=smaht_key)
+            print(f"QC item {qm_item[ACCESSION]} released.")
+            print(f"Zip file {zip_uuid} released.")
+        except Exception as e:
+            raise Exception(f"Item could not be PATCHed: {str(e)}")
+        
+
 def archive_unaligned_reads(fileset_accession: str, dry_run: bool, smaht_key: dict):
     """Archive (submitted) unaligned reads of a fileset.
     Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=long_term_archive.
@@ -206,7 +331,9 @@ def archive_unaligned_reads(fileset_accession: str, dry_run: bool, smaht_key: di
     for unaligned_read in unaligned_reads:
         if not dry_run:
             patch_body = {"s3_lifecycle_category": "long_term_archive"}
-            ff_utils.patch_metadata(patch_body, obj_id=unaligned_read[UUID], key=smaht_key)
+            ff_utils.patch_metadata(
+                patch_body, obj_id=unaligned_read[UUID], key=smaht_key
+            )
         print(f" - Archived file {unaligned_read['display_title']}")
 
 
