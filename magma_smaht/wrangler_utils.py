@@ -26,6 +26,7 @@ from magma_smaht.constants import (
     COMPLETED,
     UUID,
     ACCESSION,
+    DISPLAY_TITLE,
     COMMON_FIELDS,
     FILE_SETS,
     CONSORTIA,
@@ -35,7 +36,7 @@ from magma_smaht.constants import (
     TAGS,
     STATUS,
     DELETED,
-    FAILED_JOBS
+    FAILED_JOBS,
 )
 
 JsonObject = Dict[str, Any]
@@ -144,8 +145,13 @@ def reset_mwfrs(mwfr_uuids: list, smaht_key: dict):
         reset_all(id, smaht_key)
 
 
-def reset_all_failed_mwfrs(smaht_key: dict):
-    url = "/search/?final_status=failed&type=MetaWorkflowRun"
+def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5 : bool):
+
+    url = (
+        "/search/?final_status=failed&type=MetaWorkflowRun"
+        if not ignore_md5
+        else "/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5"
+    )
     results = ff_utils.search_metadata(url, key=smaht_key)
     for item in results:
         print(f"Reset MetaWorkflowRun {item['uuid']}")
@@ -185,7 +191,13 @@ def rerun_mwfr(
     input = mwfr_old_raw["input"]
     mwfr = mwfr_from_input(mwf[UUID], input, input_arg, smaht_key)
 
-    props_to_copy = [COMMON_FIELDS, CONSORTIA, FILE_SETS, SUBMISSION_CENTERS, FAILED_JOBS]
+    props_to_copy = [
+        COMMON_FIELDS,
+        CONSORTIA,
+        FILE_SETS,
+        SUBMISSION_CENTERS,
+        FAILED_JOBS,
+    ]
     for prop in props_to_copy:
         if prop in mwfr_old_raw:
             mwfr[prop] = mwfr_old_raw[prop]
@@ -211,8 +223,8 @@ def rerun_mwfr(
                 )
 
     mwfr[DESCRIPTION] = f"Rerun of MetaWorkflow {mwfr_old_raw[ACCESSION]}"
-    #mwfr["final_status"] = "stopped"
-    # pprint.pprint(mwfr)
+    # mwfr["final_status"] = "stopped"
+
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
@@ -221,7 +233,7 @@ def rerun_mwfr(
     patch_body = {
         DESCRIPTION: f"This MetaWorkflowRun has been rerun due to an updated MetaWorkflow as {mwfr_accession}",
         TAGS: ["rerun"],
-        STATUS: DELETED
+        STATUS: DELETED,
     }
     ff_utils.patch_metadata(patch_body, obj_id=mwfr_old_raw[UUID], key=smaht_key)
     print(f"Tagged old MWFR {mwfr_old_raw[ACCESSION]} as rerun.")
@@ -277,14 +289,16 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
     print("Merging done.")
 
 
-def replace_qc_item(file_accession: str, keep_index: int, release: bool, smaht_key:dict):
+def replace_qc_item(
+    file_accession: str, keep_index: int, release: bool, smaht_key: dict
+):
     file = ff_utils.get_metadata(file_accession, smaht_key)
     file_uuid = file["uuid"]
     file_qms = file.get("quality_metrics", [])
     if len(file_qms) < 2 or keep_index > len(file_qms):
         print(f"ERROR: Not enough QM items present.")
         return
-    
+
     qm_uuid_to_keep = file_qms[keep_index][UUID]
     try:
         patch_body = {"quality_metrics": [qm_uuid_to_keep]}
@@ -292,7 +306,7 @@ def replace_qc_item(file_accession: str, keep_index: int, release: bool, smaht_k
         print("QC item replaced.")
     except Exception as e:
         raise Exception(f"Item could not be PATCHed: {str(e)}")
-    
+
     if release:
         qm_item = ff_utils.get_metadata(qm_uuid_to_keep, smaht_key)
         zip_url = qm_item["url"]
@@ -305,15 +319,15 @@ def replace_qc_item(file_accession: str, keep_index: int, release: bool, smaht_k
             print(f"Zip file {zip_uuid} released.")
         except Exception as e:
             raise Exception(f"Item could not be PATCHed: {str(e)}")
-        
+
 
 def archive_unaligned_reads(fileset_accession: str, dry_run: bool, smaht_key: dict):
     """Archive (submitted) unaligned reads of a fileset.
-    Every submitted unaligned read in the fileset will receive the s3_lifecycle_categor=long_term_archive.
+    Every submitted unaligned read in the fileset will receive the s3_lifecycle_category=long_term_archive.
 
     Args:
-        fileset_accession (str): _description_
-        smaht_key (dict): _description_
+        fileset_accession (str): Fileset accession
+        smaht_key (dict): SMaHT key
     """
     file_set = get_file_set(fileset_accession, smaht_key)
 
@@ -335,6 +349,50 @@ def archive_unaligned_reads(fileset_accession: str, dry_run: bool, smaht_key: di
                 patch_body, obj_id=unaligned_read[UUID], key=smaht_key
             )
         print(f" - Archived file {unaligned_read['display_title']}")
+
+
+def archive_broad_crams_and_fastqs(fileset_accession: str, dry_run: bool, smaht_key: dict):
+    """Archive (submitted) CRAMs and the associated FASTQs from the conversion.
+    Every such file in the fileset will receive the s3_lifecycle_category=long_term_archive.
+
+    Args:
+        fileset_accession (str): Fileset accession
+        smaht_key (dict): SMaHT key
+    """
+    file_set = get_file_set(fileset_accession, smaht_key)
+
+    search_filter = (
+        "?type=SubmittedFile"
+        "&file_format.display_title=cram"
+        "&status=uploaded"
+        f"&file_sets.uuid={file_set[UUID]}"
+    )
+    crams = ff_utils.search_metadata(
+        f"/search/{search_filter}", key=smaht_key
+    )
+
+    search_filter = (
+        "?type=OutputFile"
+        "&file_format.display_title=fastq_gz"
+        "&status=uploaded"
+        f"&file_sets.uuid={file_set[UUID]}"
+    )
+    fastqs = ff_utils.search_metadata(
+        f"/search/{search_filter}", key=smaht_key
+    )
+    files = crams + fastqs
+    if dry_run:
+        print(f" - Patching {len(files)} files. DRY RUN - NOTHING PATCHED")
+    else:
+        print(f" - Patching {len(files)} files")
+
+    for file in files:
+        if not dry_run:
+            patch_body = {"s3_lifecycle_category": "long_term_archive"}
+            ff_utils.patch_metadata(
+                patch_body, obj_id=file[UUID], key=smaht_key
+            )
+        print(f" - Archived file {file['display_title']}")
 
 
 def sample_identity_check_status(num_files: int, smaht_key: dict):
@@ -376,6 +434,7 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
     donors = {}
     status = {}
     for output in output_files:
+        print(f"Checking file {output['display_title']}")
         mwfrs = output.get("meta_workflow_run_outputs")
         if not mwfrs:
             print(
@@ -444,6 +503,80 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         )
 
 
+def purge_fileset(
+    fileset_accession: str,
+    dry_run: bool,
+    delete_submitted_files: bool,
+    delete_fileset: bool,
+    smaht_key: dict,
+):
+    """Delete all files in a fileset, delete associated MetaWorkflowRuns (incl. files)
+    and remove the fileset from the portal.
+
+    Args:
+        fileset_accession (str): Fileset accession
+        dry_run (bool): If True, do not delete files but print what would be deleted
+        delete_submitted_files (bool): If True, delete submitted files
+        delete_fileset (bool): If True, delete the fileset
+        smaht_key (dict): SMaHT key
+    """
+    file_set = get_item(fileset_accession, smaht_key, frame="embedded")
+    if not file_set:
+        print(f"Fileset {fileset_accession} not found.")
+        return
+
+    items_to_delete = []
+
+    if delete_submitted_files:
+        print(f"\nFiles on the file set that will be deleted:")
+        for file in file_set.get("files", []):
+            print(f" - {file[DISPLAY_TITLE]}")
+            items_to_delete.append(file[UUID])
+
+    print(f"\nMetaWorkflowRuns that will be deleted:")
+    for mwfr in file_set.get("meta_workflow_runs", []):
+        print(f" - MetaWorkflowRun {mwfr[DISPLAY_TITLE]}")
+        mwfr_item = get_item(mwfr[UUID], smaht_key, frame="embedded")
+        items_to_delete.append(mwfr_item[UUID])
+
+        workflow_runs = mwfr_item.get("workflow_runs", [])
+        for wfr in workflow_runs:
+            wfr_display_title = wfr["workflow_run"][DISPLAY_TITLE]
+            wfr_uuid = wfr["workflow_run"][UUID]
+            print(f"   - WorkflowRun {wfr_display_title}")
+            items_to_delete.append(wfr_uuid)
+            outputs = wfr.get("output", [])
+            for output in outputs:
+                file = output.get("file", {})
+                if file and file.get(STATUS) != DELETED:
+                    print(f"    - File {file[DISPLAY_TITLE]}")
+                    items_to_delete.append(file[UUID])
+
+    if delete_fileset:
+        print(f"\nFile set that will be deleted:")
+        print(f" - {file_set[ACCESSION]}")
+        items_to_delete.append(file_set[UUID])
+
+    if dry_run:
+        print(f"\nDRY RUN: Nothing deleted.")
+        return
+    else:
+        confirm = input("Are you sure you want to continue? [y/N]: ").strip().lower()
+
+        if confirm != 'y':
+            print(f"Aborted deletion of Fileset {file_set[ACCESSION]} and its files.")
+            return
+
+        for item_uuid in items_to_delete:
+            try:
+                ff_utils.patch_metadata(
+                    {STATUS: DELETED}, obj_id=item_uuid, key=smaht_key
+                )
+                print(f"Deleted item {item_uuid}.")
+            except Exception as e:
+                print(f"Error deleting item {item_uuid}: {str(e)}")
+
+
 def print_error_and_exit(error):
     print(error)
     exit()
@@ -455,5 +588,14 @@ def set_property(uuid: str, prop_key: str, prop_value: Any, smaht_key: Dict[str,
     try:
         ff_utils.patch_metadata(patch_body, obj_id=uuid, key=smaht_key)
         print(f"Set item {uuid} property {prop_key} to {prop_value}.")
+    except Exception as e:
+        raise Exception(f"Item could not be PATCHed: {str(e)}")
+    
+
+def remove_property(uuid: str, property: str, smaht_key: Dict[str, Any]):
+    """ "Removes a property from an item."""
+    try:
+        ff_utils.patch_metadata({}, obj_id=f"{uuid}?delete_fields={property}", key=smaht_key)
+        print(f"Removed property {property} from item {uuid}.")
     except Exception as e:
         raise Exception(f"Item could not be PATCHed: {str(e)}")
