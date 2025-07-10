@@ -87,10 +87,17 @@ def reset_mwfrs(mwfr_uuids, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def reset_all_failed_mwfrs(auth_env):
+@click.option(
+    "--ignore-md5",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Ignore MD5 checksum runs",
+)
+def reset_all_failed_mwfrs(auth_env, ignore_md5):
     """Reset all failed MetaWorkflowRuns on the portal"""
     smaht_key = get_auth_key(auth_env)
-    wrangler_utils.reset_all_failed_mwfrs(smaht_key)
+    wrangler_utils.reset_all_failed_mwfrs(smaht_key, ignore_md5)
 
 
 @cli.command()
@@ -273,6 +280,42 @@ def archive_unaligned_reads(fileset_accessions, dry_run, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="Fileset accessions",
+)
+@click.option(
+    "-d",
+    "--dry-run",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Dry run",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def archive_broad_crams_and_fastqs(fileset_accessions, dry_run, auth_env):
+    """
+    Archive (submitted) CRAMs and the associated FASTQs from the conversion.
+    Every such file in the fileset will receive the s3_lifecycle_category=long_term_archive.
+    """
+    smaht_key = get_auth_key(auth_env)
+    for f in fileset_accessions:
+        print(f"Working on Fileset {f}")
+        wrangler_utils.archive_broad_crams_and_fastqs(f, dry_run, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
     "-n",
     "--num-files",
     required=True,
@@ -292,6 +335,64 @@ def sample_identity_check_status(num_files, auth_env):
     """
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.sample_identity_check_status(num_files, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="Fileset accessions",
+)
+@click.option(
+    "-d",
+    "--dry-run",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Dry run",
+)
+@click.option(
+    "--delete-submitted-files",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Delete submitted files",
+)
+@click.option(
+    "--delete-fileset",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Delete fileset",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def purge_fileset(
+    fileset_accessions, dry_run, delete_submitted_files, delete_fileset, auth_env
+):
+    """
+    Delete all files in a fileset, delete associated MetaWorkflowRuns (incl. files)
+    and remove the fileset from the portal. Use with caution!
+    """
+    smaht_key = get_auth_key(auth_env)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        wrangler_utils.purge_fileset(
+            fileset_accession,
+            dry_run,
+            delete_submitted_files,
+            delete_fileset,
+            smaht_key,
+        )
 
 
 @cli.command()
@@ -328,6 +429,35 @@ def set_property(identifier, property_key, property_value, auth_env):
     """Set item property to value by uuid."""
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.set_property(identifier, property_key, property_value, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-i",
+    "--identifier",
+    required=True,
+    type=str,
+    help="Item UUID",
+)
+@click.option(
+    "-p",
+    "--property",
+    required=True,
+    type=str,
+    help="Item property",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def remove_property(identifier, property, auth_env):
+    """Remove item property by uuid."""
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.remove_property(identifier, property, smaht_key)
 
 
 if __name__ == "__main__":

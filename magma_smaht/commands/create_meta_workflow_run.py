@@ -357,7 +357,12 @@ def qc_long_read_bam(file_accessions, replace_qc, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accession(s)",
 )
 @click.option(
     "-e",
@@ -366,16 +371,23 @@ def qc_long_read_bam(file_accessions, replace_qc, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def conversion_cram_to_fastq(fileset_accession, auth_env):
+def conversion_cram_to_fastq(fileset_accessions, auth_env):
     """Conversion MWFR for CRAM to FASTQ (paired-end)"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on FileSet {fileset_accession}")
+        mwfr_cram_to_fastq_paired_end(fileset_accession, smaht_key)
 
 
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
-    "-f", "--fileset-accession", required=True, type=str, help="Fileset accession"
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accession(s)",
 )
 @click.option(
     "-e",
@@ -384,10 +396,12 @@ def conversion_cram_to_fastq(fileset_accession, auth_env):
     type=str,
     help="Name of environment in smaht-keys file",
 )
-def conversion_bam_to_fastq(fileset_accession, auth_env):
+def conversion_bam_to_fastq(fileset_accessions, auth_env):
     """Conversion MWFR for BAM to FASTQ (paired-end)"""
     smaht_key = get_auth_key(auth_env)
-    mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on FileSet {fileset_accession}")
+        mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key)
 
 
 @cli.command()

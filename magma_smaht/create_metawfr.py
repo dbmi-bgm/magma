@@ -59,7 +59,6 @@ from magma_smaht.constants import (
     LENGTH_REQUIRED,
     LIBRARY_ID,
     GENOME_REFERENCE_STAR,
-    IS_STRANDED,
     STRANDEDNESS,
     COMMON_FIELDS,
     UUID,
@@ -135,7 +134,6 @@ def mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key):
         strandedness_mapping = {FIRST_STRANDED: "rf", SECOND_STRANDED: "fr"}
         mwfr_input.extend(
             [
-                get_mwfr_parameter_input_arg(IS_STRANDED, "true"),
                 get_mwfr_parameter_input_arg(
                     STRANDEDNESS, strandedness_mapping[strand]
                 ),
