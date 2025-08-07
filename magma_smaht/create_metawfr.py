@@ -36,6 +36,7 @@ from magma_smaht.utils import (
 from magma_smaht.constants import (
     MWF_NAME_ILLUMINA,
     MWF_NAME_RNASEQ,
+    MWF_NAME_KINNEX,
     MWF_NAME_ONT,
     MWF_NAME_PACBIO,
     MWF_NAME_HIC,
@@ -143,6 +144,17 @@ def mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key):
     create_and_post_mwfr(
         mwf[UUID], file_set, INPUT_FILES_R1_FASTQ_GZ, mwfr_input, smaht_key
     )
+
+
+def mwfr_kinnex_alignment(fileset_accession, smaht_key):
+    """Creates a MetaWorflowRun item in the portal for the Kinnex pipeline given a fileset"""
+
+    mwf = get_latest_mwf(MWF_NAME_KINNEX, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    file_set = get_file_set(fileset_accession, smaht_key)
+    mwfr_input = get_core_alignment_mwfr_input(file_set, INPUT_FILES_BAM, smaht_key)
+    create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 def mwfr_pacbio_alignment(fileset_accession, smaht_key):

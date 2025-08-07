@@ -326,6 +326,7 @@ def get_latest_mwf(mwf_name, smaht_key):
     Returns:
         dict: MWF item from portal
     """
+    #query = f"/search/?type=MetaWorkflow&version=0.3.0&name={mwf_name}"
     query = f"/search/?type=MetaWorkflow&name={mwf_name}"
     search_results = ff_utils.search_metadata(query, key=smaht_key)
 
