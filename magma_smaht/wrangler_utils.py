@@ -425,6 +425,7 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         "&sequencing_center.display_title=BCM+GCC"
         "&status=uploaded&status=released"
         "&file_format.display_title=bam"
+        "&file_format.display_title=cram"
         "&output_status=Final Output"
         f"&limit={num_files}"
         "&sort=date_created"

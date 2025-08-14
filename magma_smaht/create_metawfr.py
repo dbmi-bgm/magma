@@ -30,7 +30,11 @@ from magma_smaht.utils import (
     get_wfr_from_mwfr,
     get_tag_for_sample_identity_check,
     get_item,
+    get_item_es,
     get_latest_somalier_run_for_donor,
+    get_alignment_mwfr,
+    get_final_output_file,
+    has_bam_to_cram_mwfr,
 )
 
 from magma_smaht.constants import (
@@ -44,6 +48,7 @@ from magma_smaht.constants import (
     MWF_NAME_FASTQ_SHORT_READ,
     MWF_NAME_CRAM_TO_FASTQ_PAIRED_END,
     MWF_NAME_BAM_TO_FASTQ_PAIRED_END,
+    MWF_NAME_BAM_TO_CRAM,
     MWF_NAME_BAMQC_SHORT_READ,
     MWF_NAME_ULTRA_LONG_BAMQC,
     MWF_NAME_LONG_READ_BAMQC,
@@ -71,6 +76,7 @@ from magma_smaht.constants import (
     UPLOADED,
     FIRST_STRANDED,
     SECOND_STRANDED,
+    WGS
 )
 
 
@@ -285,6 +291,69 @@ def mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key):
     ]
     create_and_post_mwfr(mwf[UUID], file_set, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
+
+def mwfr_bam_to_cram(fileset_accessions, smaht_key):
+    """Converts final output BAM files to CRAM files in a fileset"""
+
+    mwf = get_latest_mwf(MWF_NAME_BAM_TO_CRAM, smaht_key)
+
+    warnings = []
+
+    for fileset_accession in fileset_accessions:
+        file_set = get_item_es(fileset_accession, smaht_key, frame='embedded')
+        file_set_raw = get_item_es(fileset_accession, smaht_key)
+
+        if has_bam_to_cram_mwfr(file_set, smaht_key):
+            warnings.append(
+                f"Fileset {file_set[ACCESSION]} already has BAM to CRAM MetaWorkflowRun, skipping."
+            )
+            continue
+
+        alignment_mwfr = get_alignment_mwfr(file_set, smaht_key)
+        if not alignment_mwfr:
+            warnings.append(
+                f"Alignment MetaWorkflowRun not found for fileset: {file_set[ACCESSION]}"
+            )
+            continue
+
+        final_ouput_file = get_final_output_file(alignment_mwfr, WGS, smaht_key)
+        if not final_ouput_file:
+            warnings.append(
+                f"Final output file not found for fileset: {file_set[ACCESSION]}"
+            )
+            continue
+
+        file_format = final_ouput_file["file_format"]["display_title"]
+        if file_format not in ["cram", "bam"]:
+            warnings.append(
+                f"Unexpected file format '{file_format}' of final output file for fileset: {file_set[ACCESSION]}"
+            )
+            continue
+        if file_format == "cram":
+            warnings.append(
+                f"Fileset {file_set[ACCESSION]} already has final output CRAM files, skipping conversion."
+            )
+            continue
+
+        bams = [{"file": final_ouput_file[UUID], "dimension": "0"}]
+
+        mwfr_input = [
+            get_mwfr_file_input_arg(INPUT_FILES_BAM, bams),
+        ]
+        mwfr_accession = create_and_post_mwfr(
+            mwf[UUID], file_set_raw, INPUT_FILES_BAM, mwfr_input, smaht_key, verbose=False
+        )
+        print(
+            f"MetaWorkflowRun for BAM to CRAM conversion created. Fileset/BAM/MWFR: {file_set[ACCESSION]}/{final_ouput_file[ACCESSION]}/{mwfr_accession}"
+        )
+
+
+    if warnings:
+        print("\nWarnings:")
+        for warning in warnings:
+            print(f"- {warning}")
+
+    
 
 ################################################
 #   QC MetaWorkflowRuns
@@ -630,23 +699,24 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
     return mwfr_input
 
 
-def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key):
+def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key, verbose=True):
 
     mwfr = mwfr_from_input(mwf_uuid, mwfr_input, input_arg, smaht_key)
     if file_set:
         mwfr[FILE_SETS] = [file_set[UUID]]
         mwfr[COMMON_FIELDS] = get_common_fields(file_set)
     # mwfr['final_status'] = 'stopped'
-    # pprint.pprint(mwfr)
+    #pprint.pprint(mwfr)
 
     post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
-    if file_set:
+    if file_set and verbose:
         print(
             f"Posted MetaWorkflowRun {mwfr_accession} for Fileset {file_set[ACCESSION]}."
         )
-    else:
+    elif verbose:
         print(f"Posted MetaWorkflowRun {mwfr_accession}.")
+    return mwfr_accession
 
 
 def filter_list_of_dicts(list_of_dics, property_target, target):
