@@ -3,6 +3,7 @@ import click
 from magma_smaht.create_metawfr import (
     mwfr_illumina_alignment,
     mwfr_rnaseq_alignment,
+    mwfr_kinnex_alignment,
     mwfr_pacbio_alignment,
     mwfr_fastqc,
     mwfr_hic_alignment,
@@ -90,6 +91,31 @@ def align_rnaseq(fileset_accessions, sequence_length, auth_env):
     for fileset_accession in fileset_accessions:
         print(f"Working on Fileset {fileset_accession}")
         mwfr_rnaseq_alignment(fileset_accession, sequence_length, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accessions",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def align_kinnex(fileset_accessions, auth_env):
+    """Alignment MWFR for Kinnex data"""
+    smaht_key = get_auth_key(auth_env)
+    for fileset_accession in fileset_accessions:
+        print(f"Working on Fileset {fileset_accession}")
+        mwfr_kinnex_alignment(fileset_accession, smaht_key)
 
 
 @cli.command()

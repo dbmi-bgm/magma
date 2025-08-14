@@ -3,12 +3,18 @@
 Change Log
 ==========
 
+3.12.0
+=====
+* Add Kinnex alignment MetaWorkflowRun creation function for SMaHT
+
+
 3.11.0
 =====
 * Most MetaWorkflowRun creation functions now accept multiple files or filesets as input.
 * Added `archive_broad_crams_and_fastqs` function to `wrangler_utils` to archive Broad submissions more easily. 
 * Added `purge_fileset` function to `wrangler_utils` to delete a fileset and its associated files.
 * Added `remove_property` function to `wrangler_utils` to remove properties from items.
+
 
 3.10.0
 =====

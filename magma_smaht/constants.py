@@ -5,9 +5,10 @@
 # MetaWorkflow names are used to get the latest version.
 # We assume that they don't change!
 MWF_NAME_ILLUMINA = "Illumina_alignment_GRCh38"
-MWF_NAME_RNASEQ = "RNA-seq_bulk_short_reads_GRCh38"
 MWF_NAME_ONT = "ONT_alignment_GRCh38"
 MWF_NAME_PACBIO = "PacBio_alignment_GRCh38"
+MWF_NAME_RNASEQ = "RNA-seq_bulk_short_reads_GRCh38"
+MWF_NAME_KINNEX = "RNA-seq_kinnex_long_reads_GRCh38"
 MWF_NAME_HIC = "Hi-C_alignment_GRCh38"
 MWF_NAME_FASTQC = "Illumina_FASTQ_quality_metrics"
 MWF_NAME_FASTQ_LONG_READ = "long_reads_FASTQ_quality_metrics"
