@@ -3,7 +3,6 @@
 Change Log
 ==========
 
-=======
 3.13.0
 =====
 * Add `conversion-bam-to-cram` MetaWorkflowRun creation function for SMaHT
