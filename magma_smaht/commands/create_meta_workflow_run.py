@@ -17,6 +17,7 @@ from magma_smaht.create_metawfr import (
     mwfr_short_read_fastqc,
     mwfr_custom_qc,
     mwfr_sample_identity_check,
+    mwfr_bam_to_cram,
 )
 from magma_smaht.utils import get_auth_key
 
@@ -428,6 +429,30 @@ def conversion_bam_to_fastq(fileset_accessions, auth_env):
     for fileset_accession in fileset_accessions:
         print(f"Working on FileSet {fileset_accession}")
         mwfr_bam_to_fastq_paired_end(fileset_accession, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--fileset-accessions",
+    required=True,
+    multiple=True,
+    type=str,
+    help="Fileset accession(s)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def conversion_bam_to_cram(fileset_accessions, auth_env):
+    """Conversion MWFR for final output BAMs to CRAM"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_bam_to_cram(fileset_accessions, smaht_key)
+        
 
 
 @cli.command()

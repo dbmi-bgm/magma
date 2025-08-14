@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.13.0
+=====
+* Add `conversion-bam-to-cram` MetaWorkflowRun creation function for SMaHT
+
+
 3.12.0
 =====
 * Add Kinnex alignment MetaWorkflowRun creation function for SMaHT

@@ -17,6 +17,13 @@ from magma_smaht.constants import (
     UUID,
     CONSORTIA,
     SUBMISSION_CENTERS,
+    STATUS,
+    COMPLETED,
+    DELETED,
+    ACCESSION,
+    WGS,
+    RNASEQ,
+    MWF_NAME_BAM_TO_CRAM
 )
 
 from packaging import version
@@ -457,8 +464,89 @@ def generate_input_structure(files):
         exit()
 
 
+def has_bam_to_cram_mwfr(fileset, key):
+    """Check if the fileset has a BAM to CRAM workflow run.
+
+    Args:
+        fileset (dict): Fileset item from portal
+
+    Returns:
+        bool: True if BAM to CRAM workflow run exists, False otherwise
+    """
+    mwfrs = fileset.get("meta_workflow_runs", [])
+    for mwfr in mwfrs:
+        mwf_item = get_item_es(mwfr['meta_workflow'][UUID], key)
+        if mwf_item['name'] == MWF_NAME_BAM_TO_CRAM:
+            return True
+       
+    return False
+
+def get_alignment_mwfr(fileset, key):
+    mwfrs = fileset.get("meta_workflow_runs", [])
+    results = []
+    for mwfr in mwfrs:
+        mwfr_item = get_item_es(mwfr[UUID], key, frame='embedded')
+        if mwfr_item[STATUS] == DELETED or mwfr_item["final_status"] != COMPLETED:
+            continue
+        categories = mwfr_item["meta_workflow"]["category"]
+
+        if "Alignment" in categories:
+            results.append(mwfr_item)
+    if len(results) == 1:
+        return results[0]
+    elif len(results) > 1:
+        mwfr = results[-1]  # Take the last one if there are multiple
+        print(
+            f"Warning: Fileset {fileset[ACCESSION]} has multiple alignment MWFRs. Taking last one: {mwfr[ACCESSION]}"
+        )
+        return mwfr
+    return None
+
+def get_final_output_file(mwfr, assay, key):
+    """Get the final output file from a MetaWorkflowRun based on assay.
+
+    Args:
+        mwfr (dict): MetaWorkflowRun item from portal
+        assay (str): Processing mode (WGS or RNASEQ)
+        key (dict): Portal authorization key
+        
+    Returns:
+        dict: Final output file item from portal, or None if not found
+        
+    Raises:
+        ValueError: If assay is not supported
+    """
+    if assay not in [WGS, RNASEQ]:
+        raise ValueError(f"Unsupported assay: {assay}. Supported assays are: {WGS}, {RNASEQ}")
+
+    mwf_version = version.parse(mwfr["meta_workflow"]["version"])
+    threshold_version = version.parse("0.3.0")
+
+    # Define workflow mapping based on assay and version
+    if assay == WGS:
+        if mwf_version <= threshold_version:
+            target_workflow = "samtools_merge"
+        else:
+            target_workflow = "bam_to_cram"
+    elif assay == RNASEQ:
+        target_workflow = "sentieon_Dedup"
+    
+    # Find the target workflow run
+    for workflow_run in mwfr["workflow_runs"]:
+        if workflow_run["name"] == target_workflow:
+            file_uuid = workflow_run["output"][0]["file"][UUID]
+            file = get_item_es(file_uuid, key, frame='embedded')
+            if file["output_status"] == "Final Output":
+                return file
+    
+    return None
 
 def get_item(identifier, key, frame="raw"):
     return ff_utils.get_metadata(
         identifier, add_on=f"frame={frame}&datastore=database", key=key
+    )
+
+def get_item_es(identifier, key, frame="raw"):
+    return ff_utils.get_metadata(
+        identifier, add_on=f"frame={frame}", key=key
     )
