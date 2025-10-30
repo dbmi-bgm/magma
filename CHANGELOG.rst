@@ -3,6 +3,12 @@
 Change Log
 ==========
 
+3.14.0
+=====
+* Add `purge_meta_workflow_run` function to `wrangler_utils` to delete a MetaWorkflowRun and its associated files.
+* Add support for new statuses
+
+
 3.13.0
 =====
 * Add `conversion-bam-to-cram` MetaWorkflowRun creation function for SMaHT

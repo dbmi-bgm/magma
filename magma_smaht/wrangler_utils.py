@@ -20,6 +20,7 @@ from magma_smaht.utils import (
     get_latest_somalier_run_for_donor,
     generate_input_structure,
     mwfr_from_input,
+    get_all_donors
 )
 
 from magma_smaht.constants import (
@@ -36,6 +37,13 @@ from magma_smaht.constants import (
     TAGS,
     STATUS,
     DELETED,
+    RELEASED,
+    OPEN,
+    OPEN_NETWORK,
+    OPEN_EARLY,
+    PROTECTED,
+    PROTECTED_NETWORK,
+    PROTECTED_EARLY,
     FAILED_JOBS,
 )
 
@@ -45,6 +53,8 @@ WF_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 WF_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 
 SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
+
+RELEASED_STATUSES = [RELEASED, OPEN, OPEN_NETWORK, OPEN_EARLY, PROTECTED, PROTECTED_NETWORK, PROTECTED_EARLY]
 
 
 def associate_conversion_output_with_fileset(
@@ -290,7 +300,7 @@ def merge_qc_items(file_accession: str, mode: str, smaht_key: dict):
 
 
 def replace_qc_item(
-    file_accession: str, keep_index: int, release: bool, smaht_key: dict
+    file_accession: str, keep_index: int, release: str, smaht_key: dict
 ):
     file = ff_utils.get_metadata(file_accession, smaht_key)
     file_uuid = file["uuid"]
@@ -312,7 +322,7 @@ def replace_qc_item(
         zip_url = qm_item["url"]
         zip_uuid = zip_url.split("/")[3]
         try:
-            patch_body = {"status": "released"}
+            patch_body = {"status": release}
             ff_utils.patch_metadata(patch_body, obj_id=qm_uuid_to_keep, key=smaht_key)
             ff_utils.patch_metadata(patch_body, obj_id=zip_uuid, key=smaht_key)
             print(f"QC item {qm_item[ACCESSION]} released.")
@@ -424,18 +434,46 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         "&sequencing_center.display_title=NYGC+GCC"
         "&sequencing_center.display_title=BCM+GCC"
         "&status=uploaded&status=released"
+        "&status=open&status=open-network&status=open-early"
+        "&status=protected&status=protected-network&status=protected-early"
         "&file_format.display_title=bam"
         "&file_format.display_title=cram"
         "&output_status=Final Output"
+        "&quality_metrics.display_title%21=No+value"
         f"&limit={num_files}"
         "&sort=date_created"
         "&meta_workflow_run_inputs.meta_workflow.name%21=sample_identity_check"
+        "&description%21=Annotated FLNC output BAM" # Exclude Kinnex FLNC BAMs as they don't show high relatedness values
     )
     output_files = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
+
+    # Get all donors at once. That's faster than looking them up one by one
+    donors_list = get_all_donors("object", smaht_key)
     donors = {}
+    for donor in donors_list:
+        donors[donor[UUID]] = donor
+
     status = {}
     for output in output_files:
         print(f"Checking file {output['display_title']}")
+
+        # if the file is released, the donor is just on the item
+        if output.get("status") in RELEASED_STATUSES:
+            donors_from_file = output.get("donors", [])
+            if len(donors_from_file) != 1:
+                print(
+                    f"Warning: Expected 1 donor but found {len(donors_from_file)} for file {output['accession']}"
+                )
+                continue
+            donor = donors_from_file[0]
+            donor_uuid = donor[UUID]
+
+            if donor_uuid not in status:
+                status[donor_uuid] = []
+            status[donor_uuid].append(output[ACCESSION])
+            continue
+
+
         mwfrs = output.get("meta_workflow_run_outputs")
         if not mwfrs:
             print(
@@ -445,10 +483,10 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         mwfr = mwfrs[0]
         mwfr = get_item(mwfr[UUID], smaht_key, frame="embedded")
 
-        # Only consider files that are outputs for alignment workflows
-        if "Alignment" not in mwfr["meta_workflow"]["category"]:
+        # Only consider files that are outputs for alignment workflows or bam2cram conversions
+        if "Alignment" not in mwfr["meta_workflow"]["category"] and mwfr["meta_workflow"]["name"] != "bam_to_cram":
             print(
-                f"Warning: File {output['accession']} is not result of an alignment MWF. Skipping."
+                f"Warning: File {output['accession']} is not result of an alignment or bam2cram MWF. Skipping."
             )
             continue
 
@@ -466,7 +504,6 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
             continue
         donor = donors_from_mwf[0]
         donor_uuid = donor[UUID]
-        donors[donor_uuid] = donor
 
         if donor_uuid not in status:
             status[donor_uuid] = []
@@ -578,6 +615,64 @@ def purge_fileset(
                 print(f"Error deleting item {item_uuid}: {str(e)}")
 
 
+def purge_meta_workflow_run(
+    mwfr_accession: str,
+    dry_run: bool,
+    assume_yes: bool,
+    smaht_key: dict,
+):
+    """Delete all files in a MetaWorkflowRun, delete MetaWorkflowRun itself.
+
+    Args:
+        mwfr_accession (str): MetaWorkflowRun accession
+        dry_run (bool): If True, do not delete files but print what would be deleted
+        smaht_key (dict): SMaHT key
+    """
+
+    items_to_delete = []
+
+    print(f"Deleting MetaWorkflowRun {mwfr_accession}:")
+    mwfr_item = get_item(mwfr_accession, smaht_key, frame="embedded")
+    print(f" - MetaWorkflowRun {mwfr_accession}")
+    items_to_delete.append(mwfr_item[UUID])
+
+    workflow_runs = mwfr_item.get("workflow_runs", [])
+    for wfr in workflow_runs:
+        wfr_display_title = wfr["workflow_run"][DISPLAY_TITLE]
+        wfr_uuid = wfr["workflow_run"][UUID]
+        print(f"   - WorkflowRun {wfr_display_title}")
+        items_to_delete.append(wfr_uuid)
+        outputs = wfr.get("output", [])
+        for output in outputs:
+            file = output.get("file", {})
+            if file and file.get(STATUS) != DELETED:
+                print(f"     - File {file[DISPLAY_TITLE]}")
+                items_to_delete.append(file[UUID])
+
+    if dry_run:
+        print(f"\nDRY RUN: Nothing deleted.")
+        return
+    else:
+        confirm = (
+            input("Are you sure you want to continue? [y/N]: ").strip().lower()
+            if not assume_yes
+            else "y"
+        )
+
+        if confirm != "y":
+            print(f"Aborted deletion of MetaWorkflowRun {mwfr_accession} and its files.")
+            return
+
+        for item_uuid in items_to_delete:
+            try:
+                ff_utils.patch_metadata(
+                    {STATUS: DELETED}, obj_id=item_uuid, key=smaht_key
+                )
+                print(f"Deleted item {item_uuid}.")
+            except Exception as e:
+                print(f"Error deleting item {item_uuid}: {str(e)}")
+
+
 def print_error_and_exit(error):
     print(error)
     exit()
@@ -591,7 +686,7 @@ def set_property(uuid: str, prop_key: str, prop_value: Any, smaht_key: Dict[str,
         print(f"Set item {uuid} property {prop_key} to {prop_value}.")
     except Exception as e:
         raise Exception(f"Item could not be PATCHed: {str(e)}")
-    
+
 
 def remove_property(uuid: str, property: str, smaht_key: Dict[str, Any]):
     """ "Removes a property from an item."""
