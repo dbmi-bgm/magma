@@ -218,10 +218,8 @@ def merge_qc_items(file_accessions, mode, auth_env):
 @click.option(
     "-r",
     "--release",
-    default=False,
-    is_flag=True,
-    show_default=True,
-    help="Release the remaining QC item",
+    type=str,
+    help="If set, release the remaining QC item with the given status",
 )
 @click.option(
     "-e",
@@ -235,7 +233,7 @@ def replace_qc_item(file_accession, keep_index, release, auth_env):
     Replace the QC item of a file with the one at the given index.
     If a file has multiple QC items, this command will remove all but the one with given index.
     Can be useful if QC has been rerun and the old QC item is no longer needed. This function also
-    releases the remaining QC item if the release flag is set.
+    releases the remaining QC item if the release argument is set.
     """
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.replace_qc_item(file_accession, keep_index, release, smaht_key)
@@ -393,6 +391,52 @@ def purge_fileset(
             delete_fileset,
             smaht_key,
         )
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-m",
+    "--mwfr-accession",
+    required=True,
+    type=str,
+    help="MetaWorkflowRun accessions",
+)
+@click.option(
+    "-d",
+    "--dry-run",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Dry run",
+)
+@click.option(
+    "-y",
+    "--assume-yes",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Assume yes to all prompts",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def purge_meta_workflow_run(mwfr_accession, dry_run, assume_yes, auth_env):
+    """
+    Delete all files in a MetaWorkflowRun, delete MetaWorkflowRun itself.
+    Use with caution!
+    """
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.purge_meta_workflow_run(
+        mwfr_accession,
+        dry_run,
+        assume_yes,
+        smaht_key,
+    )
 
 
 @cli.command()

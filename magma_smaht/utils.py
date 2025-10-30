@@ -9,6 +9,8 @@
 ################################################
 #   Libraries
 ################################################
+import pprint
+import functools
 import json, uuid
 from pathlib import Path
 from typing import Any, Dict, Sequence
@@ -314,12 +316,42 @@ def get_donors_from_mwfr(mwfr, smaht_key):
                 print(f"Can't get donor from sample source {sample_source['uuid']}")
                 continue
                
+    donors_list = get_all_donors("object", smaht_key)
+    donors_from_portal = {}
+    for donor in donors_list:
+        donors_from_portal[donor[UUID]] = donor
 
     donors = []
     donor_ids = list(set(donor_ids))
     for donor_id in donor_ids:
-        donor = get_item(donor_id, smaht_key, frame='object')
-        donors.append(donor)
+        donors.append(donors_from_portal[donor_id])
+    return donors
+
+def get_all_donors(frame, smaht_key):
+    """Get all donors in the portal (cached version)
+
+    Args:
+        frame (str): Frame type for the request
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        list: List of donor items from portal
+    """
+    serialized_key = _serialize_key(smaht_key)
+    return _get_all_donors_cached(frame, serialized_key)
+
+@functools.lru_cache(maxsize=128)
+def _get_all_donors_cached(frame, serialized_key):
+    """Internal cached function that works with hashable parameters."""
+    smaht_key = json.loads(serialized_key)
+    
+    query = f"/search/?type=Donor&field=uuid&limit=2000"
+    search_results = ff_utils.search_metadata(query, key=smaht_key)
+
+    donors = []
+    for donor in search_results:
+        donor_item = get_item(donor[UUID], smaht_key, frame=frame)
+        donors.append(donor_item)
     return donors
 
 
@@ -550,3 +582,7 @@ def get_item_es(identifier, key, frame="raw"):
     return ff_utils.get_metadata(
         identifier, add_on=f"frame={frame}", key=key
     )
+
+def _serialize_key(key_dict):
+    """Convert dictionary key to a hashable string for caching."""
+    return json.dumps(key_dict, sort_keys=True)
