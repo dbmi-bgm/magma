@@ -7,7 +7,7 @@ Change Log
 =====
 * Add `purge_meta_workflow_run` function to `wrangler_utils` to delete a MetaWorkflowRun and its associated files.
 * Add support for new statuses
-* Ignore Kinnex FLNC BAMs when checking Solamier results.
+* Ignore Kinnex FLNC BAMs when checking Somalier results.
 
 
 3.13.0
