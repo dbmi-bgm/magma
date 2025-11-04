@@ -1,0 +1,52 @@
+{
+  "accession": "ACCID",
+  "uuid": "test-uuid",
+  "input": [],
+  "workflows": [
+    {
+      "name": "A",
+      "workflow": "A-UUID",
+      "config": {},
+      "input": [
+        {
+          "argument_name": "INPUT_A",
+          "argument_type": "file"
+        }
+      ],
+      "outputs": ["OUTPUT_A"]
+    },
+    {
+      "name": "B",
+      "workflow": "B-UUID",
+      "config": {},
+      "shards": [["0"], ["1"], ["2"], ["3"]],
+      "input": [
+        {
+          "argument_name": "INPUT_B",
+          "argument_type": "file",
+          "source": "A"
+        }
+      ],
+      "outputs": ["OUTPUT_B"]
+    },
+    {
+      "name": "C",
+      "workflow": "C-UUID",
+      "config": {},
+      "input": [
+        {
+          "argument_name": "INPUT_C",
+          "argument_type": "file",
+          "source": "A"
+        },
+        {
+          "argument_name": "INPUT_CC",
+          "argument_type": "file",
+          "source": "B",
+          "gather_input": 1
+        }
+      ],
+      "outputs": ["OUTPUT_C"]
+    }
+  ]
+}
