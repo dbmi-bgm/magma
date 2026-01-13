@@ -15,12 +15,15 @@ from magma_smaht.utils import (
     get_file_set,
     get_donors_from_mwfr,
     get_item,
+    get_item_es,
     get_tag_for_sample_identity_check,
     get_wfr_from_mwfr,
     get_latest_somalier_run_for_donor,
     generate_input_structure,
     mwfr_from_input,
-    get_all_donors
+    get_all_donors,
+    ok_green_text,
+    fail_text,
 )
 
 from magma_smaht.constants import (
@@ -158,7 +161,7 @@ def reset_mwfrs(mwfr_uuids: list, smaht_key: dict):
 def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5 : bool):
 
     url = (
-        "/search/?final_status=failed&type=MetaWorkflowRun"
+        "/search/?final_status=failed&type=MetaWorkflowRun&limit=100"
         if not ignore_md5
         else "/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5"
     )
@@ -443,7 +446,7 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         f"&limit={num_files}"
         "&sort=date_created"
         "&meta_workflow_run_inputs.meta_workflow.name%21=sample_identity_check"
-        "&description%21=Annotated FLNC output BAM" # Exclude Kinnex FLNC BAMs as they don't show high relatedness values
+        "&description%21=FLNC (full-length, non-chimeric cDNA reads) aligned BAM" # Exclude Kinnex FLNC BAMs as they don't show high relatedness values
     )
     output_files = ff_utils.search_metadata(f"/search/{search_filter}", key=smaht_key)
 
@@ -481,7 +484,7 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
             )
             continue
         mwfr = mwfrs[0]
-        mwfr = get_item(mwfr[UUID], smaht_key, frame="embedded")
+        mwfr = get_item_es(mwfr[UUID], smaht_key, frame="embedded")
 
         # Only consider files that are outputs for alignment workflows or bam2cram conversions
         if "Alignment" not in mwfr["meta_workflow"]["category"] and mwfr["meta_workflow"]["name"] != "bam_to_cram":
@@ -538,6 +541,27 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         print(f"\nRun the following command to perform this QC check:")
         print(
             f"create-mwfr-smaht sample-identity-check -e data -d {donor[ACCESSION]} -f {' -f '.join(status[donor_uuid])}\n"
+        )
+
+
+def sample_identity_check_results(smaht_key: dict):
+    """Check latest sample identity check results for each donor."""
+    donors = get_all_donors("object", smaht_key)
+    donors_sorted = sorted(donors, key=lambda d: d.get("external_id", ""))
+    for donor in donors_sorted:
+        donor_display_title = donor["display_title"]
+        latest_run = get_latest_somalier_run_for_donor(donor[ACCESSION], smaht_key)
+        if not latest_run:
+            continue
+
+        latest_run = latest_run[0]
+        somalier_relate = get_wfr_from_mwfr(latest_run, "somalier_relate", 0)
+        qc_result = somalier_relate["output"][0]["file"]["quality_metrics"][0][
+            "overall_quality_status"
+        ]
+        qc_result = ok_green_text(qc_result) if qc_result == "Pass" else fail_text(qc_result)
+        print(
+            f"{donor_display_title}: {qc_result} (MWFR: {latest_run[ACCESSION]})"
         )
 
 

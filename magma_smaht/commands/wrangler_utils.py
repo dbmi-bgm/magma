@@ -338,6 +338,23 @@ def sample_identity_check_status(num_files, auth_env):
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def sample_identity_check_results(auth_env):
+    """
+    Check sample identity results for each donor.
+    """
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.sample_identity_check_results(smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
     "-f",
     "--fileset-accessions",
     required=True,
