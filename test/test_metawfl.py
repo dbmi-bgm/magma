@@ -363,3 +363,43 @@ def test_wfl_fixed_shards_gather_input_error():
     with pytest.raises(ValueError) as e:
         wfl_obj = wfl.MetaWorkflow(data)
     assert str(e.value) == 'JSON validation error, gather and gather_input can\'t be used together in the same step\n'
+
+def test_wfl_fixed_shards_gather_input_no_gather():
+    # Results expected
+    results = {
+     'meta_workflow': 'test-uuid',
+     'workflow_runs': [
+      # A
+      {'name': 'A', 'status': 'pending', 'shard': '0'},
+      # B ("shards": [["0"], ["1"], ["2"], ["3"]])
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '0',
+       'dependencies': ['A:0']},
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '1',
+       'dependencies': ['A:0']},
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '2',
+       'dependencies': ['A:0']},
+      {'name': 'B',
+       'status': 'pending',
+       'shard': '3',
+       'dependencies': ['A:0']},
+       # C (source [A], "gather_input": 1 [B])
+      {'name': 'C',
+       'status': 'pending',
+       'shard': '0',
+       'dependencies': ['A:0', 'B:0', 'B:1', 'B:2', 'B:3']}
+       ],
+     'input': [],
+     'final_status': 'pending'}
+    # Run test
+    with open('test/files/test_METAWFL_shards_fixed.json') as json_file:
+        data = json.load(json_file)
+    wfl_obj = wfl.MetaWorkflow(data)
+    x = wfl_obj.write_run(['f1', 'f2'])
+    assert x == results
+#end def

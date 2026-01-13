@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.15.0
+=====
+* fix to manage fixed shard dependencies on a single non scatter/gather/sharded step
+
+
 3.14.0
 =====
 * Add `purge_meta_workflow_run` function to `wrangler_utils` to delete a MetaWorkflowRun and its associated files.

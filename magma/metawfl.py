@@ -425,8 +425,20 @@ class MetaWorkflow(object):
                                 run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(s_g)))
                             #end if
                         #end for
-                    else:
-                        run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(s)))
+                    else: # No gather, normal dependency
+                        # Choose dependency shard:
+                        # - if producer has fixed_shards and it's exactly one, always use that one
+                        # - else if producer is scattered, align to current shard `s`
+                        # - else (producer not scattered), use ['0']
+                        if dependency in fixed_shards:
+                            dep_fixed = fixed_shards[dependency]   # e.g. [['0']] or [['0'], ['1'], ...]
+                            dep_shard = dep_fixed[0] if len(dep_fixed) == 1 else s
+                        elif dependency in scatter:
+                            dep_shard = s
+                        else:
+                            dep_shard = ['0']
+                        # Add dependency with shard
+                        run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(dep_shard)))
                     #end if
                 #end for
                 run_json['workflow_runs'].append(run_step_)
