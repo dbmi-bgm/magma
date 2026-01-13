@@ -3,6 +3,11 @@
 Change Log
 ==========
 
+3.16.0
+=====
+* Add CLI command to get an overview of Somalier results in SMaHT.
+
+
 3.15.0
 =====
 * fix to manage fixed shard dependencies on a single non scatter/gather/sharded step
