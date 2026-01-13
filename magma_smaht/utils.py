@@ -586,3 +586,34 @@ def get_item_es(identifier, key, frame="raw"):
 def _serialize_key(key_dict):
     """Convert dictionary key to a hashable string for caching."""
     return json.dumps(key_dict, sort_keys=True)
+
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+
+def ok_blue_text(text: str) -> str:
+    return f"{bcolors.OKBLUE}{text}{bcolors.ENDC}"
+
+
+def ok_green_text(text: str) -> str:
+    return f"{bcolors.OKGREEN}{text}{bcolors.ENDC}"
+
+
+def bold_text(text: str) -> str:
+    return f"{bcolors.BOLD}{text}{bcolors.ENDC}"
+
+
+def warning_text(text: str) -> str:
+    return f"{bcolors.WARNING}{text}{bcolors.ENDC}"
+
+
+def fail_text(text: str) -> str:
+    return f"{bcolors.FAIL}{text}{bcolors.ENDC}"
