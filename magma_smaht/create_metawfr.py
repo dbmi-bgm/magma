@@ -35,6 +35,18 @@ from magma_smaht.utils import (
     get_alignment_mwfr,
     get_final_output_file,
     has_bam_to_cram_mwfr,
+    get_illumina_wgs_filesets_for_tissue,
+    get_pacbio_wgs_filesets_for_tissue,
+    get_released_illumina_wgs_files_for_tissue,
+    get_released_illumina_wgs_files_for_donor,
+    get_released_pacbio_wgs_files_for_tissue,
+    get_released_pacbio_wgs_files_for_donor,
+    get_released_long_read_wgs_files_for_donor,
+    get_released_ont_wgs_files_for_tissue,
+    get_variant_calling_output,
+    get_tissue_from_external_id,
+    post_analysis_run,
+    warning_text,
 )
 
 from magma_smaht.constants import (
@@ -53,12 +65,20 @@ from magma_smaht.constants import (
     MWF_NAME_BAMQC_SHORT_READ,
     MWF_NAME_ULTRA_LONG_BAMQC,
     MWF_NAME_LONG_READ_BAMQC,
+    MWF_NAME_LONGCALLD,
+    MWF_NAME_LONGCALLD_SINGLE_FILE,
+    MWF_NAME_SNIFFLES,
+    MWF_NAME_STRELKA2,
+    MWF_NAME_DNASCOPEHYBRID,
+    MWF_NAME_TNHAPLOTYPER,
     MWF_SAMPLE_IDENTITY_CHECK,
     INPUT_FILES_R1_FASTQ_GZ,
     INPUT_FILES_R2_FASTQ_GZ,
     INPUT_FILES_BAM,
     INPUT_FILES_FASTQ_GZ,
     INPUT_FILES_CRAM,
+    INPUT_FILE_CRAM,
+    ADDITIONAL_INPUT_FILES_CRAM,
     GENOME_REFERENCE_FASTA,
     SAMPLE_NAME,
     SAMPLE_NAMES,
@@ -71,13 +91,19 @@ from magma_smaht.constants import (
     SUBMISSION_CENTERS,
     SEQUENCING_CENTER,
     FILE_SETS,
-    META_WORFLOW_RUN,
+    ANALYSIS_RUNS,
+    META_WORKFLOW_RUN,
     ACCESSION,
+    DISPLAY_TITLE,
+    TAGS,
     ALIASES,
     UPLOADED,
     FIRST_STRANDED,
     SECOND_STRANDED,
-    WGS
+    WGS,
+    SOMATIC_SNV_CALLING,
+    SOMATIC_SV_CALLING,
+    GERMLINE_SNV_CALLING
 )
 
 
@@ -365,7 +391,6 @@ def mwfr_bam_to_cram(fileset_accessions, smaht_key):
         for warning in warnings:
             print(f"- {warning}")
 
-    
 
 ################################################
 #   QC MetaWorkflowRuns
@@ -453,7 +478,7 @@ def mwfr_ubam_qc_long_read(fileset_accession, replace_existing_qc, smaht_key):
         "?type=UnalignedReads"
         f"&status={UPLOADED}"
         "&file_format.display_title=bam"
-        # "&quality_metrics=No+value"
+        "&quality_metrics=No+value"
         f"&file_sets.uuid={file_set[UUID]}"
     )
 
@@ -629,9 +654,378 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
     mwfr["tags"] = [get_tag_for_sample_identity_check(donor)]
     # mwfr["final_status"] = "stopped"
 
-    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
+
+
+################################################
+#   Variant calling
+################################################
+
+def mwfr_germline_snv_caller(donor_accession, tissue_accession, analysis_run, smaht_key):
+
+    donor = get_item_es(donor_accession, smaht_key, frame="embedded")
+    donor_code = donor["external_id"]
+
+    if tissue_accession:
+        tissue = get_item_es(tissue_accession, smaht_key, frame="embedded")
+        tissue_code = tissue["external_id"]
+        files_illumina = get_released_illumina_wgs_files_for_tissue(tissue_code, smaht_key)
+        files_pacbio = get_released_pacbio_wgs_files_for_tissue(tissue_code, smaht_key)
+        print(f"Using tissue {tissue_code} for germline SNV calling. {len(files_pacbio)} Pacbio files found. {len(files_illumina)} Illumina files found.")
+    else:   
+        # We need to find a tissue where we have Pacbio and Illumina data for the donor
+
+        # We are search for data in the following tissue priority order
+        # Heart LV, Muscle, Colon Desc, Colon Asc, Skin Calf, Cereb. Brain, Frontal Lobe Brain, Temp. Lobe Brain, Hipp. Brain L, Hipp. Brain R, Skin Abdomen, Adrenal Gland L, Aorta Abdominal, Adrenal Gland R, Testis Left, Ovary Left, Esophagus, Lung, Liver Sample, Buccal Swab, Blood Whole, Dermal Fibroblast
+        tissue_priority_list = [
+            "3S",
+            "3AH",
+            "3G",
+            "3E",
+            "3AD",
+            "3AM",
+            "3AK",
+            "3AL",
+            "3AN",
+            "3AO",
+            "3AF",
+            "3K",
+            "3O",
+            "3M",
+            "3U",
+            "3Y",
+            "3C",
+            "3Q",
+            "3I",
+            "3B",
+            "3A",
+            "3AC",
+        ]
+        for tissue_suffix in tissue_priority_list:
+            tissue_code = f"{donor_code}-{tissue_suffix}"
+            files_illumina = get_released_illumina_wgs_files_for_tissue(
+                tissue_code, smaht_key
+            )
+            files_pacbio = get_released_pacbio_wgs_files_for_tissue(
+                tissue_code, smaht_key
+            )
+            if len(files_pacbio) > 0 and len(files_illumina) > 0:
+                tissue = get_tissue_from_external_id(tissue_code, smaht_key)
+                tissue_accession = tissue[ACCESSION]
+                print(
+                    f"Using tissue {tissue_code} for germline SNV calling. {len(files_pacbio)} Pacbio files found. {len(files_illumina)} Illumina files found."
+                )
+                break
+
+    print("\nIllumina files to choose from:")
+    for f in files_illumina:
+        coverage = f["quality_metrics"][-1]["coverage"]
+        print(f"- Illumina file: {f[DISPLAY_TITLE]}. Coverage: {coverage}X")
+
+    files_with_coverage = [
+        f
+        for f in files_illumina
+        if f.get("quality_metrics") and f["quality_metrics"][-1].get("coverage")
+    ]
+    if files_with_coverage:
+        file_with_highest_coverage = max(
+            files_with_coverage, key=lambda f: f["quality_metrics"][-1]["coverage"]
+        )
+    print("\nIllumina file with highest coverage to be used:")
+    print(f"- Illumina file: {file_with_highest_coverage[DISPLAY_TITLE]}")
+    files_illumina = [file_with_highest_coverage]
+
+    print("\nPacbio files to be used:")
+    for f in files_pacbio:
+        print(f"- Pacbio file: {f[DISPLAY_TITLE]}")
+
+    # Create the AnalysisRun Item that will contain all MWFRs
+    if analysis_run:
+        analysis_run_accession = analysis_run
+        print(f"Using provided AnalysisRun {analysis_run_accession}.")
+    else:
+        analysis_run_accession = post_analysis_run(
+            GERMLINE_SNV_CALLING,
+            f"Germline SNV Calling: {donor_code}",
+            donors=[donor_accession],
+            tissues=[tissue_accession],
+            smaht_key=smaht_key,
+        )
+        print(f"Created AnalysisRun {analysis_run_accession}.")
+
+    # Create inputs for DNAScopeHybrid MWFR
+    illumina_crams = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(files_illumina)
+    ]
+    pacbio_crams = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(files_pacbio)
+    ]
+    mwfr_dnascopehybrid_input = [
+        get_mwfr_file_input_arg("input_files_short_cram", illumina_crams),
+        get_mwfr_file_input_arg("input_files_long_cram", pacbio_crams),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, donor_accession),
+    ]
+
+    mwf_dnascopehybrid = get_latest_mwf(MWF_NAME_DNASCOPEHYBRID, smaht_key)
+
+    mwfrs_to_post = []
+
+    print("Validating DNAScopeHybrid MWFR.")
+    mwfr_dnascopehybrid = create_and_validate_analysis_mwfr(
+        mwf_dnascopehybrid[UUID],
+        analysis_run_accession,
+        "input_files_short_cram",
+        mwfr_dnascopehybrid_input,
+        f"{donor_code}_dnascopehybrid",
+        smaht_key,
+    )
+    mwfrs_to_post.append(mwfr_dnascopehybrid)
+    post_analysis_mwfrs(mwfrs_to_post, smaht_key)
+
+
+def mwfrs_somatic_snv_callers(tissue_accession, analysis_run, smaht_key):
+
+    tissue = get_item_es(tissue_accession, smaht_key, frame="embedded")
+    tissue_code = tissue["external_id"]
+    tissue_type = tissue["tissue_type"]
+    donor_uuid = tissue["donor"][UUID]
+    # pprint.pprint(tissue)
+
+    # Get all released short read WGS files for the tissue
+    files_illumina = get_released_illumina_wgs_files_for_tissue(tissue_code, smaht_key)
+    print(f"Number of Illumina WGS files: {len(files_illumina)}")
+    # Get all released Pacbio WGS files for the tissue
+    files_pacbio = get_released_pacbio_wgs_files_for_tissue(tissue_code, smaht_key)
+    print(f"Number of Pacbio WGS files: {len(files_pacbio)}")
+
+    # Get all released ONT WGS files for the tissue
+    # files_ont = get_released_ont_wgs_files_for_tissue(tissue_code, smaht_key)
+    # pprint.pprint(len(files_ont))
+
+    # We are getting the filesets as well to double check if the numbers match
+    file_sets_illumina_wgs = get_illumina_wgs_filesets_for_tissue(
+        tissue_code, smaht_key
+    )
+    file_sets_pacbio_wgs = get_pacbio_wgs_filesets_for_tissue(tissue_code, smaht_key)
+
+    if len(files_illumina) != len(file_sets_illumina_wgs):
+        warning_msg = f"{warning_text('Warning:')} Number of released Illumina WGS files ({len(files_illumina)}) does not match number of Illumina WGS filesets ({len(file_sets_illumina_wgs)})."
+        print(warning_msg)
+        response = input("Do you want to continue? (yes/no): ").strip().lower()
+        if response not in ['yes', 'y']:
+            print("Operation cancelled.")
+            return
+    if len(files_pacbio) != len(file_sets_pacbio_wgs):
+        warning_msg = f"{warning_text('Warning:')} Number of released Pacbio WGS files ({len(files_pacbio)}) does not match number of Pacbio WGS filesets ({len(file_sets_pacbio_wgs)})."
+        print(warning_msg)
+        response = input("Do you want to continue? (yes/no): ").strip().lower()
+        if response not in ['yes', 'y']:
+            print("Operation cancelled.")
+            return
+
+    print("\nIllumina files to be used:")
+    for f in files_illumina:
+        print(f"- Illumina file: {f[DISPLAY_TITLE]}")
+
+    print("\nPacbio files to be used:")
+    for f in files_pacbio:
+        print(f"- Pacbio file: {f[DISPLAY_TITLE]}")
+
+    # Create the AnalysisRun Item that will contain all MWFRs
+    if analysis_run:
+        analysis_run_accession = analysis_run
+        print(f"Using provided AnalysisRun {analysis_run_accession}.")
+    else:
+        analysis_run_accession = post_analysis_run(
+            SOMATIC_SNV_CALLING,
+            f"Somatic SNV Calling: {tissue_code}",
+            [donor_uuid],
+            [tissue_accession],
+            smaht_key,
+        )
+        print(f"\nCreated AnalysisRun {analysis_run_accession}.")
+
+    mwf_tnhaplotyper = get_latest_mwf(MWF_NAME_TNHAPLOTYPER, smaht_key)
+    mwf_strelka2 = get_latest_mwf(MWF_NAME_STRELKA2, smaht_key)
+    mwf_longcalld = get_latest_mwf(MWF_NAME_LONGCALLD, smaht_key)
+    mwf_longcalld_single_file = get_latest_mwf(MWF_NAME_LONGCALLD_SINGLE_FILE, smaht_key)
+
+    mwfrs_to_post = []
+
+    # Create TNhaplotyper2 MWFR
+    illumina_crams = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(files_illumina)
+    ]
+    mwfr_tnhaplotyper_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_CRAM, illumina_crams),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, tissue_accession),
+    ]
+    print("\nValidating TNhaplotyper2 MWFR.")
+    mwfr_tnhaplotyper = create_and_validate_analysis_mwfr(
+        mwf_tnhaplotyper[UUID],
+        analysis_run_accession,
+        INPUT_FILES_CRAM,
+        mwfr_tnhaplotyper_input,
+        f"{tissue_code}_tnhaplotyper2",
+        smaht_key,
+    )
+    mwfrs_to_post.append(mwfr_tnhaplotyper)
+
+    # Create Strelka2 MWFR
+    mwfr_strelka2_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_CRAM, illumina_crams),
+    ]
+    print("Validating Strelka2 MWFR.")
+    mwfr_strelka2 = create_and_validate_analysis_mwfr(
+        mwf_strelka2[UUID],
+        analysis_run_accession,
+        INPUT_FILES_CRAM,
+        mwfr_strelka2_input,
+        f"{tissue_code}_strelka2",
+        smaht_key,
+    )
+    mwfrs_to_post.append(mwfr_strelka2)
+
+    # Create longcalled MWFR
+    if len(files_pacbio) > 1:
+        first_pacbio_cram = [
+            {"file": files_pacbio[0][UUID]}
+        ]
+        additional_pacbio_crams = [
+            {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(files_pacbio[1:])
+        ]
+        mwfr_longcalled_input = [
+            get_mwfr_file_input_arg(INPUT_FILE_CRAM, first_pacbio_cram),
+            get_mwfr_file_input_arg(ADDITIONAL_INPUT_FILES_CRAM, additional_pacbio_crams),
+            get_mwfr_parameter_input_arg(SAMPLE_NAME, tissue_accession),
+        ]
+        print("Validating Longcalld MWFR.")
+        mwfr_longcalld = create_and_validate_analysis_mwfr(
+            mwf_longcalld[UUID],
+            analysis_run_accession,
+            ADDITIONAL_INPUT_FILES_CRAM,
+            mwfr_longcalled_input,
+            f"{tissue_code}_longcalld",
+            smaht_key,
+        )
+        mwfrs_to_post.append(mwfr_longcalld)
+    elif len(files_pacbio) == 1:
+        first_pacbio_cram = [
+            {"file": files_pacbio[0][UUID]}
+        ]
+        mwfr_longcalled_input = [
+            get_mwfr_file_input_arg(INPUT_FILE_CRAM, first_pacbio_cram),
+            get_mwfr_parameter_input_arg(SAMPLE_NAME, tissue_accession),
+        ]
+        print("Validating Longcalld MWFR.")
+        mwfr_longcalld = create_and_validate_analysis_mwfr(
+            mwf_longcalld_single_file[UUID],
+            analysis_run_accession,
+            INPUT_FILE_CRAM,
+            mwfr_longcalled_input,
+            f"{tissue_code}_longcalld",
+            smaht_key,
+        )
+        mwfrs_to_post.append(mwfr_longcalld)
+    post_analysis_mwfrs(mwfrs_to_post, smaht_key)
+
+
+def mwfr_somatic_snv_filtering(tissue_accession, analysis_run, smaht_key):
+
+    tissue = get_item_es(tissue_accession, smaht_key, frame="embedded")
+    tissue_code = tissue["external_id"]
+    donor_code = tissue["donor"]["external_id"]
+
+    print(f"\nGathering input data for somatic SNV filtering for tissue {tissue_code}.")
+
+    tnhaplotyper2_result = get_variant_calling_output(
+        tissue_code, "tnhaplotyper2", "sentieon_merge_TNfilter", "output_file_vcf_gz", smaht_key
+    )
+    print(f"\nTNhaplotyper2 VCF: {tnhaplotyper2_result[ACCESSION]}")
+
+    strelka2_result_snv = get_variant_calling_output(
+        tissue_code, "strelka2", "bcftools_concat@SNV", "output_file_vcf_gz", smaht_key
+    )
+    print(f"Strelka2 SNV VCF: {strelka2_result_snv[ACCESSION]}")
+
+    strelka2_result_indel = get_variant_calling_output(
+        tissue_code, "strelka2", "bcftools_concat@Indel", "output_file_vcf_gz", smaht_key
+    )
+    print(f"Strelka2 Indel VCF: {strelka2_result_indel[ACCESSION]}")
+
+    longcalld_result = get_variant_calling_output(
+        tissue_code, "longcalld", "longcallD_compress_index_single_cram", "output_file_vcf_gz", smaht_key
+    )
+    if longcalld_result:
+        print(f"Longcalld VCF: {longcalld_result[ACCESSION]}")
+    else:
+        print("No longcalld result found. Filtering will be run with only TNhaplotyper2 and Strelka2 results.")
+
+    dnascopehybrid_result = get_variant_calling_output(
+        donor_code, "dnascopehybrid", "sentieon_DNAscopeHybrid", "output_file_vcf_gz", smaht_key
+    )
+    print(f"\nDNAscopeHybrid germline calls for {donor_code}: {dnascopehybrid_result[ACCESSION]}")
+
+    sample_name = tissue_accession
+    print(f"\nSample name: {sample_name}")
+
+    tissue_files_illumina = get_released_illumina_wgs_files_for_tissue(tissue_code, smaht_key)
+    print("\nTissue specific Illumina files to be used:")
+    for f in tissue_files_illumina:
+        print(f" - File: {f[DISPLAY_TITLE]}")
+
+    donor_files_illumina = get_released_illumina_wgs_files_for_donor(donor_code, smaht_key)
+    print("\nDonor specific Illumina files to be used:")
+    for f in donor_files_illumina:
+        print(f" - File: {f[DISPLAY_TITLE]}")
+
+    print("\nMatched tissue descriptors short read:")
+    tissue_labels_short_read = []
+    for f in donor_files_illumina:
+        sample_sources = f.get("sample_sources", [])
+        if len(sample_sources) != 1:
+            raise Exception(f" - File: {f[DISPLAY_TITLE]} has {len(sample_sources)} sample sources, expected 1.")
+        sample_source = sample_sources[0][DISPLAY_TITLE]
+        print(f" - File: {sample_source}")
+        tissue_labels_short_read.append(sample_source)
+
+    donor_files_pacbio = get_released_pacbio_wgs_files_for_donor(donor_code, smaht_key)
+    print("\nDonor specific PacBio files to be used:")
+    for f in donor_files_pacbio:
+        print(f" - File: {f[DISPLAY_TITLE]}")
+
+    donor_files_long_read = get_released_long_read_wgs_files_for_donor(donor_code, smaht_key)
+    print("\nDonor specific long read files to be used:")
+    for f in donor_files_long_read:
+        print(f" - File: {f[DISPLAY_TITLE]}")
+
+    print("\nMatched tissue descriptors long read:")
+    tissue_labels_long_read = []
+    sequencer_labels_long_read = []
+    for f in donor_files_long_read:
+        sample_sources = f.get("sample_sources", [])
+        if len(sample_sources) != 1:
+            raise Exception(f" - File: {f[DISPLAY_TITLE]} has {len(sample_sources)} sample sources, expected 1.")
+        sample_source = sample_sources[0][DISPLAY_TITLE]
+        tissue_labels_long_read.append(sample_source)
+
+        sequencers = f.get("data_generation_summary", {}).get("sequencing_platforms", [])
+        if len(sequencers) != 1 or sequencers[0] not in ["PB", "ONT"]:
+            raise Exception(f" - File: {f[DISPLAY_TITLE]} has unexpected sequencers, expected exactly one of PB or ONT.")
+        sequencer = sequencers[0]
+
+        sequencer_labels_long_read.append(sequencers[0])
+
+    print("\nMatched tissue descriptors long read:")
+    for tissue_label in tissue_labels_long_read:
+        print(f" - Tissue label: {tissue_label}")
+
+    print("\nMatched sequencer descriptors long read:")
+    for sequencer_label in sequencer_labels_long_read:
+        print(f" - Sequencer label: {sequencer_label}")
+
 
 
 ################################################
@@ -711,6 +1105,30 @@ def get_core_alignment_mwfr_input(file_set, file_input_arg, smaht_key):
     return mwfr_input
 
 
+def create_and_validate_analysis_mwfr(
+    mwf_uuid, analysis_run, input_arg, mwfr_input, tag, smaht_key
+):
+    mwfr = mwfr_from_input(mwf_uuid, mwfr_input, input_arg, smaht_key)
+    mwfr[ANALYSIS_RUNS] = [analysis_run]
+    mwfr[TAGS] = [tag]
+
+    try:
+        ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key, add_on='?check_only=true')
+    except Exception as e:
+        print(f'Validation failed: {e}')
+    return mwfr
+
+
+def post_analysis_mwfrs(mwfrs, smaht_key):
+
+    for mwfr in mwfrs:
+        #mwfr["final_status"] = "stopped"
+        # pprint.pprint(mwfr)
+        post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
+        mwfr_accession = post_response["@graph"][0]["accession"]
+        print(f"Posted MetaWorkflowRun {mwfr_accession}.")
+
+
 def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key, verbose=True):
 
     mwfr = mwfr_from_input(mwf_uuid, mwfr_input, input_arg, smaht_key)
@@ -720,7 +1138,7 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key, v
     # mwfr['final_status'] = 'stopped'
     #pprint.pprint(mwfr)
 
-    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     if file_set and verbose:
         print(

@@ -13,6 +13,30 @@ def cli():
 @cli.command()
 @click.help_option("--help", "-h")
 @click.option(
+    "-d",
+    "--donor",
+    required=True,
+    type=str,
+    help="External ID of the donor (e.g. SMHT001)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def analysis_overview(donor, auth_env):
+    """
+    Check which files need to be checked for sample identity.
+    """
+    smaht_key = get_auth_key(auth_env)
+    wrangler_utils.analysis_overview(donor, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
     "-m",
     "--mwfr-identifier",
     required=True,

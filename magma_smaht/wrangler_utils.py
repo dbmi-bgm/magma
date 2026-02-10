@@ -35,7 +35,7 @@ from magma_smaht.constants import (
     FILE_SETS,
     CONSORTIA,
     SUBMISSION_CENTERS,
-    META_WORFLOW_RUN,
+    META_WORKFLOW_RUN,
     DESCRIPTION,
     TAGS,
     STATUS,
@@ -57,7 +57,73 @@ WF_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 
 SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
 
-RELEASED_STATUSES = [RELEASED, OPEN, OPEN_NETWORK, OPEN_EARLY, PROTECTED, PROTECTED_NETWORK, PROTECTED_EARLY]
+RELEASED_STATUSES = [
+    RELEASED,
+    OPEN,
+    OPEN_NETWORK,
+    OPEN_EARLY,
+    PROTECTED,
+    PROTECTED_NETWORK,
+    PROTECTED_EARLY,
+]
+
+
+def analysis_overview(donor_id: str, smaht_key: dict):
+    """Print an analysis overview for a given donor.
+
+    Args:
+        donor_id (str): Donor external ID
+    """
+
+    donor_search = f"/search/?type=Donor&external_id={donor_id}"
+    donor_result = ff_utils.search_metadata(donor_search, key=smaht_key)
+    if not donor_result:
+        print(f"ERROR: Donor with external_id {donor_id} not found.")
+        return
+    donor = donor_result[0]
+    print(f"\nAnalysis overview for donor {donor['display_title']} ({donor[ACCESSION]}):\n")
+
+    # Get all tissues for the donor
+    tissue_search = f"/search/?type=Tissue&donor.uuid={donor[UUID]}"
+    tissues = ff_utils.search_metadata(tissue_search, key=smaht_key)
+
+    def filter_files_for_sequencer(files, sequencer_name):
+        return [
+            file for file in files
+            if any(
+                file_set.get('sequencing', {}).get('sequencer', {}).get('display_title') == sequencer_name
+                for file_set in file.get('file_sets', [])
+            )
+        ]
+
+    for tissue in tissues:
+        
+        # Get all filesets for the tissue
+        files_search = f"/search/?type=File&sample_sources.uuid={tissue[UUID]}&status=open&status=protected&status=open-early&status=protected-early&status=open-network&status=protected-network&file_sets.libraries.assay.display_title=WGS&file_sets.libraries.assay.display_title=Fiber-seq&file_sets.libraries.assay.display_title=Ultra-Long+WGS&dataset%21=No+value"
+        files = ff_utils.search_metadata(files_search, key=smaht_key)
+        # Filter files by assays display_title
+        
+        pacbio_files = filter_files_for_sequencer(files, "PacBio Revio")
+        ont_files = filter_files_for_sequencer(files, "ONT PromethION 24")
+        illumina_files = filter_files_for_sequencer(files, "Illumina NovaSeq X Plus")
+
+        if illumina_files or pacbio_files or ont_files:
+            print(f"\nTissue: {tissue['display_title']} ({tissue[ACCESSION]} - {tissue['tissue_type']})")
+            print(f"  Illumina files: {len(illumina_files)}, PacBio files: {len(pacbio_files)}, ONT files: {len(ont_files)}")
+            #print(f"{donor['display_title']}\t{donor[ACCESSION]}\tNo\t{tissue['display_title']}\t{tissue['tissue_type']}\t{tissue[ACCESSION]}")
+        else:
+            continue
+
+        analysis_search = f"/search/?type=AnalysisRun&donors.uuid={donor[UUID]}&tissues.uuid={tissue[UUID]}"
+        analysis_runs = ff_utils.search_metadata(analysis_search, key=smaht_key)
+        analysis_str = ok_green_text("Analysis")
+        for analysis_run in analysis_runs:
+            num_mwfrs = len(analysis_run["meta_workflow_runs"])
+            print(f"  {analysis_str}: {analysis_run['analysis_type']} ({analysis_run[ACCESSION]}) - MWFRs: {num_mwfrs}")
+        
+
+        
+    return
 
 
 def associate_conversion_output_with_fileset(
@@ -238,7 +304,7 @@ def rerun_mwfr(
     mwfr[DESCRIPTION] = f"Rerun of MetaWorkflow {mwfr_old_raw[ACCESSION]}"
     # mwfr["final_status"] = "stopped"
 
-    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
 
@@ -704,6 +770,8 @@ def print_error_and_exit(error):
 
 def set_property(uuid: str, prop_key: str, prop_value: Any, smaht_key: Dict[str, Any]):
     """ "Sets a property prop_key to value prop_value for item with uuid."""
+    if "," in prop_value:
+        prop_value = [v.strip() for v in prop_value.split(",")]
     patch_body = {prop_key: prop_value}
     try:
         ff_utils.patch_metadata(patch_body, obj_id=uuid, key=smaht_key)
