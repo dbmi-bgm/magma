@@ -25,8 +25,10 @@ MWF_NAME_TNHAPLOTYPER = "paired-end_short_reads_variant_calling_TNhaplotyper2_di
 MWF_NAME_LONGCALLD = "PacBio_variant_calling_longcallD_GRCh38"
 MWF_NAME_LONGCALLD_SINGLE_FILE = "PacBio_variant_calling_longcallD_single_file_GRCh38"
 MWF_NAME_STRELKA2 = "paired-end_short_reads_variant_calling_Strelka2_distributed_GRCh38"
+MWF_NAME_RUFUS = "paired-end_short_reads_variant_calling_RUFUS_distributed_GRCh38"
 MWF_NAME_DNASCOPEHYBRID = "paired-end_short_plus_PacBio_variant_calling_DNAscopeHybrid_GRCh38"
 MWF_NAME_SNIFFLES = "PacBio_ONT_variant_calling_Sniffles_GRCh38"
+MWF_NAME_SNV_FILTERING_LONGCALLD = "SNV_filtering_longcallD_GRCh38"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"

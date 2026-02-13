@@ -43,6 +43,7 @@ from magma_smaht.utils import (
     get_released_pacbio_wgs_files_for_donor,
     get_released_long_read_wgs_files_for_donor,
     get_released_ont_wgs_files_for_tissue,
+    get_analysis_runs_from_tissue,
     get_variant_calling_output,
     get_tissue_from_external_id,
     post_analysis_run,
@@ -67,8 +68,10 @@ from magma_smaht.constants import (
     MWF_NAME_LONG_READ_BAMQC,
     MWF_NAME_LONGCALLD,
     MWF_NAME_LONGCALLD_SINGLE_FILE,
+    MWF_NAME_SNV_FILTERING_LONGCALLD,
     MWF_NAME_SNIFFLES,
     MWF_NAME_STRELKA2,
+    MWF_NAME_RUFUS,
     MWF_NAME_DNASCOPEHYBRID,
     MWF_NAME_TNHAPLOTYPER,
     MWF_SAMPLE_IDENTITY_CHECK,
@@ -849,6 +852,7 @@ def mwfrs_somatic_snv_callers(tissue_accession, analysis_run, smaht_key):
 
     mwf_tnhaplotyper = get_latest_mwf(MWF_NAME_TNHAPLOTYPER, smaht_key)
     mwf_strelka2 = get_latest_mwf(MWF_NAME_STRELKA2, smaht_key)
+    #mwf_rufus = get_latest_mwf(MWF_NAME_RUFUS, smaht_key)
     mwf_longcalld = get_latest_mwf(MWF_NAME_LONGCALLD, smaht_key)
     mwf_longcalld_single_file = get_latest_mwf(MWF_NAME_LONGCALLD_SINGLE_FILE, smaht_key)
 
@@ -887,6 +891,21 @@ def mwfrs_somatic_snv_callers(tissue_accession, analysis_run, smaht_key):
         smaht_key,
     )
     mwfrs_to_post.append(mwfr_strelka2)
+
+    # Create Rufus MWFR
+    # mwfr_rufus_input = [
+    #     get_mwfr_file_input_arg(INPUT_FILES_CRAM, illumina_crams),
+    # ]
+    # print("Validating Rufus MWFR.")
+    # mwfr_rufus = create_and_validate_analysis_mwfr(
+    #     mwf_rufus[UUID],
+    #     analysis_run_accession,
+    #     INPUT_FILES_CRAM,
+    #     mwfr_rufus_input,
+    #     f"{tissue_code}_rufus",
+    #     smaht_key,
+    # )
+    # mwfrs_to_post.append(mwfr_rufus)
 
     # Create longcalled MWFR
     if len(files_pacbio) > 1:
@@ -935,10 +954,25 @@ def mwfrs_somatic_snv_callers(tissue_accession, analysis_run, smaht_key):
 def mwfr_somatic_snv_filtering(tissue_accession, analysis_run, smaht_key):
 
     tissue = get_item_es(tissue_accession, smaht_key, frame="embedded")
+    donor = get_item_es(tissue["donor"][UUID], smaht_key, frame="embedded")
     tissue_code = tissue["external_id"]
-    donor_code = tissue["donor"]["external_id"]
+    donor_code = donor["external_id"]
+    analysis_run_accession = analysis_run
+
+    if not analysis_run_accession:
+        ar = get_analysis_runs_from_tissue(tissue_code, smaht_key)
+        if ar and len(ar) == 1:
+            analysis_run_accession = ar[0][ACCESSION]   
+            print(f"\nUsing Analysis Run {analysis_run_accession} for tissue {tissue_code}.")
+        else:
+            raise Exception(f"Could not determine a unique analysis run for tissue {tissue_code}. Please provide an analysis run accession to the function.")
 
     print(f"\nGathering input data for somatic SNV filtering for tissue {tissue_code}.")
+
+    sample_name = tissue_accession
+    print(f"\nSample name: {sample_name} ({tissue_code})")
+    print(f"\nDonor sex: {donor['sex']}")
+
 
     tnhaplotyper2_result = get_variant_calling_output(
         tissue_code, "tnhaplotyper2", "sentieon_merge_TNfilter", "output_file_vcf_gz", smaht_key
@@ -961,15 +995,12 @@ def mwfr_somatic_snv_filtering(tissue_accession, analysis_run, smaht_key):
     if longcalld_result:
         print(f"Longcalld VCF: {longcalld_result[ACCESSION]}")
     else:
-        print("No longcalld result found. Filtering will be run with only TNhaplotyper2 and Strelka2 results.")
+        print("No longcalld result found. Filtering will proceed without it.")
 
     dnascopehybrid_result = get_variant_calling_output(
         donor_code, "dnascopehybrid", "sentieon_DNAscopeHybrid", "output_file_vcf_gz", smaht_key
     )
     print(f"\nDNAscopeHybrid germline calls for {donor_code}: {dnascopehybrid_result[ACCESSION]}")
-
-    sample_name = tissue_accession
-    print(f"\nSample name: {sample_name}")
 
     tissue_files_illumina = get_released_illumina_wgs_files_for_tissue(tissue_code, smaht_key)
     print("\nTissue specific Illumina files to be used:")
@@ -977,31 +1008,35 @@ def mwfr_somatic_snv_filtering(tissue_accession, analysis_run, smaht_key):
         print(f" - File: {f[DISPLAY_TITLE]}")
 
     donor_files_illumina = get_released_illumina_wgs_files_for_donor(donor_code, smaht_key)
-    print("\nDonor specific Illumina files to be used:")
+    print(f"\nDonor specific Illumina files to be used ({len(donor_files_illumina)}):")
     for f in donor_files_illumina:
         print(f" - File: {f[DISPLAY_TITLE]}")
 
-    print("\nMatched tissue descriptors short read:")
+    #print("\nMatched tissue descriptors short read:")
     tissue_labels_short_read = []
     for f in donor_files_illumina:
         sample_sources = f.get("sample_sources", [])
         if len(sample_sources) != 1:
             raise Exception(f" - File: {f[DISPLAY_TITLE]} has {len(sample_sources)} sample sources, expected 1.")
         sample_source = sample_sources[0][DISPLAY_TITLE]
-        print(f" - File: {sample_source}")
+        #print(f" - File: {sample_source}")
         tissue_labels_short_read.append(sample_source)
 
     donor_files_pacbio = get_released_pacbio_wgs_files_for_donor(donor_code, smaht_key)
-    print("\nDonor specific PacBio files to be used:")
+    print(f"\nDonor specific PacBio files to be used ({len(donor_files_pacbio)}):")
     for f in donor_files_pacbio:
         print(f" - File: {f[DISPLAY_TITLE]}")
 
     donor_files_long_read = get_released_long_read_wgs_files_for_donor(donor_code, smaht_key)
-    print("\nDonor specific long read files to be used:")
+    print(f"\nDonor specific long read files to be used ({len(donor_files_long_read)}):")
     for f in donor_files_long_read:
         print(f" - File: {f[DISPLAY_TITLE]}")
 
-    print("\nMatched tissue descriptors long read:")
+    # Matched tissue descriptors long read
+    sequencer_to_label_mapping = {
+        "ONT PromethION 24": "ONT",
+        "PacBio Revio": "PB"
+    }
     tissue_labels_long_read = []
     sequencer_labels_long_read = []
     for f in donor_files_long_read:
@@ -1012,20 +1047,81 @@ def mwfr_somatic_snv_filtering(tissue_accession, analysis_run, smaht_key):
         tissue_labels_long_read.append(sample_source)
 
         sequencers = f.get("data_generation_summary", {}).get("sequencing_platforms", [])
-        if len(sequencers) != 1 or sequencers[0] not in ["PB", "ONT"]:
+        if len(sequencers) != 1 or sequencers[0] not in sequencer_to_label_mapping.keys():
             raise Exception(f" - File: {f[DISPLAY_TITLE]} has unexpected sequencers, expected exactly one of PB or ONT.")
         sequencer = sequencers[0]
+        sequencer_labels_long_read.append(sequencer_to_label_mapping[sequencer])
 
-        sequencer_labels_long_read.append(sequencers[0])
+    # print("\nMatched tissue descriptors long read:")
+    # for tissue_label in tissue_labels_long_read:
+    #     print(f" - Tissue label: {tissue_label}")
 
-    print("\nMatched tissue descriptors long read:")
-    for tissue_label in tissue_labels_long_read:
-        print(f" - Tissue label: {tissue_label}")
+    # print("\nMatched sequencer descriptors long read:")
+    # for sequencer_label in sequencer_labels_long_read:
+    #     print(f" - Sequencer label: {sequencer_label}")
 
-    print("\nMatched sequencer descriptors long read:")
-    for sequencer_label in sequencer_labels_long_read:
-        print(f" - Sequencer label: {sequencer_label}")
+    # Compile input arguments for MWFR
+    input_files_TNhaplotyper2_vcf_gz = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate([tnhaplotyper2_result])
+    ]
+    input_files_Strelka2_vcf_gz = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate([strelka2_result_snv])
+    ]
+    # input_files_RUFUS_vcf_gz = [
+    #     {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate([rufus_result_snv])
+    # ]
+    germline_input_file_vcf_gz = [
+        {"file": dnascopehybrid_result[UUID]}
+    ]
 
+    if longcalld_result:
+        input_files_longcallD_vcf_gz = [
+            {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate([longcalld_result])
+        ]
+    
+    input_files_sr_cram_tissue_specific = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(tissue_files_illumina)
+    ]
+    input_files_sr_cram_donor_pooled = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(donor_files_illumina)
+    ]
+    input_files_pb_cram_donor_pooled = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(donor_files_pacbio)
+    ]
+    input_files_all_long_read_cram_donor_pooled = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(donor_files_long_read)
+    ]
+
+    mwfr_input = [
+        get_mwfr_file_input_arg('input_files_TNhaplotyper2_vcf_gz', input_files_TNhaplotyper2_vcf_gz),
+        get_mwfr_file_input_arg('input_files_Strelka2_vcf_gz', input_files_Strelka2_vcf_gz),
+        get_mwfr_file_input_arg('germline_input_file_vcf_gz', germline_input_file_vcf_gz),
+        get_mwfr_file_input_arg('input_files_sr_cram_tissue_specific', input_files_sr_cram_tissue_specific),
+        get_mwfr_file_input_arg('input_files_sr_cram_donor_pooled', input_files_sr_cram_donor_pooled),
+        get_mwfr_file_input_arg('input_files_pb_cram_donor_pooled', input_files_pb_cram_donor_pooled),
+        get_mwfr_file_input_arg('input_files_all_long_read_cram_donor_pooled', input_files_all_long_read_cram_donor_pooled),
+        get_mwfr_parameter_input_arg(SAMPLE_NAME, tissue_accession),
+        get_mwfr_parameter_input_arg('input_files_tissue_descriptors_sr', tissue_labels_short_read),
+        get_mwfr_parameter_input_arg('input_files_tissue_descriptors_all_long_read', tissue_labels_long_read),
+        get_mwfr_parameter_input_arg('input_files_types_all_long_read', sequencer_labels_long_read),
+        get_mwfr_parameter_input_arg('sex', donor['sex']),
+        get_mwfr_parameter_input_arg('current_tissue', tissue_code),
+    ]
+    if longcalld_result:
+        mwfr_input.append(get_mwfr_file_input_arg('input_files_longcallD_vcf_gz', input_files_longcallD_vcf_gz))
+
+    mwf_filtering_longcalld = get_latest_mwf(MWF_NAME_SNV_FILTERING_LONGCALLD, smaht_key)
+
+    print("Validating Filtering MWFR.")
+    mwfr = create_and_validate_analysis_mwfr(
+        mwf_filtering_longcalld[UUID] if longcalld_result else "TBD",
+        analysis_run_accession,
+        'input_files_sr_cram_tissue_specific',
+        mwfr_input,
+        f"{tissue_code}_snv_filtered",
+        smaht_key,
+    )
+    #post_analysis_mwfrs([mwfr], smaht_key)
 
 
 ################################################

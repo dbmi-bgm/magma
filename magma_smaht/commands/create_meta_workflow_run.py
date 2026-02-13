@@ -544,7 +544,8 @@ def call_somatic_snv_step1(tissue, analysis_run, auth_env):
 @click.option(
     "-a",
     "--analysis-run",
-    required=True,
+    required=False,
+    default=None,
     type=str,
     help="Accession of an existing analysis run",
 )

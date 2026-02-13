@@ -725,6 +725,15 @@ def get_variant_calling_output(tissue_code, caller_name, workflow_name, argument
     return final_outputs[0]
 
 
+def get_analysis_runs_from_tissue(tissue_code, key):
+    """For a given tissue code, get all analysis runs that are associated with that tissue code"""
+    search_filter = (
+        "?type=AnalysisRun"
+        f"&tissues.display_title={tissue_code}"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
 def get_item(identifier, key, frame="raw"):
     return ff_utils.get_metadata(
         identifier, add_on=f"frame={frame}&datastore=database", key=key
