@@ -28,7 +28,12 @@ MWF_NAME_STRELKA2 = "paired-end_short_reads_variant_calling_Strelka2_distributed
 MWF_NAME_RUFUS = "paired-end_short_reads_variant_calling_RUFUS_distributed_GRCh38"
 MWF_NAME_DNASCOPEHYBRID = "paired-end_short_plus_PacBio_variant_calling_DNAscopeHybrid_GRCh38"
 MWF_NAME_SNIFFLES = "PacBio_ONT_variant_calling_Sniffles_GRCh38"
+MWF_NAME_SEVERUS = "PacBio_ONT_variant_calling_Severus_GRCh38"
+MWF_NAME_DELLY = "PacBio_ONT_variant_calling_Delly_GRCh38"
 MWF_NAME_SNV_FILTERING_LONGCALLD = "SNV_filtering_longcallD_GRCh38"
+MWF_NAME_SNV_FILTERING = "SNV_filtering_GRCh38"
+
+HMS_DAC = "9626d82e-8110-4213-ac75-0a50adf890ff"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
@@ -77,6 +82,7 @@ FIRST_STRANDED = "First Stranded"
 SECOND_STRANDED = "Second Stranded"
 FAILED_JOBS = "failed_jobs"
 SOMATIC_SNV_CALLING = "Somatic SNV calling"
+SOMATIC_SNV_CALLING_CORE_SPECIFIC = "Somatic SNV calling (core specific)"
 SOMATIC_SV_CALLING = "Somatic SV calling"
 GERMLINE_SNV_CALLING = "Germline SNV calling"
 

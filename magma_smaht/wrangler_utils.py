@@ -9,7 +9,7 @@ from dcicutils import ff_utils
 import pprint
 
 from .create_metawfr import MWF_NAME_CRAM_TO_FASTQ_PAIRED_END
-from .reset_metawfr import reset_failed, reset_all
+from .reset_metawfr import reset_failed, reset_all, reset_status
 
 from magma_smaht.utils import (
     get_file_set,
@@ -224,12 +224,16 @@ def reset_mwfrs(mwfr_uuids: list, smaht_key: dict):
         reset_all(id, smaht_key)
 
 
-def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5 : bool):
+def reset_status_mwfr(mwfr_uuid: str, steps: list, status: str, smaht_key: dict):
+    print(f"\nResetting status of steps {','.join(steps)} in MetaWorkflowRun {mwfr_uuid} to {status}")
+    reset_status(mwfr_uuid, status, steps, smaht_key)
 
+
+def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5 : bool, limit: int):
     url = (
-        "/search/?final_status=failed&type=MetaWorkflowRun&limit=100"
+        f"/search/?final_status=failed&type=MetaWorkflowRun&limit={limit}"
         if not ignore_md5
-        else "/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5"
+        else f"/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5&limit={limit}"
     )
     results = ff_utils.search_metadata(url, key=smaht_key)
     for item in results:
@@ -728,6 +732,8 @@ def purge_meta_workflow_run(
 
     workflow_runs = mwfr_item.get("workflow_runs", [])
     for wfr in workflow_runs:
+        if not wfr.get("workflow_run"):
+            continue
         wfr_display_title = wfr["workflow_run"][DISPLAY_TITLE]
         wfr_uuid = wfr["workflow_run"][UUID]
         print(f"   - WorkflowRun {wfr_display_title}")

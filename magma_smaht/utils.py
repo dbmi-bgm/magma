@@ -602,6 +602,7 @@ def get_released_illumina_wgs_files_for_donor(donor_code, key):
         "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS"
+        "&sample_summary.tissues%21=Fibroblast"
         f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -626,6 +627,7 @@ def get_released_pacbio_wgs_files_for_donor(donor_code, key):
         "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
+        "&sample_summary.tissues%21=Fibroblast"
         f"&sequencing.sequencer.display_title=PacBio+Revio"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -638,6 +640,7 @@ def get_released_long_read_wgs_files_for_donor(donor_code, key):
         "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq&assays.display_title=Ultra-Long+WGS"
+        "&sample_summary.tissues%21=Fibroblast"
         f"&sequencing.sequencer.display_title=PacBio+Revio&sequencing.sequencer.display_title=ONT+PromethION+24"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -696,6 +699,7 @@ def get_variant_calling_output(tissue_code, caller_name, workflow_name, argument
     search_filter = (
         "?type=MetaWorkflowRun"
         "&sort=-date_created"
+        "&final_status=completed"
         f"&tags={mwfr_tag}"
     )
     mwfrs = ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -748,6 +752,7 @@ def _serialize_key(key_dict):
     """Convert dictionary key to a hashable string for caching."""
     return json.dumps(key_dict, sort_keys=True)
 
+
 def post_analysis_run(analysis_type, description, donors, tissues, smaht_key):
     ar = {}
     ar[CONSORTIA] = ["smaht"]
@@ -758,7 +763,9 @@ def post_analysis_run(analysis_type, description, donors, tissues, smaht_key):
     if tissues:
         ar["tissues"] = tissues
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    identifier = analysis_type.lower().replace(" ", "_")
+    identifier = (
+        analysis_type.lower().replace(" ", "_").replace("(", "").replace(")", "")
+    )
     identifier = f"{identifier}_{timestamp}"
     ar["identifier"] = identifier
     post_response = ff_utils.post_metadata(ar, ANALYSIS_RUN, smaht_key)
