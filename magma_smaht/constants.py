@@ -33,7 +33,7 @@ MWF_NAME_DELLY = "PacBio_ONT_variant_calling_Delly_GRCh38"
 MWF_NAME_SNV_FILTERING_LONGCALLD = "SNV_filtering_longcallD_GRCh38"
 MWF_NAME_SNV_FILTERING = "SNV_filtering_GRCh38"
 
-HMS_DAC = "9626d82e-8110-4213-ac75-0a50adf890ff"
+HMS_DAC_UUID = "9626d82e-8110-4213-ac75-0a50adf890ff"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
