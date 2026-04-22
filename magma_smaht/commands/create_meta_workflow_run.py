@@ -49,7 +49,6 @@ def cli():
 @click.option(
     "-l",
     "--length-required",
-    required=True,
     type=int,
     help="Required length (can be obtained from FastQC output)",
 )

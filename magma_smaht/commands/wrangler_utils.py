@@ -124,7 +124,7 @@ def reset_mwfrs(mwfr_uuids, auth_env):
     "--status",
     required=True,
     type=str,
-    help="Status to reset to",
+    help="Status to reset",
 )
 @click.option(
     "-e",

@@ -748,6 +748,12 @@ def get_item_es(identifier, key, frame="raw"):
         identifier, add_on=f"frame={frame}", key=key
     )
 
+def search_list(identifiers, key):
+    query = "search/?type=Item"
+    for item in identifiers:
+        query += f"&uuid={item}"
+    return ff_utils.search_metadata(query, key=key)
+
 def _serialize_key(key_dict):
     """Convert dictionary key to a hashable string for caching."""
     return json.dumps(key_dict, sort_keys=True)

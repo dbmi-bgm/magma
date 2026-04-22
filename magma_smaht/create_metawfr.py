@@ -31,6 +31,7 @@ from magma_smaht.utils import (
     get_tag_for_sample_identity_check,
     get_item,
     get_item_es,
+    search_list,
     get_latest_somalier_run_for_donor,
     get_alignment_mwfr,
     get_final_output_file,
@@ -93,6 +94,35 @@ def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
+
+    if not length_required:
+        file_set_embedded = ff_utils.get_metadata(
+            fileset_accession, add_on="frame=embedded&datastore=database", key=smaht_key
+        )
+        print(f"Sequence length has not been provided. Trying to get it from the FASTQC results.")
+        qm_uuids = [
+            qm[UUID]
+            for file in file_set_embedded.get("files", [])
+            if file.get("file_format", {}).get("display_title") == "fastq_gz"
+            for qm in file.get("quality_metrics", [])
+        ]
+        if not qm_uuids:
+            raise ValueError("No quality metrics found for any FASTQ files in the fileset. Please provide a sequence length or run FASTQC first.")
+        quality_metrics = search_list(qm_uuids, smaht_key)
+        sequence_lengths = []
+        for qm in quality_metrics:
+            qc_value = next(
+                (v for v in qm.get("qc_values", []) if v.get("derived_from") == "fastqc:sequence_length"),
+                None,
+            )
+            if qc_value is None:
+                raise ValueError(f"Quality metric {qm[UUID]} does not have a fastqc:sequence_length value")
+            sequence_lengths.append(qc_value["value"])
+        if len(set(sequence_lengths)) > 1:
+            raise ValueError(f"Sequence lengths are not consistent across quality metrics: {sequence_lengths}")
+        length_required = sequence_lengths[0]
+        print(f"Using sequence length {length_required} from FASTQC results.")
+
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
         file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
@@ -591,7 +621,11 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
             print(f"No previous identity check found for donor {donor}")
 
     bams = []
-    for id in previous_bam_ids + list(files):
+    all_bam_ids = previous_bam_ids + list(files)
+    # Restrict to the 80 most recent bam files to avoid hitting input limits of the workflow.
+    # The MWFR has trouble updating with more files
+    all_bam_ids = all_bam_ids[-80:]
+    for id in all_bam_ids:
         bam_meta = get_item(id, smaht_key)
         bams.append(bam_meta)
 

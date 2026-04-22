@@ -831,7 +831,7 @@ def create_and_validate_analysis_mwfr(
     try:
         ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key, add_on='?check_only=true')
     except Exception as e:
-        print(f'Validation failed: {e}')
+        raise RuntimeError(f"Validation failed: {e}") from e
     return mwfr
 
 
