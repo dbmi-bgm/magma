@@ -225,7 +225,7 @@ def reset_mwfrs(mwfr_uuids: list, smaht_key: dict):
 
 
 def reset_status_mwfr(mwfr_uuid: str, steps: list, status: str, smaht_key: dict):
-    print(f"\nResetting status of steps {','.join(steps)} in MetaWorkflowRun {mwfr_uuid} to {status}")
+    print(f"\nResetting status of steps {','.join(steps)} in MetaWorkflowRun {mwfr_uuid} with status {status}")
     reset_status(mwfr_uuid, status, steps, smaht_key)
 
 
@@ -506,6 +506,7 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         "&sequencing_center.display_title=BROAD+GCC"
         "&sequencing_center.display_title=NYGC+GCC"
         "&sequencing_center.display_title=BCM+GCC"
+        #"&sequencing_center.display_title=MAYO TTD"
         "&status=uploaded&status=released"
         "&status=open&status=open-network&status=open-early"
         "&status=protected&status=protected-network&status=protected-early"

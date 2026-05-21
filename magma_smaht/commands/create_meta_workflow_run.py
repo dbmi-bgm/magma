@@ -11,6 +11,7 @@ from magma_smaht.create_metawfr import (
     mwfr_cram_to_fastq_paired_end,
     mwfr_bam_to_fastq_paired_end,
     mwfr_bamqc_short_read,
+    mwfr_samtools_mosdepth,
     mwfr_ubam_qc_long_read,
     mwfr_ultra_long_bamqc,
     mwfr_long_read_bamqc,
@@ -22,6 +23,7 @@ from magma_smaht.create_metawfr import (
 from magma_smaht.create_metawfr_variant_calling import (
     mwfrs_somatic_snv_callers,
     mwfrs_somatic_snv_callers_by_core,
+    mwfrs_somatic_snv_callers_by_analyte,
     mwfr_germline_snv_caller,
     mwfr_somatic_snv_filtering,
     mwfrs_somatic_sv_callers,
@@ -307,6 +309,29 @@ def qc_short_read_bam(file_accession, auth_env):
 
 @cli.command()
 @click.help_option("--help", "-h")
+@click.option(
+    "-f",
+    "--file-accessions",
+    required=True,
+    type=str,
+    multiple=True,
+    help="File accession(s)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def qc_samtools_mosdepth(file_accessions, auth_env):
+    """Samtools+mosdepth QC MWFR for multiple BAMs"""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_samtools_mosdepth(file_accessions, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
 @click.option("-f", "--file-accession", required=True, type=str, help="File accession")
 @click.option(
     "-e",
@@ -537,6 +562,32 @@ def call_somatic_snv_by_core(tissue, analysis_run, auth_env):
     """Call SNV on a given tissue sample. Create the individual caller MWFRs by core. If an analysis run is provided, the MWFRs will be added to it."""
     smaht_key = get_auth_key(auth_env)
     mwfrs_somatic_snv_callers_by_core(tissue, analysis_run, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-t", "--tissue", required=True, type=str, help="Accession of donor specific tissue"
+)
+@click.option(
+    "-a",
+    "--analysis-run",
+    required=False,
+    default=None,
+    type=str,
+    help="Accession of an existing analysis run (optional)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def call_somatic_snv_by_analyte(tissue, analysis_run, auth_env):
+    """Call SNV on a given tissue sample. Create the individual caller MWFRs by analyte. If an analysis run is provided, the MWFRs will be added to it."""
+    smaht_key = get_auth_key(auth_env)
+    mwfrs_somatic_snv_callers_by_analyte(tissue, analysis_run, smaht_key)
 
 
 @cli.command()

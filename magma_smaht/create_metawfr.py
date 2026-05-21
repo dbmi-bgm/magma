@@ -52,6 +52,7 @@ from magma_smaht.constants import (
     MWF_NAME_BAM_TO_FASTQ_PAIRED_END,
     MWF_NAME_BAM_TO_CRAM,
     MWF_NAME_BAMQC_SHORT_READ,
+    MWF_NAME_SAMTOOLS_MOSDEPTH,
     MWF_NAME_ULTRA_LONG_BAMQC,
     MWF_NAME_LONG_READ_BAMQC,
     MWF_SAMPLE_IDENTITY_CHECK,
@@ -541,6 +542,19 @@ def mwfr_bamqc_short_read(file_accession, smaht_key):
     ]
 
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+
+def mwfr_samtools_mosdepth(file_accessions, smaht_key):
+    mwf = get_latest_mwf(MWF_NAME_SAMTOOLS_MOSDEPTH, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    files_input = []
+    for dim, file_accession in enumerate(file_accessions):
+        bam_meta = get_item(file_accession, smaht_key)
+        files_input.append({"file": bam_meta[UUID], "dimension": f"{dim}"})
+
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_BAM, files_input)]
+    create_and_post_mwfr(mwf[UUID], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 def mwfr_ultra_long_bamqc(file_accession, replace_existing_qc, smaht_key):
