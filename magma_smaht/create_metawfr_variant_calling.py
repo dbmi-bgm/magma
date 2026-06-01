@@ -47,6 +47,7 @@ from magma_smaht.constants import (
     MWF_NAME_SNIFFLES,
     MWF_NAME_SEVERUS,
     MWF_NAME_DELLY,
+    MWF_NAME_DELLY_SR,
     MWF_NAME_STRELKA2,
     MWF_NAME_RUFUS,
     MWF_NAME_DNASCOPEHYBRID,
@@ -749,6 +750,136 @@ def mwfrs_somatic_sv_callers(tissue_accession, analysis_run, smaht_key):
     post_analysis_mwfrs(mwfrs_to_post, smaht_key)
 
 
+def mwfrs_somatic_sv_callers_by_core(tissue_accession, analysis_run, smaht_key):
+    tissue = get_item_es(tissue_accession, smaht_key, frame="embedded")
+    tissue_code = tissue["external_id"]
+    donor_uuid = tissue["donor"][UUID]
+
+    # Get all released short read WGS files for the tissue
+    files_illumina = get_released_illumina_wgs_files_for_tissue(tissue_code, smaht_key)
+    print(f"Number of Illumina WGS files: {len(files_illumina)}")
+    
+    print("\nIllumina files associated with the tissue:")
+    for f in files_illumina:
+        print(f"- Illumina file: {f[DISPLAY_TITLE]}")
+
+
+    print("\nThey will be processed in the following groups:")
+
+    def get_core_from_display_title(file_item):
+        display_title = file_item.get(DISPLAY_TITLE, "")
+        parts = display_title.split("-")
+        if len(parts) >= 3:
+            return parts[2]
+        return "unknown"
+
+    grouped_files_illumina = {}
+    for f in files_illumina:
+        core = get_core_from_display_title(f)
+        grouped_files_illumina.setdefault(core, [])
+        grouped_files_illumina[core].append(f)
+
+
+    for core in grouped_files_illumina:
+        print(f"\nCore {core} - Illumina files:")
+        for f in grouped_files_illumina[core]:
+            print(f"- {f[DISPLAY_TITLE]}")
+   
+    # Create the AnalysisRun Item that will contain all MWFRs
+    if analysis_run:
+        analysis_run_accession = analysis_run
+        print(f"\nUsing provided AnalysisRun {analysis_run_accession}.")
+    else:
+        analysis_run_accession = post_analysis_run(
+            SOMATIC_SV_CALLING,
+            f"Somatic SV Calling (core specific): {tissue_code}",
+            [donor_uuid],
+            [tissue_accession],
+            smaht_key,
+        )
+        print(f"\nCreated AnalysisRun {analysis_run_accession}.")
+
+    mwfrs_to_post = []
+    for core in grouped_files_illumina:
+        core_specific_illumina = grouped_files_illumina[core]
+
+        mwfr_delly = create_delly_sr_mwfr(
+            core_specific_illumina,
+            f"{tissue_code}_core_{core}_dellysr",
+            analysis_run_accession,
+            smaht_key,
+        )
+        mwfrs_to_post.append(mwfr_delly)
+
+    # pprint.pprint(mwfrs_to_post)
+    post_analysis_mwfrs(mwfrs_to_post, smaht_key)
+
+
+def mwfrs_somatic_sv_callers_by_gcc(tissue_accession, analysis_run, smaht_key):
+    tissue = get_item_es(tissue_accession, smaht_key, frame="embedded")
+    tissue_code = tissue["external_id"]
+    donor_uuid = tissue["donor"][UUID]
+
+    # Get all released short read WGS files for the tissue
+    files_illumina = get_released_illumina_wgs_files_for_tissue(tissue_code, smaht_key)
+    print(f"Number of Illumina WGS files: {len(files_illumina)}")
+    
+    print("\nIllumina files associated with the tissue:")
+    for f in files_illumina:
+        print(f"- Illumina file: {f[DISPLAY_TITLE]}")
+
+
+    print("\nThey will be processed in the following groups:")
+
+    def get_gcc_from_display_title(file_item):
+        display_title = file_item.get(DISPLAY_TITLE, "")
+        parts = display_title.split("-")
+        if len(parts) >= 6:
+            return parts[5]
+        return "unknown"
+
+    grouped_files_illumina = {}
+    for f in files_illumina:
+        gcc = get_gcc_from_display_title(f)
+        grouped_files_illumina.setdefault(gcc, [])
+        grouped_files_illumina[gcc].append(f)
+
+
+    for gcc in grouped_files_illumina:
+        print(f"\nGCC {gcc} - Illumina files:")
+        for f in grouped_files_illumina[gcc]:
+            print(f"- {f[DISPLAY_TITLE]}")
+   
+    # Create the AnalysisRun Item that will contain all MWFRs
+    if analysis_run:
+        analysis_run_accession = analysis_run
+        print(f"\nUsing provided AnalysisRun {analysis_run_accession}.")
+    else:
+        analysis_run_accession = post_analysis_run(
+            SOMATIC_SV_CALLING,
+            f"Somatic SV Calling (GCC specific): {tissue_code}",
+            [donor_uuid],
+            [tissue_accession],
+            smaht_key,
+        )
+        print(f"\nCreated AnalysisRun {analysis_run_accession}.")
+
+    mwfrs_to_post = []
+    for gcc in grouped_files_illumina:
+        gcc_specific_illumina = grouped_files_illumina[gcc]
+
+        mwfr_delly = create_delly_sr_mwfr(
+            gcc_specific_illumina,
+            f"{tissue_code}_gcc_{gcc}_dellysr",
+            analysis_run_accession,
+            smaht_key,
+        )
+        mwfrs_to_post.append(mwfr_delly)
+
+    # pprint.pprint(mwfrs_to_post)
+    post_analysis_mwfrs(mwfrs_to_post, smaht_key)
+
+
 def create_tnhaplotyper2_mwfr(
     files_illumina, tissue_accession, tag, analysis_run_accession, smaht_key
 ):
@@ -913,6 +1044,29 @@ def create_delly_mwfr(
         smaht_key,
     )
     return mwfr_delly
+
+
+def create_delly_sr_mwfr(
+    files_illumina, tag, analysis_run_accession, smaht_key
+): 
+    # Create Delly SR MWFR
+    mwf_delly_sr = get_latest_mwf(MWF_NAME_DELLY_SR, smaht_key)
+    illumina_crams = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(files_illumina)
+    ]
+    mwfr_delly_sr_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_CRAM, illumina_crams),
+    ]
+    print("Validating Delly SR MWFR.")
+    mwfr_delly_sr = create_and_validate_analysis_mwfr(
+        mwf_delly_sr[UUID],
+        analysis_run_accession,
+        INPUT_FILES_CRAM,
+        mwfr_delly_sr_input,
+        tag,
+        smaht_key,
+    )
+    return mwfr_delly_sr
 
 
 def create_sniffles_mwfr(

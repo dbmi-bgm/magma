@@ -27,6 +27,8 @@ from magma_smaht.create_metawfr_variant_calling import (
     mwfr_germline_snv_caller,
     mwfr_somatic_snv_filtering,
     mwfrs_somatic_sv_callers,
+    mwfrs_somatic_sv_callers_by_core,
+    mwfrs_somatic_sv_callers_by_gcc,
 )
 from magma_smaht.utils import get_auth_key
 
@@ -641,6 +643,58 @@ def call_somatic_sv(tissue, analysis_run, auth_env):
     """Call somatic SV on a given tissue sample. This will create individual caller MWFRs. If an analysis run is provided, the MWFRs will be added to it."""
     smaht_key = get_auth_key(auth_env)
     mwfrs_somatic_sv_callers(tissue, analysis_run, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-t", "--tissue", required=True, type=str, help="Accession of donor specific tissue"
+)
+@click.option(
+    "-a",
+    "--analysis-run",
+    required=False,
+    default=None,
+    type=str,
+    help="Accession of an existing analysis run (optional)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def call_somatic_sv_by_core(tissue, analysis_run, auth_env):
+    """Call somatic SV on a given tissue sample. Create individual caller MWFRs by core. If an analysis run is provided, the MWFRs will be added to it."""
+    smaht_key = get_auth_key(auth_env)
+    mwfrs_somatic_sv_callers_by_core(tissue, analysis_run, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-t", "--tissue", required=True, type=str, help="Accession of donor specific tissue"
+)
+@click.option(
+    "-a",
+    "--analysis-run",
+    required=False,
+    default=None,
+    type=str,
+    help="Accession of an existing analysis run (optional)",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def call_somatic_sv_by_gcc(tissue, analysis_run, auth_env):
+    """Call somatic SV on a given tissue sample. Create individual caller MWFRs by GCC. If an analysis run is provided, the MWFRs will be added to it."""
+    smaht_key = get_auth_key(auth_env)
+    mwfrs_somatic_sv_callers_by_gcc(tissue, analysis_run, smaht_key)
 
 
 @cli.command()

@@ -602,7 +602,7 @@ def get_released_illumina_wgs_files_for_donor(donor_code, key):
         "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS"
-        "&sample_summary.tissues%21=Fibroblast"
+        "&sample_summary.tissues%21=3AC - Fibroblast"
         f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -627,7 +627,7 @@ def get_released_pacbio_wgs_files_for_donor(donor_code, key):
         "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
-        "&sample_summary.tissues%21=Fibroblast"
+        f"&sample_summary.tissues%21=3AC - Fibroblast"
         f"&sequencing.sequencer.display_title=PacBio+Revio"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -640,7 +640,7 @@ def get_released_long_read_wgs_files_for_donor(donor_code, key):
         "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq&assays.display_title=Ultra-Long+WGS"
-        "&sample_summary.tissues%21=Fibroblast"
+        f"&sample_summary.tissues%21=3AC - Fibroblast"
         f"&sequencing.sequencer.display_title=PacBio+Revio&sequencing.sequencer.display_title=ONT+PromethION+24"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)

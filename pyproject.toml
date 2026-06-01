@@ -26,6 +26,7 @@ dcicutils = "^8.13.3"
 tibanna-ff = "^3.5.0"
 packaging = "^23.0"
 click = "^7.1.2"
+rich = ">=10.0.0"
 
 
 [tool.poetry.dev-dependencies]
