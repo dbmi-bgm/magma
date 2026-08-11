@@ -229,12 +229,14 @@ def reset_status_mwfr(mwfr_uuid: str, steps: list, status: str, smaht_key: dict)
     reset_status(mwfr_uuid, status, steps, smaht_key)
 
 
-def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5 : bool, limit: int):
+def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5: bool, limit: int, mwf_name: str = None):
     url = (
         f"/search/?final_status=failed&type=MetaWorkflowRun&limit={limit}"
         if not ignore_md5
         else f"/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5&limit={limit}"
     )
+    if mwf_name:
+        url += f"&meta_workflow.name={mwf_name}"
     results = ff_utils.search_metadata(url, key=smaht_key)
     for item in results:
         print(f"Reset MetaWorkflowRun {item['uuid']}")

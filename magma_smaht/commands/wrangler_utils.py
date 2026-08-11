@@ -165,10 +165,17 @@ def reset_status_mwfrs(mwfr_uuids, steps, status, auth_env):
     show_default=True,
     help="Ignore MD5 checksum runs",
 )
-def reset_all_failed_mwfrs(auth_env, ignore_md5, limit):
+@click.option(
+    "--mwf-name",
+    required=False,
+    default=None,
+    type=str,
+    help="Filter by MetaWorkflow name",
+)
+def reset_all_failed_mwfrs(auth_env, ignore_md5, limit, mwf_name):
     """Reset all failed MetaWorkflowRuns on the portal"""
     smaht_key = get_auth_key(auth_env)
-    wrangler_utils.reset_all_failed_mwfrs(smaht_key, ignore_md5, limit)
+    wrangler_utils.reset_all_failed_mwfrs(smaht_key, ignore_md5, limit, mwf_name)
 
 
 @cli.command()

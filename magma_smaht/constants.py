@@ -32,6 +32,7 @@ MWF_NAME_SNIFFLES = "PacBio_ONT_variant_calling_Sniffles_GRCh38"
 MWF_NAME_SEVERUS = "PacBio_ONT_variant_calling_Severus_GRCh38"
 MWF_NAME_DELLY = "PacBio_ONT_variant_calling_Delly_GRCh38"
 MWF_NAME_DELLY_SR = "paired-end_short_reads_variant_calling_Delly_GRCh38"
+MWF_NAME_MANTA = "paired-end_short_reads_variant_calling_Manta_GRCh38"
 MWF_NAME_SNV_FILTERING_LONGCALLD = "SNV_filtering_longcallD_GRCh38"
 MWF_NAME_SNV_FILTERING = "SNV_filtering_GRCh38"
 
