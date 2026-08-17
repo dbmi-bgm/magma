@@ -33,6 +33,7 @@ from magma_smaht.utils import (
     get_released_long_read_wgs_files_for_donor,
     get_released_ont_wgs_files_for_tissue,
     get_analysis_runs_from_tissue,
+    get_existing_analysis_run,
     get_variant_calling_output,
     get_tissue_from_external_id,
     post_analysis_run,
@@ -48,6 +49,7 @@ from magma_smaht.constants import (
     MWF_NAME_SEVERUS,
     MWF_NAME_DELLY,
     MWF_NAME_DELLY_SR,
+    MWF_NAME_MANTA,
     MWF_NAME_STRELKA2,
     MWF_NAME_RUFUS,
     MWF_NAME_DNASCOPEHYBRID,
@@ -489,6 +491,8 @@ def mwfrs_somatic_snv_callers(tissue_accession, analysis_run, smaht_key):
     if mwfr_longcalld:
         mwfrs_to_post.append(mwfr_longcalld)
 
+    # Commented out for now as this is not part of the callers that go
+    # into the filtering step
     # mwfr_longcalld_ont = create_longcalld_mwfr(
     #     file_ont,
     #     "--ont",
@@ -784,11 +788,16 @@ def mwfrs_somatic_sv_callers_by_core(tissue_accession, analysis_run, smaht_key):
         print(f"\nCore {core} - Illumina files:")
         for f in grouped_files_illumina[core]:
             print(f"- {f[DISPLAY_TITLE]}")
-   
+
     # Create the AnalysisRun Item that will contain all MWFRs
     if analysis_run:
         analysis_run_accession = analysis_run
         print(f"\nUsing provided AnalysisRun {analysis_run_accession}.")
+    elif existing_analysis_run := get_existing_analysis_run(
+        SOMATIC_SV_CALLING, tissue_accession, smaht_key
+    ):
+        analysis_run_accession = existing_analysis_run[ACCESSION]
+        print(f"\nUsing existing AnalysisRun {analysis_run_accession}.")
     else:
         analysis_run_accession = post_analysis_run(
             SOMATIC_SV_CALLING,
@@ -811,7 +820,14 @@ def mwfrs_somatic_sv_callers_by_core(tissue_accession, analysis_run, smaht_key):
         )
         mwfrs_to_post.append(mwfr_delly)
 
-    # pprint.pprint(mwfrs_to_post)
+        mwfr_manta = create_manta_mwfr(
+            core_specific_illumina,
+            f"{tissue_code}_core_{core}_manta",
+            analysis_run_accession,
+            smaht_key,
+        )
+        mwfrs_to_post.append(mwfr_manta)
+
     post_analysis_mwfrs(mwfrs_to_post, smaht_key)
 
 
@@ -854,6 +870,11 @@ def mwfrs_somatic_sv_callers_by_gcc(tissue_accession, analysis_run, smaht_key):
     if analysis_run:
         analysis_run_accession = analysis_run
         print(f"\nUsing provided AnalysisRun {analysis_run_accession}.")
+    elif existing_analysis_run := get_existing_analysis_run(
+        SOMATIC_SV_CALLING, tissue_accession, smaht_key
+    ):
+        analysis_run_accession = existing_analysis_run[ACCESSION]
+        print(f"\nUsing existing AnalysisRun {analysis_run_accession}.")
     else:
         analysis_run_accession = post_analysis_run(
             SOMATIC_SV_CALLING,
@@ -876,7 +897,14 @@ def mwfrs_somatic_sv_callers_by_gcc(tissue_accession, analysis_run, smaht_key):
         )
         mwfrs_to_post.append(mwfr_delly)
 
-    # pprint.pprint(mwfrs_to_post)
+        mwfr_manta = create_manta_mwfr(
+            gcc_specific_illumina,
+            f"{tissue_code}_gcc_{gcc}_manta",
+            analysis_run_accession,
+            smaht_key,
+        )
+        mwfrs_to_post.append(mwfr_manta)
+
     post_analysis_mwfrs(mwfrs_to_post, smaht_key)
 
 
@@ -1067,6 +1095,29 @@ def create_delly_sr_mwfr(
         smaht_key,
     )
     return mwfr_delly_sr
+
+
+def create_manta_mwfr(
+    files_illumina, tag, analysis_run_accession, smaht_key
+):
+    # Create Manta MWFR
+    mwf_manta = get_latest_mwf(MWF_NAME_MANTA, smaht_key)
+    illumina_crams = [
+        {"file": f[UUID], "dimension": f"{dim}"} for dim, f in enumerate(files_illumina)
+    ]
+    mwfr_manta_input = [
+        get_mwfr_file_input_arg(INPUT_FILES_CRAM, illumina_crams),
+    ]
+    print("Validating Manta MWFR.")
+    mwfr_manta = create_and_validate_analysis_mwfr(
+        mwf_manta[UUID],
+        analysis_run_accession,
+        INPUT_FILES_CRAM,
+        mwfr_manta_input,
+        tag,
+        smaht_key,
+    )
+    return mwfr_manta
 
 
 def create_sniffles_mwfr(

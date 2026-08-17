@@ -15,6 +15,7 @@ import json, uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Sequence
+from urllib.parse import quote
 from magma_smaht.metawfl import MetaWorkflow
 from magma_smaht.constants import (
     UUID,
@@ -736,6 +737,54 @@ def get_analysis_runs_from_tissue(tissue_code, key):
         f"&tissues.display_title={tissue_code}"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_analysis_runs_for_type_and_tissue(analysis_type, tissue_identifier, key):
+    """Get all AnalysisRuns of a given analysis type that are associated with a given tissue.
+
+    Args:
+        analysis_type (str): analysis_type of the AnalysisRun, e.g. "Somatic SV calling"
+        tissue_identifier (str): Tissue accession or UUID
+        key (dict): SMaHT key
+
+    Returns:
+        list: Matching AnalysisRun items (empty list if there are none)
+    """
+    tissue = get_item_es(tissue_identifier, key)
+    search_filter = (
+        "?type=AnalysisRun"
+        f"&analysis_type={quote(analysis_type)}"
+        f"&tissues.uuid={tissue[UUID]}"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_existing_analysis_run(analysis_type, tissue_identifier, key):
+    """Get the existing AnalysisRun for an analysis type and tissue, if there is exactly one.
+
+    Args:
+        analysis_type (str): analysis_type of the AnalysisRun, e.g. "Somatic SV calling"
+        tissue_identifier (str): Tissue accession or UUID
+        key (dict): SMaHT key
+
+    Returns:
+        dict: The AnalysisRun item if exactly one exists, None if there is none
+
+    Raises:
+        Exception: If multiple AnalysisRuns exist for this analysis type and tissue
+    """
+    analysis_runs = get_analysis_runs_for_type_and_tissue(
+        analysis_type, tissue_identifier, key
+    )
+    if not analysis_runs:
+        return None
+    if len(analysis_runs) > 1:
+        accessions = ", ".join(ar[ACCESSION] for ar in analysis_runs)
+        raise Exception(
+            f"Multiple AnalysisRuns of type '{analysis_type}' found for tissue "
+            f"{tissue_identifier}: {accessions}. Please provide an analysis run accession."
+        )
+    return analysis_runs[0]
 
 
 def get_item(identifier, key, frame="raw"):
