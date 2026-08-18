@@ -32,7 +32,7 @@ from magma_smaht.utils import (
     get_released_pacbio_wgs_files_for_donor,
     get_released_long_read_wgs_files_for_donor,
     get_released_ont_wgs_files_for_tissue,
-    get_analysis_runs_from_tissue,
+    get_file_coverage,
     get_existing_analysis_run,
     get_variant_calling_output,
     get_tissue_from_external_id,
@@ -137,18 +137,13 @@ def mwfr_germline_snv_caller(donor_accession, tissue_accession, analysis_run, sm
 
     print("\nIllumina files to choose from:")
     for f in files_illumina:
-        coverage = f["quality_metrics"][-1]["coverage"]
-        print(f"- Illumina file: {f[DISPLAY_TITLE]}. Coverage: {coverage}X")
+        coverage = get_file_coverage(f)
+        coverage_text = f"{coverage}X" if coverage else "not available"
+        print(f"- Illumina file: {f[DISPLAY_TITLE]}. Coverage: {coverage_text}")
 
-    files_with_coverage = [
-        f
-        for f in files_illumina
-        if f.get("quality_metrics") and f["quality_metrics"][-1].get("coverage")
-    ]
+    files_with_coverage = [f for f in files_illumina if get_file_coverage(f)]
     if files_with_coverage:
-        file_with_highest_coverage = max(
-            files_with_coverage, key=lambda f: f["quality_metrics"][-1]["coverage"]
-        )
+        file_with_highest_coverage = max(files_with_coverage, key=get_file_coverage)
     print("\nIllumina file with highest coverage to be used:")
     print(f"- Illumina file: {file_with_highest_coverage[DISPLAY_TITLE]}")
     files_illumina = [file_with_highest_coverage]
@@ -516,12 +511,13 @@ def mwfr_somatic_snv_filtering(tissue_accession, analysis_run, smaht_key):
     analysis_run_accession = analysis_run
 
     if not analysis_run_accession:
-        ar = get_analysis_runs_from_tissue(tissue_code, smaht_key)
-        if ar and len(ar) == 1:
-            analysis_run_accession = ar[0][ACCESSION]   
-            print(f"\nUsing Analysis Run {analysis_run_accession} for tissue {tissue_code}.")
-        else:
-            raise Exception(f"Could not determine a unique analysis run for tissue {tissue_code}. Please provide an analysis run accession to the function.")
+        ar = get_existing_analysis_run(
+            SOMATIC_SNV_CALLING, tissue_accession, smaht_key
+        )
+        if not ar:
+            raise Exception(f"Could not find an AnalysisRun of type '{SOMATIC_SNV_CALLING}' for tissue {tissue_code}. Please provide an analysis run accession to the function.")
+        analysis_run_accession = ar[ACCESSION]
+        print(f"\nUsing Analysis Run {analysis_run_accession} for tissue {tissue_code}.")
 
     print(f"\nGathering input data for somatic SNV filtering for tissue {tissue_code}.")
 

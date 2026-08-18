@@ -659,6 +659,14 @@ def get_released_ont_wgs_files_for_tissue(tissue_code, key):
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
 
 
+def get_file_coverage(file):
+    """Get the coverage from the most recent QualityMetrics of a file, if there is one"""
+    quality_metrics = file.get("quality_metrics")
+    if not quality_metrics:
+        return None
+    return quality_metrics[-1].get("coverage")
+
+
 def get_illumina_wgs_filesets_for_tissue(tissue_code, key):
     """For a given tissue code, get all Illumina WGS filesets"""
 
