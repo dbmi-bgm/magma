@@ -121,8 +121,6 @@ def analysis_overview(donor_id: str, smaht_key: dict):
             num_mwfrs = len(analysis_run["meta_workflow_runs"])
             print(f"  {analysis_str}: {analysis_run['analysis_type']} ({analysis_run[ACCESSION]}) - MWFRs: {num_mwfrs}")
         
-
-        
     return
 
 

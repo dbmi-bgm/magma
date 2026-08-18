@@ -28,7 +28,7 @@ def cli():
 )
 def analysis_overview(donor, auth_env):
     """
-    Check which files need to be checked for sample identity.
+    Print an analysis overview for a given donor.
     """
     smaht_key = get_auth_key(auth_env)
     wrangler_utils.analysis_overview(donor, smaht_key)
