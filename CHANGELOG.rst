@@ -3,6 +3,15 @@
 Change Log
 ==========
 
+4.0.0
+=====
+* Drop Python 3.8 support. Python 3.9 or higher is now required.
+* Add germline SNV, somatic SNV, and somatic SV (Manta) MetaWorkflowRun creation for SMaHT, with reuse of existing AnalysisRuns.
+* Add CLI commands for the new variant calling flows, mosdepth QC, and a per-donor analysis overview.
+* Allow filtering by MetaWorkflow name and limiting the number of resets when resetting failed MetaWorkflowRuns.
+* Add tests that check generated MetaWorkflowRun structures against expected output.
+
+
 3.16.0
 =====
 * Add CLI command to get an overview of Somalier results in SMaHT.
