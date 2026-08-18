@@ -1,0 +1,165 @@
+{
+  "accession": "SMAMWTDH4UEC",
+  "aliases": [
+    "smaht:MetaWorkflow-paired-end_short_reads_variant_calling_Manta_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Variant Calling"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2026-08-07T19:34:01.227775+00:00",
+  "description": "Run Manta on short-read data for structural variant calling in tumor-only mode. Accepts a list of CRAM files as input, merges them, and produces scored (tumorSV) and unscored candidate (candidateSV) calls in VCF format.",
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-08-07T19:34:01.252978+00:00",
+    "modified_by": "45ac3b0a-6640-4ccc-8ba7-e4cc7c778c15"
+  },
+  "name": "paired-end_short_reads_variant_calling_Manta_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "45ac3b0a-6640-4ccc-8ba7-e4cc7c778c15",
+  "tags": [
+    "DEPLOY_HASH-6e4a5cff2bc0003fb78b8587c2f53cc0cfbfe4a6b20cd84f077e17eb5b5fcee1"
+  ],
+  "title": "paired-end short reads variant calling Manta GRCh38 [0.3.1]",
+  "uuid": "f8fc087f-51a2-42a8-8254-b3d62dd3a18b",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.75x",
+        "instance_type": [
+          "c5a.2xlarge",
+          "c6a.2xlarge",
+          "c6i.2xlarge",
+          "c7i.2xlarge"
+        ],
+        "run_name": "run_samtools_merge_cram",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_cram": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "Sample CRAM (merged)",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_cram",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 8,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_merge_cram",
+      "workflow": "ddc0a618-7287-45ae-9d30-3577d0ccc2d1"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.5x",
+        "instance_type": [
+          "c5a.2xlarge",
+          "c6a.2xlarge",
+          "c6i.2xlarge",
+          "c7a.2xlarge",
+          "c7i.2xlarge",
+          "c8a.2xlarge",
+          "c8i.2xlarge"
+        ],
+        "run_name": "run_manta",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_candidate_vcf_gz": {
+          "data_category": [
+            "Germline Variant Calls",
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SV"
+          ],
+          "description": "Manta unscored candidate structural variant VCF",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "aa6250c3-a2cf-474c-aaeb-cdf4bd1f8aa0"
+          ]
+        },
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Germline Variant Calls",
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SV"
+          ],
+          "description": "Manta structural variant VCF (scored)",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "aa6250c3-a2cf-474c-aaeb-cdf4bd1f8aa0"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_cram",
+          "argument_type": "file",
+          "source": "samtools_merge_cram",
+          "source_argument_name": "output_file_cram"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 8,
+          "value_type": "integer"
+        }
+      ],
+      "name": "manta",
+      "workflow": "e0fa6cf8-020d-4415-a99e-2dd3bec8dc89"
+    }
+  ]
+}

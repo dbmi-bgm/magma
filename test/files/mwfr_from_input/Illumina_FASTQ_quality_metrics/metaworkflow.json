@@ -1,0 +1,352 @@
+{
+  "accession": "SMAMWXDFI3NU",
+  "aliases": [
+    "smaht:MetaWorkflow-Illumina_FASTQ_quality_metrics_0.3.1"
+  ],
+  "category": [
+    "Quality Control"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2025-07-24T19:12:36.139024+00:00",
+  "description": "Calculate quality metrics for input files in FASTQ format. Implementation for short reads Illumina data",
+  "input": [
+    {
+      "argument_name": "input_files_fastq_gz",
+      "argument_type": "file",
+      "dimensionality": 2
+    },
+    {
+      "argument_name": "kraken2_db",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "c9a09979-3bd1-455c-9320-f4e9f02d895d"
+        }
+      ]
+    },
+    {
+      "argument_name": "nthreads",
+      "argument_type": "parameter",
+      "value": 1,
+      "value_type": "integer"
+    },
+    {
+      "argument_name": "qc_ruleset",
+      "argument_type": "QC ruleset",
+      "value": {
+        "overall_quality_status_rule": "{kraken2_human} and {kraken2_virus} and {kraken2_bacteria} and {sequence_length}",
+        "qc_thresholds": [
+          {
+            "id": "kraken2_human",
+            "metric": "Percentage Human Sequences [Kraken2]",
+            "operator": ">",
+            "pass_target": 95.0,
+            "use_as_qc_flag": true,
+            "warn_target": 0.0
+          },
+          {
+            "id": "kraken2_virus",
+            "metric": "Percentage Viral Sequences [Kraken2]",
+            "operator": "<",
+            "pass_target": 0.3,
+            "use_as_qc_flag": true,
+            "warn_target": 100.0
+          },
+          {
+            "id": "kraken2_bacteria",
+            "metric": "Percentage Bacterial Sequences [Kraken2]",
+            "operator": "<",
+            "pass_target": 0.1,
+            "use_as_qc_flag": true,
+            "warn_target": 100.0
+          },
+          {
+            "id": "sequence_length",
+            "metric": "Sequence Length [FastQC]",
+            "operator": "is_type",
+            "pass_target": "int",
+            "use_as_qc_flag": true,
+            "warn_target": "int"
+          }
+        ]
+      }
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-08-04T20:44:02.209864+00:00",
+    "modified_by": "0d565156-00db-4948-82fe-021d151a5daf"
+  },
+  "name": "Illumina_FASTQ_quality_metrics",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-1f8256501056de126aa4caa7b68dc602fa4a3b31b9d700658e916466a2e6920f"
+  ],
+  "title": "Illumina FASTQ quality metrics [0.3.1]",
+  "uuid": "85b07a59-611c-4c2e-ae58-91069afbecd8",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_get_fastq_lanes",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "lane identifiers report",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_fastq_gz",
+          "argument_type": "file",
+          "scatter": 2,
+          "source_argument_name": "input_files_fastq_gz"
+        }
+      ],
+      "name": "get_fastq_lanes",
+      "workflow": "6792b86b-ca9e-4ae0-a67d-af9342fe8ff6"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_compare_lanes",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_log_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "lane identifiers summary"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_txt",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "get_fastq_lanes",
+          "source_argument_name": "output_file_txt"
+        }
+      ],
+      "name": "compare_lanes",
+      "workflow": "f84dd731-841b-4dea-97b7-02e3a25e7b06"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m6a.large",
+          "m6i.large"
+        ],
+        "run_name": "run_fastqc",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_report_zip": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics",
+            "Image"
+          ],
+          "description": "FastQC compressed output report"
+        },
+        "output_summary_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "FastQC summary output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_fastq_gz",
+          "argument_type": "file",
+          "scatter": 2,
+          "source_argument_name": "input_files_fastq_gz"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "input_logs_txt",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "compare_lanes",
+          "source_argument_name": "output_log_txt"
+        }
+      ],
+      "name": "fastqc",
+      "workflow": "24657f9e-d446-4e3c-b570-a92bd7649549"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.1x",
+        "instance_type": [
+          "r5.xlarge",
+          "r5a.xlarge",
+          "r6a.xlarge",
+          "r6i.xlarge",
+          "r7a.xlarge",
+          "r7i.xlarge"
+        ],
+        "run_name": "run_kraken2",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "Kraken2 output report TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_fastq_gz",
+          "argument_type": "file",
+          "scatter": 2,
+          "source_argument_name": "input_files_fastq_gz"
+        },
+        {
+          "argument_name": "database",
+          "argument_type": "file",
+          "source_argument_name": "kraken2_db"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "input_logs_txt",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "compare_lanes",
+          "source_argument_name": "output_log_txt"
+        }
+      ],
+      "name": "kraken2",
+      "workflow": "9304f68f-bc15-40a1-919a-26104a3a79eb"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 10,
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_parse-qc_FASTQ_Quality_Metrics_short_reads",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "metrics_zip": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics",
+            "Image"
+          ],
+          "description": "QC compressed output"
+        },
+        "qc_values_json": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC output JSON"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_fastq_gz",
+          "argument_type": "file",
+          "input_dimension": 2,
+          "mount": true,
+          "source_argument_name": "input_files_fastq_gz"
+        },
+        {
+          "argument_name": "fastqc_report_zip",
+          "argument_type": "file",
+          "source": "fastqc",
+          "source_argument_name": "output_report_zip"
+        },
+        {
+          "argument_name": "fastqc_summary_txt",
+          "argument_type": "file",
+          "source": "fastqc",
+          "source_argument_name": "output_summary_txt"
+        },
+        {
+          "argument_name": "kraken2_report_txt",
+          "argument_type": "file",
+          "source": "kraken2",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "qc_ruleset",
+          "argument_type": "QC ruleset"
+        }
+      ],
+      "name": "parse-qc_FASTQ_Quality_Metrics_short_reads",
+      "workflow": "8dcf5628-5ecb-48d3-a8f4-fa730d8d96fa"
+    }
+  ]
+}

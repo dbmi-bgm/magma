@@ -1,0 +1,19 @@
+{
+  "description": "",
+  "input_arg": "input_files_TNhaplotyper2_vcf_gz",
+  "source": {
+    "ambiguous_input_args": [
+      "input_files_all_long_read_cram_donor_pooled",
+      "input_files_pb_cram_donor_pooled",
+      "input_files_sr_cram_donor_pooled",
+      "input_files_sr_cram_tissue_specific"
+    ],
+    "env": "data",
+    "meta_workflow_name": "SNV_filtering_GRCh38",
+    "meta_workflow_uuid": "69bcc93e-08f8-4777-826a-982220b96be4",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRAOCJMNR",
+    "mwfr_date_created": "2026-04-07T17:16:28.259273+00:00",
+    "mwfr_uuid": "2faace9e-ad07-4c6d-b6a4-ecde81d788a6"
+  }
+}

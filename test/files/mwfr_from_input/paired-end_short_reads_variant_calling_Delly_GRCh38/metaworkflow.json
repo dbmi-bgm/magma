@@ -1,0 +1,155 @@
+{
+  "accession": "SMAMWYDJTMVN",
+  "aliases": [
+    "smaht:MetaWorkflow-paired-end_short_reads_variant_calling_Delly_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Variant Calling"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2026-05-21T15:09:15.897381+00:00",
+  "description": "Run Delly on short-read data for structural variant calling. Accepts a list of CRAM files as input, merges them, and produces final calls in VCF format.",
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "exclude_tsv",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "ac627278-230a-437b-8e7b-f30963d1fe1d"
+        }
+      ]
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-06-04T13:43:08.572416+00:00",
+    "modified_by": "45ac3b0a-6640-4ccc-8ba7-e4cc7c778c15"
+  },
+  "name": "paired-end_short_reads_variant_calling_Delly_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "0d565156-00db-4948-82fe-021d151a5daf",
+  "tags": [
+    "DEPLOY_HASH-3f198ca21801fa716fcd8042a36b702dbcd276eceec087c298ce9595fb3e2296"
+  ],
+  "title": "paired-end short reads variant calling Delly GRCh38 [0.3.1]",
+  "uuid": "31c66189-bc9e-4cba-86f7-232516b8f2e5",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.75x",
+        "instance_type": [
+          "c5a.2xlarge",
+          "c6a.2xlarge",
+          "c6i.2xlarge",
+          "c7i.2xlarge"
+        ],
+        "run_name": "run_samtools_merge_cram",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_cram": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "Sample CRAM (merged)",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_cram",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 8,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_merge_cram",
+      "workflow": "ddc0a618-7287-45ae-9d30-3577d0ccc2d1"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.5x",
+        "instance_type": [
+          "r5a.4xlarge",
+          "r6a.4xlarge",
+          "r6i.4xlarge",
+          "r7i.4xlarge",
+          "r8i.4xlarge"
+        ],
+        "run_name": "run_delly_sr",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Germline Variant Calls",
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SV"
+          ],
+          "description": "Delly-SR output VCF",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "24ac7ac0-ea28-4e4d-8757-aab66cb55fd2"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_cram",
+          "argument_type": "file",
+          "source": "samtools_merge_cram",
+          "source_argument_name": "output_file_cram"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "exclude_tsv",
+          "argument_type": "file"
+        }
+      ],
+      "name": "delly_sr",
+      "workflow": "710c296f-89e2-444f-a16e-ca2287e5c50e"
+    }
+  ]
+}

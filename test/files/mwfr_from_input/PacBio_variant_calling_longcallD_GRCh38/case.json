@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_file_cram",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "PacBio_variant_calling_longcallD_GRCh38",
+    "meta_workflow_uuid": "cdbfaae7-9ac9-4357-84b7-9030024f75d7",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMR5L3DKP7",
+    "mwfr_date_created": "2026-05-13T16:31:52.336077+00:00",
+    "mwfr_uuid": "6c9da6e3-43f6-4361-80dd-2171185b4081"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_bam",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "PacBio_alignment_GRCh38",
+    "meta_workflow_uuid": "d1460553-0b3d-41df-b862-af19081974e0",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRBH2O1X7",
+    "mwfr_date_created": "2026-06-23T15:59:45.579337+00:00",
+    "mwfr_uuid": "3e23efd1-c70a-4b96-893e-80f798aaf483"
+  }
+}

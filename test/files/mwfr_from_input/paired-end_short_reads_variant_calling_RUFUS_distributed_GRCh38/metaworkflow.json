@@ -1,0 +1,287 @@
+{
+  "accession": "SMAMWDHKK3L1",
+  "aliases": [
+    "smaht:MetaWorkflow-paired-end_short_reads_variant_calling_RUFUS_distributed_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Variant Calling"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2026-02-16T14:42:41.339681+00:00",
+  "description": "Run RUFUS algorithm for somatic variant calling. Accepts a list of CRAM files as input and produces final calls in VCF format. Implemented to distribute run on genomic regions across 5 shards. Each shard contains multiple 1Mb regions",
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "genome_reference_bwt",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "f5ad62fa-5a76-4cf3-bf66-3b71d740be22"
+        }
+      ]
+    },
+    {
+      "argument_name": "region_file_tsv",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "c017c0fb-cf44-400e-b724-ad5688316687"
+        }
+      ]
+    },
+    {
+      "argument_name": "shard_index",
+      "argument_type": "parameter",
+      "value": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "value_type": "array"
+    },
+    {
+      "argument_name": "nthreads",
+      "argument_type": "parameter",
+      "value": 3,
+      "value_type": "integer"
+    },
+    {
+      "argument_name": "kg1_version",
+      "argument_type": "parameter",
+      "value": "v3.0",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "control_version",
+      "argument_type": "parameter",
+      "value": "v1.0",
+      "value_type": "string"
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-03-05T20:24:14.268447+00:00",
+    "modified_by": "5bc9d5d7-1c07-48b5-941e-b006ac58d3a0"
+  },
+  "name": "paired-end_short_reads_variant_calling_RUFUS_distributed_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-7390ee5f471deffa8c4d8c0177549e94c6be6c9ab0e10037e1c8d0ac27eb9a08"
+  ],
+  "title": "paired-end short reads variant calling RUFUS distributed GRCh38 [0.3.1]",
+  "uuid": "8c528115-dfdb-41d8-ac87-8111efed3327",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.xlarge",
+          "c5a.xlarge",
+          "m5.xlarge",
+          "m5a.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_samtools_merge_cram",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_cram": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "Sample CRAM (merged)",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_cram",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_merge_cram",
+      "workflow": "ddc0a618-7287-45ae-9d30-3577d0ccc2d1"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 50,
+        "instance_type": [
+          "c6i.24xlarge",
+          "c6i.32xlarge",
+          "c6a.24xlarge",
+          "c6a.32xlarge",
+          "c6a.48xlarge",
+          "c7i.24xlarge",
+          "c7i.48xlarge",
+          "c7a.24xlarge",
+          "c7a.32xlarge",
+          "c7a.48xlarge",
+          "c8i.24xlarge",
+          "c8i.32xlarge",
+          "c8a.24xlarge"
+        ],
+        "run_name": "run_rufus",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel"
+          ],
+          "description": "RUFUS output VCF (shard)",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_cram",
+          "argument_type": "file",
+          "mount": true,
+          "source": "samtools_merge_cram",
+          "source_argument_name": "output_file_cram"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "genome_reference_bwt",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "region_file_tsv",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "shard_index",
+          "argument_type": "parameter",
+          "input_dimension": 1,
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "kg1_version",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "control_version",
+          "argument_type": "parameter",
+          "value_type": "string"
+        }
+      ],
+      "name": "rufus",
+      "shards": [
+        [
+          "0"
+        ],
+        [
+          "1"
+        ],
+        [
+          "2"
+        ],
+        [
+          "3"
+        ],
+        [
+          "4"
+        ]
+      ],
+      "workflow": "906b5169-ca72-430c-a551-faca4b7df97c"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "m5.xlarge",
+          "c5.xlarge"
+        ],
+        "run_name": "run_bcftools_concat",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel"
+          ],
+          "description": "RUFUS output VCF",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "2d6b20a9-1c30-499a-aad6-b794ab72a95a"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_vcf_gz",
+          "argument_type": "file",
+          "gather_input": 1,
+          "source": "rufus",
+          "source_argument_name": "output_file_vcf_gz"
+        }
+      ],
+      "name": "bcftools_concat",
+      "workflow": "9d1d1cbd-7ada-40b4-ada3-d56aec78765d"
+    }
+  ]
+}

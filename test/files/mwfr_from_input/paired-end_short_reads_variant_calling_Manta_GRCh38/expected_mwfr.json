@@ -1,0 +1,32 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "1f77fb18-fc20-4f46-bcaf-8ce504924e16"
+        },
+        {
+          "dimension": "1",
+          "file": "1abd7448-f354-46c6-9902-5a49606a8fba"
+        }
+      ]
+    }
+  ],
+  "meta_workflow": "f8fc087f-51a2-42a8-8254-b3d62dd3a18b",
+  "workflow_runs": [
+    {
+      "name": "samtools_merge_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "manta",
+      "shard": "0"
+    }
+  ]
+}

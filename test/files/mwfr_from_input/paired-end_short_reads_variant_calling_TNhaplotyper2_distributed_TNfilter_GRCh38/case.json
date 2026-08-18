@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_cram",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "paired-end_short_reads_variant_calling_TNhaplotyper2_distributed_TNfilter_GRCh38",
+    "meta_workflow_uuid": "15d85e83-9e50-4280-8488-ddf163882708",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMR1FEY8TE",
+    "mwfr_date_created": "2026-05-13T16:32:04.324643+00:00",
+    "mwfr_uuid": "5641a4b0-c6a4-43db-84b1-6d2c64627adf"
+  }
+}
