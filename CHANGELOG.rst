@@ -3,6 +3,22 @@
 Change Log
 ==========
 
+3.17.0
+=====
+* Add optional `input_structures` argument to `MetaWorkflow.write_run`, so that the shards of a step
+  are calculated from the input structure of the input argument the step scatters over. This makes it
+  possible to scatter workflows of the same MetaWorkflowRun over input arguments with a different
+  number of files. Without the argument the created MetaWorkflowRun is unchanged.
+* `write_run` now raises a `ValueError` instead of creating a dependency on a shard that does not
+  exist, which can happen when steps that are scattered differently are combined without gather.
+* `generate_input_structure` validates the dimensions of all given files instead of assuming that the
+  first file is representative of the input structure. Mixed dimensionalities, and duplicate, gapped or
+  negative dimensions, now raise a `ValueError` instead of resulting in an input structure that does not
+  match the given files. The input structure itself is unchanged for all valid input.
+* `mwfr_from_input` calculates the input structure of every scattered input argument and raises a
+  `ValueError` if `input_arg` is not one of the given input arguments.
+
+
 3.16.0
 =====
 * Add CLI command to get an overview of Somalier results in SMaHT.

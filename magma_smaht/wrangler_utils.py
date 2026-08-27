@@ -19,7 +19,6 @@ from magma_smaht.utils import (
     get_tag_for_sample_identity_check,
     get_wfr_from_mwfr,
     get_latest_somalier_run_for_donor,
-    generate_input_structure,
     mwfr_from_input,
     get_all_donors,
     ok_green_text,

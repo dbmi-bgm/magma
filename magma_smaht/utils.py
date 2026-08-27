@@ -13,7 +13,7 @@ import pprint
 import functools
 import json, uuid
 from pathlib import Path
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, List, Sequence
 from magma_smaht.metawfl import MetaWorkflow
 from magma_smaht.constants import (
     UUID,
@@ -454,12 +454,23 @@ def mwfr_from_input(
 
     metawf_meta = get_item(metawf_uuid, ff_key)
 
+    input_structure = None
     for arg in input:
         if arg["argument_name"] == input_arg:
             input_structure = generate_input_structure(arg["files"])
+    if input_structure is None:
+        raise ValueError(
+            f"There is no input argument {input_arg} to calculate the input"
+            " structure from. Available input arguments:"
+            f" {', '.join(arg['argument_name'] for arg in input)}."
+        )
+
+    # Steps that scatter over an input argument other than input_arg get their
+    # shards from the structure of that argument
+    input_structures = get_input_structures(metawf_meta, input)
 
     mwf = MetaWorkflow(metawf_meta)
-    mwfr = mwf.write_run(input_structure)
+    mwfr = mwf.write_run(input_structure, input_structures=input_structures)
 
     mwfr[UUID] = str(uuid.uuid4())
     mwfr[CONSORTIA] = consortia
@@ -469,31 +480,178 @@ def mwfr_from_input(
     return mwfr
 
 
-def generate_input_structure(files):
-    dimension_first_file = files[0][
-        "dimension"
-    ]  # We assume that this is representative of the input structure
-    if dimension_first_file.count(",") == 0:
+def get_scattered_argument_names(metawf_meta: JsonObject) -> List[str]:
+    """Get the names of the input arguments of a MetaWorkflow[portal] that are
+    scattered over by at least one of its workflows.
+
+    Arguments that are matched to the output of a previous workflow (source) are
+    not returned, they scatter over that output and not over the input.
+
+    :param metawf_meta: MetaWorkflow[portal]
+    :type metawf_meta: dict
+    :return: Names of the input arguments that are scattered over
+    :rtype: list(str)
+    """
+    argument_names = []
+    for workflow in metawf_meta.get("workflows", []):
+        for arg in workflow.get("input", []):
+            if not arg.get("scatter") or arg.get("source"):
+                continue
+            if arg.get("argument_type") != "file":
+                continue
+            # source_argument_name is the name of the argument
+            #   in the input of the MetaWorkflowRun, if specified
+            name = arg.get("source_argument_name") or arg.get("argument_name")
+            if name not in argument_names:
+                argument_names.append(name)
+    return argument_names
+
+
+def get_input_structures(
+    metawf_meta: JsonObject, input: Sequence[JsonObject]
+) -> Dict[str, List[Any]]:
+    """Calculate the input structure of every input argument of a
+    MetaWorkflowRun that is scattered over by one of the workflows.
+
+    :param metawf_meta: MetaWorkflow[portal] the MetaWorkflowRun is derived from
+    :type metawf_meta: dict
+    :param input: Input arguments as list, where each argument is a dictionary
+    :type input: list(dict)
+    :return: Input structures by input argument name
+    :rtype: dict
+    """
+    scattered_argument_names = get_scattered_argument_names(metawf_meta)
+
+    input_structures = {}
+    for arg in input:
+        argument_name = arg.get("argument_name")
+        if argument_name not in scattered_argument_names:
+            continue
+        if arg.get("argument_type") != "file" or not arg.get("files"):
+            continue
+        try:
+            input_structures[argument_name] = generate_input_structure(arg["files"])
+        except ValueError as e:
+            raise ValueError(
+                f"Cannot calculate the input structure of the scattered input"
+                f" argument {argument_name}: {e}"
+            ) from e
+    return input_structures
+
+
+def generate_input_structure(files: Sequence[Dict[str, Any]]) -> List[Any]:
+    """Calculate the input structure of a MetaWorkflowRun from the input files
+    of an input argument that is scattered over.
+
+    The `dimension` of every file is parsed and validated, i.e. the
+    dimensionality of the input structure is not inferred from the first file
+    alone. Files with mixed dimensionalities, and duplicate, gapped or negative
+    dimensions, raise a ValueError instead of resulting in an input structure
+    that does not match the given files.
+
+    :param files: Files of a single input argument, e.g.
+        [{'file': 'UUID', 'dimension': '0'}, ...]
+    :type files: list(dict)
+    :return: Input structure with maximum scatter, 1 or 2 dimensions
+    :rtype: list
+    :raises ValueError: If the dimensions of the given files don't describe a
+        complete 1 or 2 dimensional input structure
+    """
+    if not files:
+        raise ValueError(
+            "Cannot generate an input structure from an empty list of files."
+        )
+
+    def file_description(file, dimension):
+        return f"file {file.get('file', '<unknown>')} (dimension {dimension!r})"
+
+    # Parse the dimension of every file. Files without a dimension yield an
+    # empty list of indices, i.e. no dimension at all.
+    parsed = []  # [(file, dimension as given, [dimension indices]), ...]
+    for file in files:
+        dimension = file.get("dimension")
+        dimension = "" if dimension is None else str(dimension).strip()
+        indices = []
+        for component in dimension.split(",") if dimension else []:
+            component = component.strip()
+            if not component.isdigit():
+                raise ValueError(
+                    f"Invalid dimension component {component!r} in "
+                    f"{file_description(file, dimension)}. A dimension must be a"
+                    " comma separated list of non-negative integers."
+                )
+            indices.append(int(component))
+        parsed.append((file, dimension, indices))
+
+    # All files must have the same number of dimensions, i.e. the first file
+    # is not assumed to be representative of the input structure.
+    first_file, first_dimension, first_indices = parsed[0]
+    num_dimensions = len(first_indices)
+    for file, dimension, indices in parsed[1:]:
+        if len(indices) != num_dimensions:
+            raise ValueError(
+                f"Inconsistent dimensions: {file_description(first_file, first_dimension)}"
+                f" has {num_dimensions} dimension(s), but "
+                f"{file_description(file, dimension)} has {len(indices)}. All"
+                " files of an input argument must have the same number of"
+                " dimensions."
+            )
+
+    if num_dimensions == 0:
+        # No file has a dimension, the files are treated as a positional
+        # 1 dimensional list.
+        if len(files) > 1:
+            print(
+                warning_text(
+                    f"WARNING: None of the {len(files)} input files has a"
+                    " dimension. They are treated as a 1 dimensional list, in"
+                    " the given order."
+                )
+            )
         return list(range(len(files)))
-    elif dimension_first_file.count(",") == 1:
-        dimensions = list(map(lambda x: x["dimension"].split(","), files))
-        dimensions = list(map(lambda x: [int(x[0]), int(x[1])], dimensions))
-        # Example for dimensions: [[1, 0],[0, 0],[1, 1],[0, 1],[1, 2]]
+    elif num_dimensions == 1:
+        _validate_dimension_indices(
+            [indices[0] for _, _, indices in parsed], "input files"
+        )
+        return list(range(len(files)))
+    elif num_dimensions == 2:
         dimensions_dict = {}
-        for dim in dimensions:
-            if dim[0] not in dimensions_dict:
-                dimensions_dict[dim[0]] = [dim[1]]
-            else:
-                dimensions_dict[dim[0]].append(dim[1])
+        for _, _, indices in parsed:
+            dimensions_dict.setdefault(indices[0], []).append(indices[1])
         # Example for dimensions_dict: {0: [0, 1], 1: [0, 1, 2]}
-        input_structure = []
-        for key in sorted(dimensions_dict.keys()):
-            input_structure.append(dimensions_dict[key])
-        # Example for input_structure: [[0, 1], [0, 1, 2]]
-        return input_structure
+        _validate_dimension_indices(list(dimensions_dict.keys()), "first dimension")
+        for index, inner_indices in dimensions_dict.items():
+            _validate_dimension_indices(
+                inner_indices, f"second dimension of index {index}"
+            )
+        # The indices within a sublist are kept in the order in which they
+        # appear in `files`
+        return [dimensions_dict[index] for index in sorted(dimensions_dict)]
     else:
-        print("More than 2 input dimensions are currently not supported")
-        exit()
+        raise ValueError(
+            "Input structures with more than 2 dimensions are currently not"
+            f" supported (got {num_dimensions} dimensions, e.g."
+            f" {file_description(first_file, first_dimension)})."
+        )
+
+
+def _validate_dimension_indices(indices: Sequence[int], description: str) -> None:
+    """Check that the given dimension indices are a permutation of
+    0, ..., len(indices)-1, i.e. that they are complete and free of duplicates.
+
+    :param indices: Dimension indices to validate
+    :type indices: list(int)
+    :param description: Description of the validated indices for the error message
+    :type description: str
+    :raises ValueError: If the indices are not complete or contain duplicates
+    """
+    expected = list(range(len(indices)))
+    if sorted(indices) != expected:
+        raise ValueError(
+            f"The dimensions of the {description} are not a complete range"
+            f" without duplicates: expected indices {expected}, got"
+            f" {sorted(indices)}."
+        )
 
 
 def has_bam_to_cram_mwfr(fileset, key):
