@@ -303,7 +303,142 @@ class MetaWorkflow(object):
         """
         return len(shards[0])
 
-    def write_run(self, input_structure, end_steps=[]):
+    def _scatter_argument_names(self, step_obj):
+        """Given StepWorkflow[obj] calculate the names of the input arguments
+        that the step scatters over at its maximum scatter dimension.
+
+        Only arguments that are matched to the input of the MetaWorkflowRun are
+        returned, arguments that are matched to the output of a previous step
+        (source) scatter over that output and not over the input.
+
+        :param step_obj: StepWorkflow[obj] representing a StepWorkflow[json]
+        :type step_obj: object
+        :return: Names of the input arguments to scatter over
+        :rtype: list(str)
+        """
+        argument_names = []
+        for arg in step_obj.input:
+            if arg.get('scatter') != step_obj.is_scatter:
+                continue
+            if arg.get('argument_type') != 'file' or arg.get('source'):
+                continue
+            # source_argument_name is the name of the argument
+            #   in the input of the MetaWorkflowRun, if specified
+            argument_names.append(
+                arg.get('source_argument_name') or arg.get('argument_name')
+            )
+        return argument_names
+
+    def _step_dimensions(self, step_obj, scatter_dimension, dimensions, dimensions_by_argument):
+        """Given StepWorkflow[obj] get the input dimensions that define
+        the shards of the step.
+
+        These are the dimensions of the input argument the step scatters over,
+        if that argument has its own input structure, else the dimensions of the
+        input structure with maximum scatter.
+
+        :param step_obj: StepWorkflow[obj] representing a StepWorkflow[json]
+        :type step_obj: object
+        :param scatter_dimension: Dimension the step is scattered on
+        :type scatter_dimension: int
+        :param dimensions: Input dimensions for the input structure
+            with maximum scatter
+        :type dimensions: dict
+        :param dimensions_by_argument: Input dimensions by input argument name
+        :type dimensions_by_argument: dict
+        :return: Input dimensions to calculate the shards of the step
+        :rtype: dict
+        """
+        if scatter_dimension != step_obj.is_scatter:
+            # The scatter dimension has been increased by a scattered dependency,
+            #   the input argument of the step does not define the structure
+            return dimensions
+        step_dimensions, argument_names = [], []
+        for argument_name in self._scatter_argument_names(step_obj):
+            argument_dimensions = dimensions_by_argument.get(argument_name)
+            if argument_dimensions and argument_dimensions not in step_dimensions:
+                step_dimensions.append(argument_dimensions)
+                argument_names.append(argument_name)
+        if not step_dimensions:
+            return dimensions
+        if len(step_dimensions) > 1:
+            raise ValueError(
+                'Value error, step "{0}" scatters over arguments with different input structures ({1})\n'
+                    .format(step_obj.name, ', '.join(argument_names))
+            )
+        return step_dimensions[0]
+
+    def _inherited_shards(self, step_obj, inherit_from, shards_by_step):
+        """Given StepWorkflow[obj] that inherits its scatter structure from
+        dependencies get the shards to align to them.
+
+        :param step_obj: StepWorkflow[obj] representing a StepWorkflow[json]
+        :type step_obj: object
+        :param inherit_from: Names of the dependencies the scatter structure
+            is inherited from
+        :type inherit_from: list(str)
+        :param shards_by_step: Shards by step name
+        :type shards_by_step: dict
+        :return: List of shards
+        :rtype: list(str)
+        """
+        shards_ = []
+        for dependency in inherit_from:
+            if shards_by_step[dependency] not in shards_:
+                shards_.append(shards_by_step[dependency])
+        if len(shards_) > 1:
+            raise ValueError(
+                'Value error, step "{0}" depends on steps with different shards ({1}), gather is required to combine them\n'
+                    .format(step_obj.name, ', '.join(inherit_from))
+            )
+        return shards_[0]
+
+    def _validate_gather_shards(self, step_obj, shards, scatter_dimension, shards_by_step):
+        """Given StepWorkflow[obj] that is scattered and gathers from
+        dependencies check that its shards match the shards of the steps
+        it gathers from.
+
+        The shards of a partial gather are calculated from the input structure,
+        which is the wrong structure if a step to gather from is scattered on
+        a structure of its own.
+
+        :param step_obj: StepWorkflow[obj] representing a StepWorkflow[json]
+        :type step_obj: object
+        :param shards: Shards calculated for the step
+        :type shards: list(str)
+        :param scatter_dimension: Dimension the step is scattered on
+        :type scatter_dimension: int
+        :param shards_by_step: Shards by step name
+        :type shards_by_step: dict
+        :raises ValueError: If the shards of the step don't match the shards
+            of a step it gathers from
+        """
+        for dependency in sorted(step_obj.gather_from):
+            shards_gather = shards_by_step.get(dependency)
+            if not shards_gather:
+                continue
+            if self._shards_dimension(shards_gather) < scatter_dimension:
+                # All shards of the dependency are gathered in every shard
+                #   of the step, the dependency does not define its shards
+                continue
+            # The shards of the step must be the shards of the dependency
+            #   reduced to the dimension the step is scattered on
+            shards_ = []
+            for s_g in shards_gather:
+                if s_g[:scatter_dimension] not in shards_:
+                    shards_.append(s_g[:scatter_dimension])
+            if sorted(shards_) != sorted(shards):
+                raise ValueError(
+                    'Value error, shards {0} calculated for step "{1}" don\'t match the shards {2} it gathers from step "{3}"\n'
+                        .format(
+                            [':'.join(s) for s in shards],
+                            step_obj.name,
+                            [':'.join(s) for s in shards_],
+                            dependency
+                        )
+                )
+
+    def write_run(self, input_structure, end_steps=[], input_structures=None):
         """Create MetaWorkflowRun[json] for MetaWorkflow[json]
         given end_steps and input_structure.
 
@@ -320,6 +455,12 @@ class MetaWorkflow(object):
         :param input_structure: Structure for the input with
             maximum scatter as list (e.g. [[A, B], [C, D], [E]])
         :type input_structure: list [1|2|3 dimensions]
+        :param input_structures: Structures for the individual input arguments
+            as dict (e.g. {'ARG_NAME': [A, B, C], ...}), used to calculate the
+            shards of the steps that scatter over them. Arguments that are
+            missing, and steps that scatter over the output of a previous step,
+            fall back to input_structure
+        :type input_structures: dict
         :return: MetaWorkflowRun[json]
         :rtype: dict
         """
@@ -333,7 +474,18 @@ class MetaWorkflow(object):
         #end if
         scatter = {} #{step_obj.name: dimension, ...}
         fixed_shards = {} #{step_obj.name: shards, ...}
+        shards_by_step = {} #{step_obj.name: shards, ...} for all steps
         dimensions = self._input_dimensions(input_structure)
+        # Get dimensions for the input arguments with their own structure
+        dimensions_by_argument = {} #{argument_name: dimensions, ...}
+        for argument_name, argument_structure in (input_structures or {}).items():
+            if isinstance(argument_structure, str):
+                argument_structure = [argument_structure]
+            #end if
+            dimensions_by_argument.setdefault(
+                argument_name, self._input_dimensions(argument_structure)
+            )
+        #end for
         steps_ = self._order_run(end_steps)
         run_json = {
             'meta_workflow': self.uuid,
@@ -350,6 +502,7 @@ class MetaWorkflow(object):
             #       but not in gather_from
             #       current step must be scattered
             scatter_dimension = 0 #dimension to scatter if any
+            inherit_from = [] #dependencies the scatter structure is inherited from
             if step_obj.is_scatter:
                 scatter_dimension = step_obj.is_scatter
                 # Check if higher dimension in scatter
@@ -361,22 +514,34 @@ class MetaWorkflow(object):
                 #end for
                 scatter.setdefault(step_obj.name, scatter_dimension)
             else:
-                in_gather, gather_dimensions = True, []
-                for dependency in step_obj.dependencies:
+                in_gather, gather_dimensions, inherit_dimensions = True, [], []
+                #   sorted to make the inherited scatter structure deterministic
+                for dependency in sorted(step_obj.dependencies):
                     if dependency in scatter:
-                        scatter_dimension = scatter[dependency]
                         if dependency not in step_obj.gather_from:
                             in_gather = False
-                            break
+                            inherit_dimensions.append(scatter[dependency])
+                            if dependency not in step_obj.gather_input:
+                                # gather_input only affects the dependencies and
+                                #   not the scatter structure of the step
+                                inherit_from.append(dependency)
+                            #end if
                         else:
-                            gather_dimension = scatter_dimension - step_obj.gather_from[dependency]
+                            gather_dimension = scatter[dependency] - step_obj.gather_from[dependency]
                             gather_dimensions.append(gather_dimension)
                         #end if
                     #end if
                 #end for
-                if in_gather and gather_dimensions:
+                if inherit_dimensions:
+                    # Scatter structure is inherited from the dependencies
+                    #   that are not gathered from, get max scatter
+                    scatter_dimension = max(inherit_dimensions)
+                elif in_gather and gather_dimensions:
                     scatter_dimension = max(gather_dimensions)
                 #end if
+                # Only the dependencies scattered on the max dimension
+                #   define the shards of the step
+                inherit_from = [i for i in inherit_from if scatter[i] == scatter_dimension]
                 if scatter_dimension > 0:
                     scatter.setdefault(step_obj.name, scatter_dimension)
                 #end if
@@ -388,9 +553,24 @@ class MetaWorkflow(object):
                 shards = step_obj.shards
                 fixed_shards.setdefault(step_obj.name, shards)
             elif scatter_dimension:
-                shards = self._shards(dimensions, scatter_dimension)
+                if inherit_from:
+                    # Align to the shards of the dependencies
+                    #   the scatter structure is inherited from
+                    shards = self._inherited_shards(step_obj, inherit_from, shards_by_step)
+                else:
+                    shards = self._shards(
+                        self._step_dimensions(
+                            step_obj, scatter_dimension, dimensions, dimensions_by_argument
+                        ),
+                        scatter_dimension
+                    )
+                    self._validate_gather_shards(
+                        step_obj, shards, scatter_dimension, shards_by_step
+                    )
+                #end if
             else: shards = [['0']] #no scatter, only one shard
             #end if
+            shards_by_step.setdefault(step_obj.name, shards)
             for s in shards:
                 run_step_ = copy.deepcopy(run_step)
                 run_step_.setdefault('shard', ':'.join(s))
@@ -406,15 +586,11 @@ class MetaWorkflow(object):
                         gather_from_ = step_obj.gather_input
                     #end if
                     if gather_from_:
-                        # Check if the previous step is fixed_shards
-                        #   if so get shards from there
-                        if dependency in fixed_shards:
-                            shards_gather = fixed_shards[dependency]
-                        else:
-                            # If the previous step is NOT in fixed_shards
-                            #   get shards for original scatter dimension
-                            shards_gather = self._shards(dimensions, scatter[dependency])
-                        #end if
+                        # Get the shards of the previous step,
+                        #   these can be fixed shards, shards calculated for the
+                        #   original scatter dimension, or shards inherited from
+                        #   its own dependencies
+                        shards_gather = shards_by_step[dependency]
                         # Reducing dimension organically to gather
                         gather_dimension = self._shards_dimension(shards_gather) - gather_from_[dependency]
                         for s_g in shards_gather:
@@ -437,6 +613,15 @@ class MetaWorkflow(object):
                             dep_shard = s
                         else:
                             dep_shard = ['0']
+                        # Check that the shard of the dependency exists,
+                        #   steps that are scattered differently can only be
+                        #   combined by gathering from them
+                        if dep_shard not in shards_by_step[dependency]:
+                            raise ValueError(
+                                'Value error, shard "{0}" of step "{1}" depends on step "{2}" that has no matching shard, gather is required to combine them\n'
+                                    .format(':'.join(s), step_obj.name, dependency)
+                            )
+                        #end if
                         # Add dependency with shard
                         run_step_['dependencies'].append('{0}:{1}'.format(dependency, ':'.join(dep_shard)))
                     #end if
