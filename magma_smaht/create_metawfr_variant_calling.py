@@ -93,7 +93,7 @@ def mwfr_germline_snv_caller(donor_accession, tissue_accession, analysis_run, sm
     else:   
         # We need to find a tissue where we have Pacbio and Illumina data for the donor
 
-        # We are search for data in the following tissue priority order
+        # We search for data in the following tissue priority order
         # Heart LV, Muscle, Colon Desc, Colon Asc, Skin Calf, Cereb. Brain, Frontal Lobe Brain, Temp. Lobe Brain, Hipp. Brain L, Hipp. Brain R, Skin Abdomen, Adrenal Gland L, Aorta Abdominal, Adrenal Gland R, Testis Left, Ovary Left, Esophagus, Lung, Liver Sample, Buccal Swab, Blood Whole, Dermal Fibroblast
         tissue_priority_list = [
             "3S",

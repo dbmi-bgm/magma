@@ -21,7 +21,7 @@ MWF_NAME_SAMTOOLS_MOSDEPTH = "samtools_mosdepth_bam"
 MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
 MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check"
-# Variant callering
+# Variant calling
 MWF_NAME_TNHAPLOTYPER = "paired-end_short_reads_variant_calling_TNhaplotyper2_distributed_TNfilter_GRCh38"
 MWF_NAME_LONGCALLD = "PacBio_variant_calling_longcallD_GRCh38"
 MWF_NAME_LONGCALLD_SINGLE_FILE = "PacBio_variant_calling_longcallD_single_file_GRCh38"
@@ -89,6 +89,21 @@ SOMATIC_SNV_CALLING = "Somatic SNV calling"
 SOMATIC_SNV_CALLING_CORE_SPECIFIC = "Somatic SNV calling (core specific)"
 SOMATIC_SV_CALLING = "Somatic SV calling"
 GERMLINE_SNV_CALLING = "Germline SNV calling"
+
+# Statuses of files that have been released (in some form)
+RELEASED_STATUSES = [
+    OPEN,
+    OPEN_NETWORK,
+    OPEN_EARLY,
+    PROTECTED,
+    PROTECTED_NETWORK,
+    PROTECTED_EARLY,
+]
+
+# Search query fragment restricting results to the released statuses above
+RELEASED_STATUSES_SEARCH_FILTER = "".join(
+    f"&status={status}" for status in RELEASED_STATUSES
+)
 
 # Assays
 WGS = "WGS"

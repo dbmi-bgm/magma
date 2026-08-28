@@ -28,7 +28,8 @@ from magma_smaht.constants import (
     WGS,
     RNASEQ,
     MWF_NAME_BAM_TO_CRAM,
-    ANALYSIS_RUN
+    ANALYSIS_RUN,
+    RELEASED_STATUSES_SEARCH_FILTER,
 )
 
 from packaging import version
@@ -395,6 +396,11 @@ def get_tissue_from_external_id(external_id, smaht_key):
     if len(search_results) == 0:
         return None
 
+    if len(search_results) > 1:
+        print(
+            f"{warning_text('Warning:')} Expected 1 tissue but found {len(search_results)} for external ID {external_id}. Taking the first one."
+        )
+
     return search_results[0]
 
 
@@ -589,7 +595,8 @@ def get_released_illumina_wgs_files_for_tissue(tissue_code, key):
     """For a given tissue, get all released Illumina Nova Seq X Plus files"""
     search_filter = (
         "?type=OutputFile"
-        "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&sample_sources.display_title={tissue_code}"
         f"&assays.display_title=WGS"
         f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
@@ -600,7 +607,8 @@ def get_released_illumina_wgs_files_for_donor(donor_code, key):
     """For a given tissue, get all released Illumina Nova Seq X Plus files"""
     search_filter = (
         "?type=OutputFile"
-        "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS"
         "&sample_summary.tissues%21=3AC - Fibroblast"
@@ -613,7 +621,8 @@ def get_released_pacbio_wgs_files_for_tissue(tissue_code, key):
     """For a given tissue code, get all released PacBio WGS files"""
     search_filter = (
         "?type=OutputFile"
-        "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&sample_sources.display_title={tissue_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
         f"&sequencing.sequencer.display_title=PacBio+Revio"
@@ -625,7 +634,8 @@ def get_released_pacbio_wgs_files_for_donor(donor_code, key):
     """For a given donor, get all released PacBio WGS files"""
     search_filter = (
         "?type=OutputFile"
-        "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
         f"&sample_summary.tissues%21=3AC - Fibroblast"
@@ -638,7 +648,8 @@ def get_released_long_read_wgs_files_for_donor(donor_code, key):
     """For a given donor, get all released PacBio/ONT WGS files"""
     search_filter = (
         "?type=OutputFile"
-        "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq&assays.display_title=Ultra-Long+WGS"
         f"&sample_summary.tissues%21=3AC - Fibroblast"
@@ -651,7 +662,8 @@ def get_released_ont_wgs_files_for_tissue(tissue_code, key):
     """For a given tissue code, get all released ONT WGS files"""
     search_filter = (
         "?type=OutputFile"
-        "&sample_summary.studies=Production&dataset%21=No+value&status=open&status=open-early&status=open-network&status=protected&status=protected-early&status=protected-network"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&sample_sources.display_title={tissue_code}"
         f"&assays.display_title=WGS&assays.display_title=Ultra-Long+WGS"
         f"&sequencing.sequencer.display_title=ONT+PromethION+24"
@@ -806,6 +818,8 @@ def get_item_es(identifier, key, frame="raw"):
     )
 
 def search_list(identifiers, key):
+    if not identifiers:
+        raise Exception("search_list requires at least one identifier")
     query = "search/?type=Item"
     for item in identifiers:
         query += f"&uuid={item}"

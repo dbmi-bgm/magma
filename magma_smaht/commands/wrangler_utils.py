@@ -136,7 +136,7 @@ def reset_mwfrs(mwfr_uuids, auth_env):
 def reset_status_mwfrs(mwfr_uuids, steps, status, auth_env):
     """Reset a list of failed MetaWorkflowRuns to a desired status"""
     smaht_key = get_auth_key(auth_env)
-    steps_list = steps.split(",")
+    steps_list = [s.strip() for s in steps.split(",") if s.strip()]
     for mwfr_uuid in mwfr_uuids:
         wrangler_utils.reset_status_mwfr(mwfr_uuid, steps_list, status, smaht_key)
 

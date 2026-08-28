@@ -40,13 +40,8 @@ from magma_smaht.constants import (
     TAGS,
     STATUS,
     DELETED,
-    RELEASED,
-    OPEN,
-    OPEN_NETWORK,
-    OPEN_EARLY,
-    PROTECTED,
-    PROTECTED_NETWORK,
-    PROTECTED_EARLY,
+    RELEASED_STATUSES,
+    RELEASED_STATUSES_SEARCH_FILTER,
     FAILED_JOBS,
 )
 
@@ -56,16 +51,6 @@ WF_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 WF_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 
 SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
-
-RELEASED_STATUSES = [
-    RELEASED,
-    OPEN,
-    OPEN_NETWORK,
-    OPEN_EARLY,
-    PROTECTED,
-    PROTECTED_NETWORK,
-    PROTECTED_EARLY,
-]
 
 
 def analysis_overview(donor_id: str, smaht_key: dict):
@@ -99,7 +84,7 @@ def analysis_overview(donor_id: str, smaht_key: dict):
     for tissue in tissues:
         
         # Get all filesets for the tissue
-        files_search = f"/search/?type=File&sample_sources.uuid={tissue[UUID]}&status=open&status=protected&status=open-early&status=protected-early&status=open-network&status=protected-network&file_sets.libraries.assay.display_title=WGS&file_sets.libraries.assay.display_title=Fiber-seq&file_sets.libraries.assay.display_title=Ultra-Long+WGS&dataset%21=No+value"
+        files_search = f"/search/?type=File&sample_sources.uuid={tissue[UUID]}{RELEASED_STATUSES_SEARCH_FILTER}&file_sets.libraries.assay.display_title=WGS&file_sets.libraries.assay.display_title=Fiber-seq&file_sets.libraries.assay.display_title=Ultra-Long+WGS&dataset%21=No+value"
         files = ff_utils.search_metadata(files_search, key=smaht_key)
         # Filter files by assays display_title
         
@@ -508,8 +493,7 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         "&sequencing_center.display_title=BCM+GCC"
         #"&sequencing_center.display_title=MAYO TTD"
         "&status=uploaded&status=released"
-        "&status=open&status=open-network&status=open-early"
-        "&status=protected&status=protected-network&status=protected-early"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         "&file_format.display_title=bam"
         "&file_format.display_title=cram"
         "&output_status=Final Output"
