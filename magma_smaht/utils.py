@@ -12,8 +12,10 @@
 import pprint
 import functools
 import json, uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Sequence
+from urllib.parse import quote
 from magma_smaht.metawfl import MetaWorkflow
 from magma_smaht.constants import (
     UUID,
@@ -25,7 +27,9 @@ from magma_smaht.constants import (
     ACCESSION,
     WGS,
     RNASEQ,
-    MWF_NAME_BAM_TO_CRAM
+    MWF_NAME_BAM_TO_CRAM,
+    ANALYSIS_RUN,
+    RELEASED_STATUSES_SEARCH_FILTER,
 )
 
 from packaging import version
@@ -384,6 +388,21 @@ def get_latest_mwf(mwf_name, smaht_key):
             latest_result = search_result
     return latest_result
 
+def get_tissue_from_external_id(external_id, smaht_key):
+
+    query = f"/search/?type=Tissue&external_id={external_id}"
+    search_results = ff_utils.search_metadata(query, key=smaht_key)
+
+    if len(search_results) == 0:
+        return None
+
+    if len(search_results) > 1:
+        print(
+            f"{warning_text('Warning:')} Expected 1 tissue but found {len(search_results)} for external ID {external_id}. Taking the first one."
+        )
+
+    return search_results[0]
+
 
 def get_mwfr_file_input_arg(argument_name, files):
     return {"argument_name": argument_name, "argument_type": "file", "files": files}
@@ -470,9 +489,7 @@ def mwfr_from_input(
 
 
 def generate_input_structure(files):
-    dimension_first_file = files[0][
-        "dimension"
-    ]  # We assume that this is representative of the input structure
+    dimension_first_file = files[0].get("dimension", "")  # We assume that this is representative of the input structure
     if dimension_first_file.count(",") == 0:
         return list(range(len(files)))
     elif dimension_first_file.count(",") == 1:
@@ -562,7 +579,7 @@ def get_final_output_file(mwfr, assay, key):
             target_workflow = "bam_to_cram"
     elif assay == RNASEQ:
         target_workflow = "sentieon_Dedup"
-    
+
     # Find the target workflow run
     for workflow_run in mwfr["workflow_runs"]:
         if workflow_run["name"] == target_workflow:
@@ -570,8 +587,225 @@ def get_final_output_file(mwfr, assay, key):
             file = get_item_es(file_uuid, key, frame='embedded')
             if file["output_status"] == "Final Output":
                 return file
-    
+
     return None
+
+
+def get_released_illumina_wgs_files_for_tissue(tissue_code, key):
+    """For a given tissue, get all released Illumina Nova Seq X Plus files"""
+    search_filter = (
+        "?type=OutputFile"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
+        f"&sample_sources.display_title={tissue_code}"
+        f"&assays.display_title=WGS"
+        f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+def get_released_illumina_wgs_files_for_donor(donor_code, key):
+    """For a given tissue, get all released Illumina Nova Seq X Plus files"""
+    search_filter = (
+        "?type=OutputFile"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
+        f"&donors.display_title={donor_code}"
+        f"&assays.display_title=WGS"
+        "&sample_summary.tissues%21=3AC - Fibroblast"
+        f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_released_pacbio_wgs_files_for_tissue(tissue_code, key):
+    """For a given tissue code, get all released PacBio WGS files"""
+    search_filter = (
+        "?type=OutputFile"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
+        f"&sample_sources.display_title={tissue_code}"
+        f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
+        f"&sequencing.sequencer.display_title=PacBio+Revio"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_released_pacbio_wgs_files_for_donor(donor_code, key):
+    """For a given donor, get all released PacBio WGS files"""
+    search_filter = (
+        "?type=OutputFile"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
+        f"&donors.display_title={donor_code}"
+        f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
+        f"&sample_summary.tissues%21=3AC - Fibroblast"
+        f"&sequencing.sequencer.display_title=PacBio+Revio"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_released_long_read_wgs_files_for_donor(donor_code, key):
+    """For a given donor, get all released PacBio/ONT WGS files"""
+    search_filter = (
+        "?type=OutputFile"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
+        f"&donors.display_title={donor_code}"
+        f"&assays.display_title=WGS&assays.display_title=Fiber-seq&assays.display_title=Ultra-Long+WGS"
+        f"&sample_summary.tissues%21=3AC - Fibroblast"
+        f"&sequencing.sequencer.display_title=PacBio+Revio&sequencing.sequencer.display_title=ONT+PromethION+24"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_released_ont_wgs_files_for_tissue(tissue_code, key):
+    """For a given tissue code, get all released ONT WGS files"""
+    search_filter = (
+        "?type=OutputFile"
+        "&sample_summary.studies=Production&dataset%21=No+value"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
+        f"&sample_sources.display_title={tissue_code}"
+        f"&assays.display_title=WGS&assays.display_title=Ultra-Long+WGS"
+        f"&sequencing.sequencer.display_title=ONT+PromethION+24"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_file_coverage(file):
+    """Get the coverage from the most recent QualityMetrics of a file, if there is one"""
+    quality_metrics = file.get("quality_metrics")
+    if not quality_metrics:
+        return None
+    return quality_metrics[-1].get("coverage")
+
+
+def get_illumina_wgs_filesets_for_tissue(tissue_code, key):
+    """For a given tissue code, get all Illumina WGS filesets"""
+
+    search_filter = (
+        "?type=FileSet"
+        f"&libraries.analytes.samples.sample_sources.display_title={tissue_code}"
+        f"&libraries.assay.display_title=WGS"
+        f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_pacbio_wgs_filesets_for_tissue(tissue_code, key):
+    """For a given tissue code, get all PacBio WGS filesets"""
+    search_filter = (
+        "?type=FileSet"
+        f"&libraries.analytes.samples.sample_sources.display_title={tissue_code}"
+        f"&libraries.assay.display_title=WGS&libraries.assay.display_title=Fiber-seq"
+        f"&sequencing.sequencer.display_title=PacBio Revio"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_variant_calling_output(tissue_code, caller_name, workflow_name, argument_name, key):
+    """Get the output file for a given variant caller MWFR based on tissue code, caller name, and argument name.
+
+    Args:
+        tissue_code (str): tissue code (external id)
+        caller_name (str): caller name
+        workflow_name (str): workflow name that contains final output
+        argument_name (str): argument name of the final output file in the MWFR
+        key (str): authentication key
+
+    Returns:
+        dict: Output file
+    """
+    mwfr_tag = f"{tissue_code}_{caller_name}"
+    # Get correct MWFR based on tag
+    search_filter = (
+        "?type=MetaWorkflowRun"
+        "&sort=-date_created"
+        "&final_status=completed"
+        f"&tags={mwfr_tag}"
+    )
+    mwfrs = ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+    if not mwfrs:
+        return None
+    elif len(mwfrs) > 1:
+        print(f"{warning_text('Warning:')} Multiple MWFRs found for tag {mwfr_tag}. Taking the latest one.")
+    mwfr = mwfrs[0]
+    workflow_runs = mwfr.get("workflow_runs", [])
+    final_outputs = []
+    for workflow_run in workflow_runs:
+        if not workflow_run["name"] == workflow_name:
+            continue
+        for output in workflow_run.get("output", []):
+            if (
+                output["argument_name"] == argument_name
+                and output.get("file", {}).get("output_status", "") == "Final Output"
+            ):
+                file_uuid = output["file"][UUID]
+                file = get_item_es(file_uuid, key)
+                final_outputs.append(file)
+    if not final_outputs:
+        return None
+    elif len(final_outputs) > 1:
+        print(f"{warning_text('Warning:')} Multiple final output files found for argument {argument_name} in MWFR with tag {mwfr_tag}. Aborting.")
+        return None
+    return final_outputs[0]
+
+
+def get_analysis_runs_from_tissue(tissue_code, key):
+    """For a given tissue code, get all analysis runs that are associated with that tissue code"""
+    search_filter = (
+        "?type=AnalysisRun"
+        f"&tissues.display_title={tissue_code}"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_analysis_runs_for_type_and_tissue(analysis_type, tissue_identifier, key):
+    """Get all AnalysisRuns of a given analysis type that are associated with a given tissue.
+
+    Args:
+        analysis_type (str): analysis_type of the AnalysisRun, e.g. "Somatic SV calling"
+        tissue_identifier (str): Tissue accession or UUID
+        key (dict): SMaHT key
+
+    Returns:
+        list: Matching AnalysisRun items (empty list if there are none)
+    """
+    tissue = get_item_es(tissue_identifier, key)
+    search_filter = (
+        "?type=AnalysisRun"
+        f"&analysis_type={quote(analysis_type)}"
+        f"&tissues.uuid={tissue[UUID]}"
+    )
+    return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
+
+
+def get_existing_analysis_run(analysis_type, tissue_identifier, key):
+    """Get the existing AnalysisRun for an analysis type and tissue, if there is exactly one.
+
+    Args:
+        analysis_type (str): analysis_type of the AnalysisRun, e.g. "Somatic SV calling"
+        tissue_identifier (str): Tissue accession or UUID
+        key (dict): SMaHT key
+
+    Returns:
+        dict: The AnalysisRun item if exactly one exists, None if there is none
+
+    Raises:
+        Exception: If multiple AnalysisRuns exist for this analysis type and tissue
+    """
+    analysis_runs = get_analysis_runs_for_type_and_tissue(
+        analysis_type, tissue_identifier, key
+    )
+    if not analysis_runs:
+        return None
+    if len(analysis_runs) > 1:
+        accessions = ", ".join(ar[ACCESSION] for ar in analysis_runs)
+        raise Exception(
+            f"Multiple AnalysisRuns of type '{analysis_type}' found for tissue "
+            f"{tissue_identifier}: {accessions}. Please provide an analysis run accession."
+        )
+    return analysis_runs[0]
+
 
 def get_item(identifier, key, frame="raw"):
     return ff_utils.get_metadata(
@@ -583,9 +817,38 @@ def get_item_es(identifier, key, frame="raw"):
         identifier, add_on=f"frame={frame}", key=key
     )
 
+def search_list(identifiers, key):
+    if not identifiers:
+        raise Exception("search_list requires at least one identifier")
+    query = "search/?type=Item"
+    for item in identifiers:
+        query += f"&uuid={item}"
+    return ff_utils.search_metadata(query, key=key)
+
 def _serialize_key(key_dict):
     """Convert dictionary key to a hashable string for caching."""
     return json.dumps(key_dict, sort_keys=True)
+
+
+def post_analysis_run(analysis_type, description, donors, tissues, smaht_key):
+    ar = {}
+    ar[CONSORTIA] = ["smaht"]
+    ar["analysis_type"] = analysis_type
+    ar["description"] = description
+    if donors:
+        ar["donors"] = donors
+    if tissues:
+        ar["tissues"] = tissues
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    identifier = (
+        analysis_type.lower().replace(" ", "_").replace("(", "").replace(")", "")
+    )
+    identifier = f"{identifier}_{timestamp}"
+    ar["identifier"] = identifier
+    post_response = ff_utils.post_metadata(ar, ANALYSIS_RUN, smaht_key)
+    ar_accession = post_response["@graph"][0]["accession"]
+    return ar_accession
+
 
 class bcolors:
     HEADER = "\033[95m"

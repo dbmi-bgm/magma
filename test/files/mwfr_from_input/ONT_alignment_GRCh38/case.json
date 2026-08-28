@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_fastq_gz",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "ONT_alignment_GRCh38",
+    "meta_workflow_uuid": "1903b722-6649-40ec-83f5-e3cdced05d44",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRE2P13PC",
+    "mwfr_date_created": "2026-08-10T17:20:16.248578+00:00",
+    "mwfr_uuid": "de17faa4-124d-474f-b9bc-5fed402f7161"
+  }
+}

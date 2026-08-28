@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_r1_fastq_gz",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "Illumina_alignment_GRCh38",
+    "meta_workflow_uuid": "6c73a14e-dfd4-4856-b305-689b4ea15700",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMR5YOQYWV",
+    "mwfr_date_created": "2026-08-06T16:18:48.214919+00:00",
+    "mwfr_uuid": "005553dc-8aa8-4a17-a441-ebab93b890ff"
+  }
+}

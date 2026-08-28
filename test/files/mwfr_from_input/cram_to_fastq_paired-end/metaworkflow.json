@@ -1,0 +1,116 @@
+{
+  "accession": "SMAMWQD4FXAB",
+  "aliases": [
+    "smaht:MetaWorkflow-cram_to_fastq_paired-end_0.3.1"
+  ],
+  "category": [
+    "Format Conversion"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2025-07-24T19:12:12.139316+00:00",
+  "description": "Convert a CRAM file for paired-end alignment into two compressed FASTQ files, one for each of the mate reads",
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "nthreads",
+      "argument_type": "parameter",
+      "value": 8,
+      "value_type": "integer"
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2025-10-01T16:08:28.247184+00:00",
+    "modified_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222"
+  },
+  "name": "cram_to_fastq_paired-end",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-b34f0796e1812677e7c3190ee48c81cbd1c35765605b4e8aa74336811b9b17d0"
+  ],
+  "title": "cram to fastq paired-end [0.3.1]",
+  "uuid": "d1131c84-5ef7-42cc-a954-60422c6d7efd",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "7x",
+        "instance_type": [
+          "c5.2xlarge",
+          "m5a.2xlarge",
+          "m5.2xlarge",
+          "m6i.2xlarge",
+          "m6a.2xlarge",
+          "m7i.2xlarge",
+          "m7a.2xlarge"
+        ],
+        "run_name": "run_cram_to_fastq_paired-end",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_r1_fastq_gz": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Unaligned Reads"
+          ],
+          "description": "reads FASTQ (from CRAM)",
+          "output_status": "Final Output",
+          "read_pair_number": "R1"
+        },
+        "output_file_r2_fastq_gz": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Unaligned Reads"
+          ],
+          "description": "reads FASTQ (from CRAM)",
+          "output_status": "Final Output",
+          "read_pair_number": "R2"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_cram",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_cram"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        }
+      ],
+      "name": "cram_to_fastq_paired-end",
+      "workflow": "1f609107-588c-416e-84f0-6719208b41f5"
+    }
+  ]
+}

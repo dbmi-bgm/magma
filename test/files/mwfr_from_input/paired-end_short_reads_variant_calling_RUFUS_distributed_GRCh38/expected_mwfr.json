@@ -1,0 +1,71 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "74f0416f-b1d3-4858-9951-f2e2385d0124"
+        },
+        {
+          "dimension": "1",
+          "file": "d48f54cf-d5ae-482f-b7d0-775e71dd20be"
+        }
+      ]
+    }
+  ],
+  "meta_workflow": "8c528115-dfdb-41d8-ac87-8111efed3327",
+  "workflow_runs": [
+    {
+      "name": "samtools_merge_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "rufus",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "rufus",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "rufus",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "rufus",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "rufus",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "rufus:0",
+        "rufus:1",
+        "rufus:2",
+        "rufus:3",
+        "rufus:4"
+      ],
+      "name": "bcftools_concat",
+      "shard": "0"
+    }
+  ]
+}

@@ -1,0 +1,985 @@
+{
+  "accession": "SMAMW3QYTHSE",
+  "aliases": [
+    "smaht:MetaWorkflow-PacBio_alignment_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Alignment",
+    "Quality Control"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2025-07-24T19:12:50.062659+00:00",
+  "description": "End-to-end alignment pipeline for PacBio data. Run pbmm2 to align unaligned input BAM files. Sort the alignment BAM files by coordinates. Merge the aligned BAM files. Calculate quality metrics. Implemented to run per single sample and library. Build hg38/GRCh38",
+  "input": [
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "resources_vb2",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cfbf7601-7ce1-4cc5-9b1f-dda456052f14"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "library_id",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "qc_ruleset",
+      "argument_type": "QC ruleset",
+      "value": {
+        "overall_quality_status_rule": "{freemix_alpha} and {mapped} and {mismatch_rate}",
+        "qc_thresholds": [
+          {
+            "id": "freemix_alpha",
+            "metric": "Estimate of Contamination [VerifyBamID2]",
+            "operator": "<",
+            "pass_target": 0.01,
+            "use_as_qc_flag": true,
+            "warn_target": 1.0
+          },
+          {
+            "id": "mapped",
+            "metric": "Percentage of Reads Mapped [Samtools]",
+            "operator": ">",
+            "pass_target": 97.0,
+            "use_as_qc_flag": true,
+            "warn_target": 0.0
+          },
+          {
+            "id": "mismatch_rate",
+            "metric": "Aligned Bases Mismatch Rate [Picard]",
+            "operator": "<",
+            "pass_target": 0.003,
+            "use_as_qc_flag": true,
+            "warn_target": 1.0
+          }
+        ]
+      }
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-08-04T20:44:07.550698+00:00",
+    "modified_by": "0d565156-00db-4948-82fe-021d151a5daf"
+  },
+  "name": "PacBio_alignment_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-b8c6cde88eb77c825b0813554bd2893cd7aaaa49d446fffd2ee6c97bafc2c507"
+  ],
+  "title": "PacBio alignment GRCh38 [0.3.1]",
+  "uuid": "d1460553-0b3d-41df-b862-af19081974e0",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "4.5x",
+        "instance_type": [
+          "c5n.9xlarge",
+          "c5.9xlarge",
+          "c5a.8xlarge",
+          "c5.12xlarge",
+          "c5a.12xlarge",
+          "c6i.8xlarge",
+          "c6i.12xlarge",
+          "m6a.8xlarge",
+          "m6a.12xlarge",
+          "m6i.8xlarge",
+          "m6i.12xlarge",
+          "m7a.8xlarge",
+          "m7i.8xlarge",
+          "m7i.12xlarge"
+        ],
+        "run_name": "run_pbmm2",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "pbmm2 output BAM",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_reads",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads_sorting",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "memory_sorting",
+          "argument_type": "parameter",
+          "value": "4G",
+          "value_type": "string"
+        }
+      ],
+      "name": "pbmm2",
+      "workflow": "3d644202-f4de-4d57-9b60-8b5c92e65e68"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.xlarge",
+          "c5a.xlarge",
+          "m5.xlarge",
+          "m5a.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_ReplaceReadGroups",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "ReplaceReadGroups output BAM",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "pbmm2",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "sample_name",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "library_id",
+          "argument_type": "parameter",
+          "value_type": "string"
+        }
+      ],
+      "name": "ReplaceReadGroups",
+      "workflow": "01644228-6c7c-4a0b-82aa-bf2ac7c2ff9d"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "3x",
+        "instance_type": [
+          "c5.xlarge",
+          "c5a.xlarge",
+          "m5.xlarge",
+          "m5a.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_samtools_merge",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "samtools merge output BAM",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_bam",
+          "argument_type": "file",
+          "gather": 1,
+          "mount": true,
+          "source": "ReplaceReadGroups",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_merge",
+      "workflow": "758652eb-4873-4332-a4e7-f75e35aea1a7"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.xlarge",
+          "m5a.xlarge",
+          "m5.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_bam_to_cram",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_cram": {
+          "alignment_details": [
+            "Sorted"
+          ],
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "analysis-ready CRAM (from BAM)",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "3da83aec-d8b1-4996-9c71-e8ad53608758"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "mount": true,
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        }
+      ],
+      "name": "bam_to_cram",
+      "workflow": "8cb700bc-fe8b-4ac9-ac68-492dac45c994"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_samtools_stats",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "samtools stats output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 2,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_stats",
+      "workflow": "9a96fc83-df26-44e6-92a5-8b062e721df5"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_samtools_flagstat",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "samtools flagstat output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 2,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_flagstat",
+      "workflow": "bd6a461a-3097-4e65-ab83-1f198ce302d2"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_samtools_idxstats",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "samtools idxstats output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "mount": true,
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        }
+      ],
+      "name": "samtools_idxstats",
+      "workflow": "647e9b2e-b5f9-4f96-aa8d-b7470cf95057"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_picard_CollectAlignmentSummaryMetrics",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "picard CollectAlignmentSummaryMetrics output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        }
+      ],
+      "name": "picard_CollectAlignmentSummaryMetrics",
+      "workflow": "aff1cd94-b39f-4944-8693-146c7c77f19a"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_picard_CollectBaseDistributionByCycle",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_chart_pdf": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Image"
+          ],
+          "description": "picard CollectBaseDistributionByCycle output PDF"
+        },
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "picard CollectBaseDistributionByCycle output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        }
+      ],
+      "name": "picard_CollectBaseDistributionByCycle",
+      "workflow": "488e4044-407d-41de-b5f0-497d8677375e"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.5x",
+        "instance_type": [
+          "m5a.xlarge",
+          "m5.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_picard_CollectGcBiasMetrics",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_chart_pdf": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Image"
+          ],
+          "description": "picard CollectGcBiasMetrics output PDF"
+        },
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "picard CollectGcBiasMetrics output TXT"
+        },
+        "output_summary_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "picard CollectGcBiasMetrics summary TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "mount": true,
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        }
+      ],
+      "name": "picard_CollectGcBiasMetrics",
+      "workflow": "fff15cec-c73f-492b-9e91-25556cec5813"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_picard_MeanQualityByCycle",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_chart_pdf": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Image"
+          ],
+          "description": "picard MeanQualityByCycle output PDF"
+        },
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "picard MeanQualityByCycle output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        }
+      ],
+      "name": "picard_MeanQualityByCycle",
+      "workflow": "b4f36f66-6247-4a95-acbc-ab8ac25221e5"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_bamstats",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "bamstats output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        }
+      ],
+      "name": "bamstats",
+      "workflow": "652c60ae-5d23-4fef-bcb1-20bd641ad26b"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_samtools_subsample",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "subsample output BAM",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "input_file_stats",
+          "argument_type": "file",
+          "source": "samtools_stats",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "coverage",
+          "argument_type": "parameter",
+          "value": 30,
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 2,
+          "value_type": "integer"
+        }
+      ],
+      "name": "samtools_subsample",
+      "workflow": "9dc09664-7db5-49f9-ba6f-f4f12ad96730"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "r5a.2xlarge",
+          "r6a.2xlarge",
+          "r6i.2xlarge",
+          "r7a.2xlarge",
+          "r7i.2xlarge"
+        ],
+        "run_name": "run_verifybamid2",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "VerifyBamID2 output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_subsample",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "resources_vb2",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        }
+      ],
+      "name": "verifybamid2",
+      "workflow": "79a9d0bb-17d2-4ea9-8e37-064f0ab12e39"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.xlarge",
+          "m5.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_mosdepth",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "mosdepth output TXT"
+        },
+        "output_summary_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "mosdepth summary TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "samtools_merge",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 4,
+          "value_type": "integer"
+        }
+      ],
+      "name": "mosdepth",
+      "workflow": "f96ad288-799f-492c-870f-cd1cb930098f"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 10,
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_parse-qc_BAM_Quality_Metrics_single-end_verifybamid2",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "metrics_zip": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics",
+            "Image"
+          ],
+          "description": "QC compressed output"
+        },
+        "qc_values_json": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC output JSON"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "mount": true,
+          "source": "bam_to_cram",
+          "source_argument_name": "output_file_cram"
+        },
+        {
+          "argument_name": "SAMTOOLS_stats_OUTPUT",
+          "argument_type": "file",
+          "source": "samtools_stats",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "SAMTOOLS_flagstat_OUTPUT",
+          "argument_type": "file",
+          "source": "samtools_flagstat",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "SAMTOOLS_idxstats_OUTPUT",
+          "argument_type": "file",
+          "source": "samtools_idxstats",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "PICARD_CollectAlignmentSummaryMetrics_OUTPUT",
+          "argument_type": "file",
+          "source": "picard_CollectAlignmentSummaryMetrics",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "PICARD_CollectBaseDistributionByCycle_OUTPUT",
+          "argument_type": "file",
+          "source": "picard_CollectBaseDistributionByCycle",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "PICARD_CollectBaseDistributionByCycle_PDF",
+          "argument_type": "file",
+          "source": "picard_CollectBaseDistributionByCycle",
+          "source_argument_name": "output_chart_pdf"
+        },
+        {
+          "argument_name": "PICARD_CollectGcBiasMetrics_OUTPUT",
+          "argument_type": "file",
+          "source": "picard_CollectGcBiasMetrics",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "PICARD_CollectGcBiasMetrics_SUMMARY",
+          "argument_type": "file",
+          "source": "picard_CollectGcBiasMetrics",
+          "source_argument_name": "output_summary_txt"
+        },
+        {
+          "argument_name": "PICARD_CollectGcBiasMetrics_PDF",
+          "argument_type": "file",
+          "source": "picard_CollectGcBiasMetrics",
+          "source_argument_name": "output_chart_pdf"
+        },
+        {
+          "argument_name": "PICARD_MeanQualityByCycle_OUTPUT",
+          "argument_type": "file",
+          "source": "picard_MeanQualityByCycle",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "PICARD_MeanQualityByCycle_PDF",
+          "argument_type": "file",
+          "source": "picard_MeanQualityByCycle",
+          "source_argument_name": "output_chart_pdf"
+        },
+        {
+          "argument_name": "BAMSTATS_OUTPUT",
+          "argument_type": "file",
+          "source": "bamstats",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "VERIFYBAMID2_OUTPUT",
+          "argument_type": "file",
+          "source": "verifybamid2",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "MOSDEPTH_SUMMARY",
+          "argument_type": "file",
+          "source": "mosdepth",
+          "source_argument_name": "output_summary_txt"
+        },
+        {
+          "argument_name": "MOSDEPTH_OUTPUT",
+          "argument_type": "file",
+          "source": "mosdepth",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "qc_ruleset",
+          "argument_type": "QC ruleset"
+        }
+      ],
+      "name": "parse-qc_BAM_Quality_Metrics_single-end_verifybamid2",
+      "workflow": "eeea5009-fd08-4d72-aa26-23b83be20eab"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Somalier sample identity check, 10 BAMs, 1D input",
+  "input_arg": "input_files_bam",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "sample_identity_check",
+    "meta_workflow_uuid": "2f7456ca-8cbe-42ae-bdb2-51d971cae77c",
+    "meta_workflow_version": "0.2.0",
+    "mwfr_accession": "SMAMRV4ZTV3G",
+    "mwfr_date_created": null,
+    "mwfr_uuid": "7b0874d7-8a5b-488e-8a09-b0a5edd8edf1",
+    "note": "Seeded from smaht-portal test inserts rather than a live fetch; re-capture with fetch_mwfr_fixture.py to refresh."
+  }
+}

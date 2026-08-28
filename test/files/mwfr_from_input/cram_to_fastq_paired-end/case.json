@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_cram",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "cram_to_fastq_paired-end",
+    "meta_workflow_uuid": "d1131c84-5ef7-42cc-a954-60422c6d7efd",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRT9MHMJJ",
+    "mwfr_date_created": "2026-05-15T17:49:43.526723+00:00",
+    "mwfr_uuid": "c3da908b-e7de-4403-a7e1-64b58675cb97"
+  }
+}

@@ -17,9 +17,26 @@ MWF_NAME_CRAM_TO_FASTQ_PAIRED_END = "cram_to_fastq_paired-end"
 MWF_NAME_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 MWF_NAME_BAM_TO_CRAM = "bam_to_cram"
 MWF_NAME_BAMQC_SHORT_READ = "paired-end_short_reads_BAM_quality_metrics_GRCh38"
+MWF_NAME_SAMTOOLS_MOSDEPTH = "samtools_mosdepth_bam"
 MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
 MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check"
+# Variant calling
+MWF_NAME_TNHAPLOTYPER = "paired-end_short_reads_variant_calling_TNhaplotyper2_distributed_TNfilter_GRCh38"
+MWF_NAME_LONGCALLD = "PacBio_variant_calling_longcallD_GRCh38"
+MWF_NAME_LONGCALLD_SINGLE_FILE = "PacBio_variant_calling_longcallD_single_file_GRCh38"
+MWF_NAME_STRELKA2 = "paired-end_short_reads_variant_calling_Strelka2_distributed_GRCh38"
+MWF_NAME_RUFUS = "paired-end_short_reads_variant_calling_RUFUS_distributed_GRCh38"
+MWF_NAME_DNASCOPEHYBRID = "paired-end_short_plus_PacBio_variant_calling_DNAscopeHybrid_GRCh38"
+MWF_NAME_SNIFFLES = "PacBio_ONT_variant_calling_Sniffles_GRCh38"
+MWF_NAME_SEVERUS = "PacBio_ONT_variant_calling_Severus_GRCh38"
+MWF_NAME_DELLY = "PacBio_ONT_variant_calling_Delly_GRCh38"
+MWF_NAME_DELLY_SR = "paired-end_short_reads_variant_calling_Delly_GRCh38"
+MWF_NAME_MANTA = "paired-end_short_reads_variant_calling_Manta_GRCh38"
+MWF_NAME_SNV_FILTERING_LONGCALLD = "SNV_filtering_longcallD_GRCh38"
+MWF_NAME_SNV_FILTERING = "SNV_filtering_GRCh38"
+
+HMS_DAC_UUID = "9626d82e-8110-4213-ac75-0a50adf890ff"
 
 # Input argument names
 INPUT_FILES_R1_FASTQ_GZ = "input_files_r1_fastq_gz"
@@ -28,9 +45,12 @@ INPUT_FILES_BAM = "input_files_bam"
 INPUT_FILES = "input_files"
 INPUT_FILES_FASTQ_GZ = "input_files_fastq_gz"
 INPUT_FILES_CRAM = "input_files_cram"
+INPUT_FILE_CRAM = "input_file_cram"
+ADDITIONAL_INPUT_FILES_CRAM = "additional_input_files_cram"
 GENOME_REFERENCE_FASTA = "genome_reference_fasta"
 SAMPLE_NAME = "sample_name"
 SAMPLE_NAMES = "sample_names"
+PLATFORM = "platform"
 LENGTH_REQUIRED = "length_required"
 LIBRARY_ID = "library_id"
 GENOME_REFERENCE_STAR = "genome_reference_star"
@@ -46,7 +66,9 @@ SUBMISSION_CENTERS = "submission_centers"
 SEQUENCING_CENTER = "sequencing_center"
 CONSORTIA = "consortia"
 FILE_SETS = "file_sets"
-META_WORFLOW_RUN = "MetaWorkflowRun"
+ANALYSIS_RUNS = "analysis_runs"
+META_WORKFLOW_RUN = "MetaWorkflowRun"
+ANALYSIS_RUN = "AnalysisRun"
 ACCESSION = "accession"
 DISPLAY_TITLE = "display_title"
 ALIASES = "aliases"
@@ -63,6 +85,25 @@ STATUS = "status"
 FIRST_STRANDED = "First Stranded"
 SECOND_STRANDED = "Second Stranded"
 FAILED_JOBS = "failed_jobs"
+SOMATIC_SNV_CALLING = "Somatic SNV calling"
+SOMATIC_SNV_CALLING_CORE_SPECIFIC = "Somatic SNV calling (core specific)"
+SOMATIC_SV_CALLING = "Somatic SV calling"
+GERMLINE_SNV_CALLING = "Germline SNV calling"
+
+# Statuses of files that have been released (in some form)
+RELEASED_STATUSES = [
+    OPEN,
+    OPEN_NETWORK,
+    OPEN_EARLY,
+    PROTECTED,
+    PROTECTED_NETWORK,
+    PROTECTED_EARLY,
+]
+
+# Search query fragment restricting results to the released statuses above
+RELEASED_STATUSES_SEARCH_FILTER = "".join(
+    f"&status={status}" for status in RELEASED_STATUSES
+)
 
 # Assays
 WGS = "WGS"

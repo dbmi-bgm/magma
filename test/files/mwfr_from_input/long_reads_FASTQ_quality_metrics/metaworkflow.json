@@ -1,0 +1,358 @@
+{
+  "accession": "SMAMWM3I67W8",
+  "aliases": [
+    "smaht:MetaWorkflow-long_reads_FASTQ_quality_metrics_0.3.1"
+  ],
+  "category": [
+    "Quality Control"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2025-07-24T19:12:36.385213+00:00",
+  "description": "Calculate quality metrics for input files in FASTQ format (or unaligned BAM files). Implementation for long reads data",
+  "input": [
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "kraken2_db",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "c9a09979-3bd1-455c-9320-f4e9f02d895d"
+        }
+      ]
+    },
+    {
+      "argument_name": "nthreads",
+      "argument_type": "parameter",
+      "value": 4,
+      "value_type": "integer"
+    },
+    {
+      "argument_name": "required_tags",
+      "argument_type": "parameter",
+      "value": [
+        "MM",
+        "ML"
+      ],
+      "value_type": "array"
+    },
+    {
+      "argument_name": "qc_ruleset",
+      "argument_type": "QC ruleset",
+      "value": {
+        "overall_quality_status_rule": "{kraken2_human} and {kraken2_virus} and {kraken2_bacteria}",
+        "qc_thresholds": [
+          {
+            "id": "kraken2_human",
+            "metric": "Percentage Human Sequences [Kraken2]",
+            "operator": ">",
+            "pass_target": 95.0,
+            "use_as_qc_flag": true,
+            "warn_target": 0.0
+          },
+          {
+            "id": "kraken2_virus",
+            "metric": "Percentage Viral Sequences [Kraken2]",
+            "operator": "<",
+            "pass_target": 0.3,
+            "use_as_qc_flag": true,
+            "warn_target": 100.0
+          },
+          {
+            "id": "kraken2_bacteria",
+            "metric": "Percentage Bacterial Sequences [Kraken2]",
+            "operator": "<",
+            "pass_target": 0.1,
+            "use_as_qc_flag": true,
+            "warn_target": 100.0
+          }
+        ]
+      }
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-08-04T20:44:02.515131+00:00",
+    "modified_by": "0d565156-00db-4948-82fe-021d151a5daf"
+  },
+  "name": "long_reads_FASTQ_quality_metrics",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-d35b8231ee6bec392c08b5d0dea71e5e52cf98e880dd9b586f3f696f2a76605f"
+  ],
+  "title": "long reads FASTQ quality metrics [0.3.1]",
+  "uuid": "920ee827-7843-49d6-bba6-dd19f0ceb9fb",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.xlarge",
+          "m6a.xlarge",
+          "m6i.xlarge"
+        ],
+        "run_name": "run_check_bam_tags",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_log_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "tags validation log",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_bam"
+        },
+        {
+          "argument_name": "required_tags",
+          "argument_type": "parameter",
+          "value_type": "array"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        }
+      ],
+      "name": "check_bam_tags",
+      "workflow": "9df4ac85-be99-4321-a7e6-9c94fc66493c"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.2xlarge",
+          "m6a.2xlarge",
+          "m6i.2xlarge"
+        ],
+        "run_name": "run_nanoplot",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_html": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics",
+            "Image"
+          ],
+          "description": "NanoPlot output HTML"
+        },
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "NanoPlot output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_bam"
+        },
+        {
+          "argument_name": "input_logs_txt",
+          "argument_type": "file",
+          "source": "check_bam_tags",
+          "source_argument_name": "output_log_txt"
+        }
+      ],
+      "name": "nanoplot",
+      "workflow": "2693e694-ed1f-4976-b90e-7741f862db79"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "3x",
+        "instance_type": [
+          "m5a.xlarge",
+          "m6a.xlarge",
+          "m6i.xlarge"
+        ],
+        "run_name": "run_bam_to_fastq_single-end",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_fastq_gz": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Unaligned Reads"
+          ],
+          "description": "reads FASTQ (from BAM)",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_bam"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        },
+        {
+          "argument_name": "input_logs_txt",
+          "argument_type": "file",
+          "source": "check_bam_tags",
+          "source_argument_name": "output_log_txt"
+        }
+      ],
+      "name": "bam_to_fastq_single-end",
+      "workflow": "491b19da-ae9b-4dab-af9e-a4416e85523f"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "r5.xlarge",
+          "r5a.xlarge",
+          "r6a.xlarge",
+          "r6i.xlarge",
+          "r7a.xlarge",
+          "r7i.xlarge"
+        ],
+        "run_name": "run_kraken2",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "Kraken2 output report TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_fastq_gz",
+          "argument_type": "file",
+          "source": "bam_to_fastq_single-end",
+          "source_argument_name": "output_file_fastq_gz"
+        },
+        {
+          "argument_name": "database",
+          "argument_type": "file",
+          "source_argument_name": "kraken2_db"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        }
+      ],
+      "name": "kraken2",
+      "workflow": "9304f68f-bc15-40a1-919a-26104a3a79eb"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 10,
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_parse-qc_FASTQ_Quality_Metrics_long_reads",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "metrics_zip": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics",
+            "Image"
+          ],
+          "description": "QC compressed output"
+        },
+        "qc_values_json": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC output JSON"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file",
+          "argument_type": "file",
+          "input_dimension": 1,
+          "mount": true,
+          "source_argument_name": "input_files_bam"
+        },
+        {
+          "argument_name": "nanoplot_metrics_html",
+          "argument_type": "file",
+          "source": "nanoplot",
+          "source_argument_name": "output_file_html"
+        },
+        {
+          "argument_name": "nanoplot_metrics_txt",
+          "argument_type": "file",
+          "source": "nanoplot",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "kraken2_report_txt",
+          "argument_type": "file",
+          "source": "kraken2",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "qc_ruleset",
+          "argument_type": "QC ruleset"
+        }
+      ],
+      "name": "parse-qc_FASTQ_Quality_Metrics_long_reads",
+      "workflow": "c66f5e34-9cb4-409f-987f-19af9dd3cd2a"
+    }
+  ]
+}

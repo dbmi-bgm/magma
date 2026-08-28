@@ -31,6 +31,7 @@ from magma_smaht.utils import (
     get_tag_for_sample_identity_check,
     get_item,
     get_item_es,
+    search_list,
     get_latest_somalier_run_for_donor,
     get_alignment_mwfr,
     get_final_output_file,
@@ -51,6 +52,7 @@ from magma_smaht.constants import (
     MWF_NAME_BAM_TO_FASTQ_PAIRED_END,
     MWF_NAME_BAM_TO_CRAM,
     MWF_NAME_BAMQC_SHORT_READ,
+    MWF_NAME_SAMTOOLS_MOSDEPTH,
     MWF_NAME_ULTRA_LONG_BAMQC,
     MWF_NAME_LONG_READ_BAMQC,
     MWF_SAMPLE_IDENTITY_CHECK,
@@ -71,13 +73,13 @@ from magma_smaht.constants import (
     SUBMISSION_CENTERS,
     SEQUENCING_CENTER,
     FILE_SETS,
-    META_WORFLOW_RUN,
+    META_WORKFLOW_RUN,
     ACCESSION,
     ALIASES,
     UPLOADED,
     FIRST_STRANDED,
     SECOND_STRANDED,
-    WGS
+    WGS,
 )
 
 
@@ -93,6 +95,35 @@ def mwfr_illumina_alignment(fileset_accession, length_required, smaht_key):
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
     file_set = get_file_set(fileset_accession, smaht_key)
+
+    if not length_required:
+        file_set_embedded = ff_utils.get_metadata(
+            fileset_accession, add_on="frame=embedded&datastore=database", key=smaht_key
+        )
+        print(f"Sequence length has not been provided. Trying to get it from the FASTQC results.")
+        qm_uuids = [
+            qm[UUID]
+            for file in file_set_embedded.get("files", [])
+            if file.get("file_format", {}).get("display_title") == "fastq_gz"
+            for qm in file.get("quality_metrics", [])
+        ]
+        if not qm_uuids:
+            raise ValueError("No quality metrics found for any FASTQ files in the fileset. Please provide a sequence length or run FASTQC first.")
+        quality_metrics = search_list(qm_uuids, smaht_key)
+        sequence_lengths = []
+        for qm in quality_metrics:
+            qc_value = next(
+                (v for v in qm.get("qc_values", []) if v.get("derived_from") == "fastqc:sequence_length"),
+                None,
+            )
+            if qc_value is None:
+                raise ValueError(f"Quality metric {qm[UUID]} does not have a fastqc:sequence_length value")
+            sequence_lengths.append(qc_value["value"])
+        if len(set(sequence_lengths)) > 1:
+            raise ValueError(f"Sequence lengths are not consistent across quality metrics: {sequence_lengths}")
+        length_required = sequence_lengths[0]
+        print(f"Using sequence length {length_required} from FASTQC results.")
+
     mwfr_input = get_core_alignment_mwfr_input_from_readpairs(
         file_set, INPUT_FILES_R1_FASTQ_GZ, INPUT_FILES_R2_FASTQ_GZ, smaht_key
     )
@@ -365,7 +396,6 @@ def mwfr_bam_to_cram(fileset_accessions, smaht_key):
         for warning in warnings:
             print(f"- {warning}")
 
-    
 
 ################################################
 #   QC MetaWorkflowRuns
@@ -453,7 +483,7 @@ def mwfr_ubam_qc_long_read(fileset_accession, replace_existing_qc, smaht_key):
         "?type=UnalignedReads"
         f"&status={UPLOADED}"
         "&file_format.display_title=bam"
-        # "&quality_metrics=No+value"
+        "&quality_metrics=No+value"
         f"&file_sets.uuid={file_set[UUID]}"
     )
 
@@ -512,6 +542,19 @@ def mwfr_bamqc_short_read(file_accession, smaht_key):
     ]
 
     create_and_post_mwfr(mwf["uuid"], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
+
+
+def mwfr_samtools_mosdepth(file_accessions, smaht_key):
+    mwf = get_latest_mwf(MWF_NAME_SAMTOOLS_MOSDEPTH, smaht_key)
+    print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
+
+    files_input = []
+    for dim, file_accession in enumerate(file_accessions):
+        bam_meta = get_item(file_accession, smaht_key)
+        files_input.append({"file": bam_meta[UUID], "dimension": f"{dim}"})
+
+    mwfr_input = [get_mwfr_file_input_arg(INPUT_FILES_BAM, files_input)]
+    create_and_post_mwfr(mwf[UUID], None, INPUT_FILES_BAM, mwfr_input, smaht_key)
 
 
 def mwfr_ultra_long_bamqc(file_accession, replace_existing_qc, smaht_key):
@@ -576,22 +619,27 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
 
     previous_bam_ids = []
     previous_bam_dimension = {}
-    previous_mwfr = get_latest_somalier_run_for_donor(donor, smaht_key)
-    if previous_mwfr:
-        print(f"Importing data from previous MetaWorkflowRun for donor {donor}")
-        # We want the raw frame - that's why we get it here again
-        previous_mwfr = get_item(previous_mwfr[0][UUID], smaht_key)
-        for input in previous_mwfr["input"]:
-            if input["argument_name"] == INPUT_FILES_BAM:
-                previous_bam_dimension = {
-                    file["file"]: file["dimension"] for file in input["files"]
-                }
-                previous_bam_ids = [file["file"] for file in input["files"]]
-    else:
-        print(f"No previous identity check found for donor {donor}")
+    if donor:
+        previous_mwfr = get_latest_somalier_run_for_donor(donor, smaht_key)
+        if previous_mwfr:
+            print(f"Importing data from previous MetaWorkflowRun for donor {donor}")
+            # We want the raw frame - that's why we get it here again
+            previous_mwfr = get_item(previous_mwfr[0][UUID], smaht_key)
+            for input in previous_mwfr["input"]:
+                if input["argument_name"] == INPUT_FILES_BAM:
+                    previous_bam_dimension = {
+                        file["file"]: file["dimension"] for file in input["files"]
+                    }
+                    previous_bam_ids = [file["file"] for file in input["files"]]
+        else:
+            print(f"No previous identity check found for donor {donor}")
 
     bams = []
-    for id in previous_bam_ids + list(files):
+    all_bam_ids = previous_bam_ids + list(files)
+    # Restrict to the 80 most recent bam files to avoid hitting input limits of the workflow.
+    # The MWFR has trouble updating with more files
+    all_bam_ids = all_bam_ids[-80:]
+    for id in all_bam_ids:
         bam_meta = get_item(id, smaht_key)
         bams.append(bam_meta)
 
@@ -626,12 +674,15 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
             if workflow_run["name"] == "ReplaceReadGroups":
                 workflow_run["status"] = "completed"
 
-    mwfr["tags"] = [get_tag_for_sample_identity_check(donor)]
+    if donor:
+        mwfr["tags"] = [get_tag_for_sample_identity_check(donor)]
     # mwfr["final_status"] = "stopped"
 
-    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
+
+
 
 
 ################################################
@@ -720,7 +771,7 @@ def create_and_post_mwfr(mwf_uuid, file_set, input_arg, mwfr_input, smaht_key, v
     # mwfr['final_status'] = 'stopped'
     #pprint.pprint(mwfr)
 
-    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     if file_set and verbose:
         print(
