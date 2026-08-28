@@ -1,0 +1,108 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_r1_fastq_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "f9ef1db8-6530-4e2f-b20d-54c7a416272e"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_r2_fastq_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "d1d7a83c-d374-43e0-b369-d54e9d858a54"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATS8GNMZI3"
+    },
+    {
+      "argument_name": "library_id",
+      "argument_type": "parameter",
+      "value": "SMALISFR8JQ2"
+    },
+    {
+      "argument_name": "genome_reference_star",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "bbde170b-b9b1-463b-a423-825b056451ad"
+        }
+      ]
+    },
+    {
+      "argument_name": "strandedness",
+      "argument_type": "parameter",
+      "value": "rf"
+    }
+  ],
+  "meta_workflow": "b8bfe1b3-5076-46f9-8c4b-47121b8bfb23",
+  "workflow_runs": [
+    {
+      "name": "sentieon_STAR_sort",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_STAR_sort:0"
+      ],
+      "name": "RSEM",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_STAR_sort:0"
+      ],
+      "name": "sentieon_Dedup",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_Dedup:0"
+      ],
+      "name": "RNA-SeQC",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_Dedup:0"
+      ],
+      "name": "verifybamid2",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "RNA-SeQC:0"
+      ],
+      "name": "collect_rnaseqc_metrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "RNA-SeQC:0"
+      ],
+      "name": "tissue_classifier",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "RNA-SeQC:0",
+        "collect_rnaseqc_metrics:0",
+        "sentieon_Dedup:0",
+        "tissue_classifier:0",
+        "verifybamid2:0"
+      ],
+      "name": "parse-qc_RNA-SeQC_Quality_Metrics",
+      "shard": "0"
+    }
+  ]
+}

@@ -1,0 +1,342 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "74f0416f-b1d3-4858-9951-f2e2385d0124"
+        },
+        {
+          "dimension": "1",
+          "file": "d48f54cf-d5ae-482f-b7d0-775e71dd20be"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATI1Z4HVJQ"
+    }
+  ],
+  "meta_workflow": "15d85e83-9e50-4280-8488-ddf163882708",
+  "workflow_runs": [
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "0"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "1"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "2"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "3"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "4"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "5"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "6"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "7"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "8"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "9"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "10"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "11"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "12"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "13"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "14"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "15"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "16"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "17"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "18"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "19"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "20"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "21"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "22"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "23"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "24"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "25"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "26"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "27"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "28"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "29"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "30"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "31"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "32"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "33"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "34"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "35"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "36"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "37"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "38"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "39"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "40"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "41"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "42"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "43"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "44"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "45"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "46"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "47"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "48"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "49"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "50"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "51"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "52"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "53"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "54"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "55"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "56"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "57"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "58"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "59"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "60"
+    },
+    {
+      "name": "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel",
+      "shard": "61"
+    },
+    {
+      "dependencies": [
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:0",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:1",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:2",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:3",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:4",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:5",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:6",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:7",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:8",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:9",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:10",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:11",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:12",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:13",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:14",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:15",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:16",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:17",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:18",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:19",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:20",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:21",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:22",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:23",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:24",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:25",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:26",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:27",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:28",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:29",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:30",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:31",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:32",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:33",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:34",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:35",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:36",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:37",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:38",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:39",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:40",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:41",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:42",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:43",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:44",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:45",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:46",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:47",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:48",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:49",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:50",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:51",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:52",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:53",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:54",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:55",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:56",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:57",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:58",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:59",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:60",
+        "sentieon_TNhaplotyper2_wOrientationBias_ContaminationModel:61"
+      ],
+      "name": "sentieon_merge_TNfilter",
+      "shard": "0"
+    }
+  ]
+}

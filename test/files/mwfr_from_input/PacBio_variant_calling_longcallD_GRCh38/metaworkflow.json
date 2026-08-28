@@ -1,0 +1,153 @@
+{
+  "accession": "SMAMWPDWHTKZ",
+  "aliases": [
+    "smaht:MetaWorkflow-PacBio_variant_calling_longcallD_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Variant Calling"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2026-01-16T16:28:04.063217+00:00",
+  "description": "Run longcallD algorithm for somatic variant calling using PacBio or ONT long read data. Accepts a main CRAM file and a list of additional CRAM files as input (required) and produces final calls in VCF format",
+  "input": [
+    {
+      "argument_name": "input_file_cram",
+      "argument_type": "file",
+      "dimensionality": 0
+    },
+    {
+      "argument_name": "additional_input_files_cram",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "mei_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "3df7d2d5-3160-4f0a-a393-f60ef4126ccb"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "platform",
+      "argument_type": "parameter",
+      "value": "--hifi",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "nthreads",
+      "argument_type": "parameter",
+      "value": 32,
+      "value_type": "integer"
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-05-22T20:37:06.984453+00:00",
+    "modified_by": "45ac3b0a-6640-4ccc-8ba7-e4cc7c778c15"
+  },
+  "name": "PacBio_variant_calling_longcallD_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-2e539bb98a5da3f3db81005f877e8dfe70f6f3069353a9cd4bf460f15a0b584f"
+  ],
+  "title": "PacBio variant calling longcallD GRCh38 [0.3.1]",
+  "uuid": "cdbfaae7-9ac9-4357-84b7-9030024f75d7",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2x",
+        "instance_type": [
+          "r5.8xlarge",
+          "r5n.8xlarge",
+          "r5a.8xlarge",
+          "r6i.8xlarge",
+          "r6a.8xlarge",
+          "r7i.8xlarge",
+          "r7a.8xlarge",
+          "r8i.8xlarge",
+          "r8a.8xlarge"
+        ],
+        "run_name": "run_longcallD_compress_index",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel",
+            "MEI"
+          ],
+          "description": "longcallD output VCF",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "97070eb1-9da2-475c-a4d1-6f4d04df6c9b"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_cram",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "additional_input_files_cram",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "mei_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "sample_name",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "platform",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value_type": "integer"
+        }
+      ],
+      "name": "longcallD_compress_index",
+      "workflow": "6f31fa50-b0ba-4076-8c99-115a90e61d71"
+    }
+  ]
+}

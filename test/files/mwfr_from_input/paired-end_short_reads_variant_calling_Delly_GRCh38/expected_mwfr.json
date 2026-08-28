@@ -1,0 +1,32 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "1f77fb18-fc20-4f46-bcaf-8ce504924e16"
+        },
+        {
+          "dimension": "1",
+          "file": "1abd7448-f354-46c6-9902-5a49606a8fba"
+        }
+      ]
+    }
+  ],
+  "meta_workflow": "31c66189-bc9e-4cba-86f7-232516b8f2e5",
+  "workflow_runs": [
+    {
+      "name": "samtools_merge_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "delly_sr",
+      "shard": "0"
+    }
+  ]
+}

@@ -1,0 +1,645 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_TNhaplotyper2_vcf_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "a00c0666-c925-425d-ac66-ec5bceafd78e"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_Strelka2_vcf_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "9c9babcd-a1a3-44d3-9439-0c550da540ff"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_RUFUS_vcf_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "e4f7ecdf-b300-4f4c-aa7c-44b1308c8b7e"
+        }
+      ]
+    },
+    {
+      "argument_name": "additional_files_vcf_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "8f207794-3a18-4bf9-807a-a2eec390beb4"
+        }
+      ]
+    },
+    {
+      "argument_name": "germline_input_file_vcf_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "37e76444-ec48-4a25-aaa4-05efe7b4cf7a"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_sr_cram_tissue_specific",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "1f77fb18-fc20-4f46-bcaf-8ce504924e16"
+        },
+        {
+          "dimension": "1",
+          "file": "1abd7448-f354-46c6-9902-5a49606a8fba"
+        },
+        {
+          "dimension": "2",
+          "file": "2a21b97e-aacf-46af-a53a-2105960f54a4"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_sr_cram_donor_pooled",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "fa191142-16a7-47f1-81de-99aac09dd47d"
+        },
+        {
+          "dimension": "1",
+          "file": "3442e479-c915-4148-9e5c-0b102c942806"
+        },
+        {
+          "dimension": "2",
+          "file": "fd7f80a7-b36a-4f4a-9a17-15f2bc32b128"
+        },
+        {
+          "dimension": "3",
+          "file": "11697133-83aa-4b65-beab-b2206010d047"
+        },
+        {
+          "dimension": "4",
+          "file": "1973c0b7-bab0-43b4-a891-84eba78cdd4b"
+        },
+        {
+          "dimension": "5",
+          "file": "1278a171-4f00-4e12-843e-59623d3894f2"
+        },
+        {
+          "dimension": "6",
+          "file": "1b4e4204-257e-4f88-b51f-6a9cfc256da7"
+        },
+        {
+          "dimension": "7",
+          "file": "1dc01c48-e5f8-4ba4-a2c4-9aebaafb4a58"
+        },
+        {
+          "dimension": "8",
+          "file": "3849c9e6-bb7b-4cc2-95a9-8f4a8a729f61"
+        },
+        {
+          "dimension": "9",
+          "file": "ddc3ba5d-d20f-49f4-9825-47ea4b57aa98"
+        },
+        {
+          "dimension": "10",
+          "file": "97c2ade1-3110-4bfb-a37b-5b19c32f39b4"
+        },
+        {
+          "dimension": "11",
+          "file": "462f107a-9a07-47ff-a0d0-9ae1042a29ad"
+        },
+        {
+          "dimension": "12",
+          "file": "ddf6e836-24f9-4b4f-b994-b68a6ed40e1e"
+        },
+        {
+          "dimension": "13",
+          "file": "8258aed1-a53d-4b71-af4e-9989f7294877"
+        },
+        {
+          "dimension": "14",
+          "file": "301de2ed-6bcb-4934-8ea9-a076e5d9b0ba"
+        },
+        {
+          "dimension": "15",
+          "file": "68a04f14-be5e-459a-9c34-fc2c674bfd0d"
+        },
+        {
+          "dimension": "16",
+          "file": "1f77fb18-fc20-4f46-bcaf-8ce504924e16"
+        },
+        {
+          "dimension": "17",
+          "file": "56664751-86e6-49d5-a58b-cc5289b709c3"
+        },
+        {
+          "dimension": "18",
+          "file": "440b2830-4f28-4be8-92c2-8ce418673662"
+        },
+        {
+          "dimension": "19",
+          "file": "c4cb0b59-1681-439f-a270-cc8ca14d9460"
+        },
+        {
+          "dimension": "20",
+          "file": "c5ddcaf8-ba32-421f-9810-be89d29da541"
+        },
+        {
+          "dimension": "21",
+          "file": "29617063-5c6a-49ad-a5b3-3694039eb7a1"
+        },
+        {
+          "dimension": "22",
+          "file": "835cac64-b4fe-4a3a-aa5e-854635c16a72"
+        },
+        {
+          "dimension": "23",
+          "file": "96d690f1-a989-4038-9660-d75b1fb416e8"
+        },
+        {
+          "dimension": "24",
+          "file": "1abd7448-f354-46c6-9902-5a49606a8fba"
+        },
+        {
+          "dimension": "25",
+          "file": "24481a57-64d9-48ee-acc5-175e56de6a78"
+        },
+        {
+          "dimension": "26",
+          "file": "c4b993b1-8b0c-4834-979f-f64140d4ff6e"
+        },
+        {
+          "dimension": "27",
+          "file": "ead06099-4e17-4742-8436-ff7fe46db17f"
+        },
+        {
+          "dimension": "28",
+          "file": "a5f828e3-2bef-4ff5-8fac-538e0eeeef97"
+        },
+        {
+          "dimension": "29",
+          "file": "a9e9337d-39a4-431b-a8ba-9429ecc10e60"
+        },
+        {
+          "dimension": "30",
+          "file": "ea0cc602-3017-4d57-8155-547f5dcd49a4"
+        },
+        {
+          "dimension": "31",
+          "file": "a7ae7de3-7d85-481a-b65d-a90db3ae576a"
+        },
+        {
+          "dimension": "32",
+          "file": "acc12f06-5d34-4399-8bdf-a625412c9f91"
+        },
+        {
+          "dimension": "33",
+          "file": "05259b16-cdcd-4f37-8111-971bd4e62aed"
+        },
+        {
+          "dimension": "34",
+          "file": "b9ae8eb9-7d07-4493-8e8f-00e27aa5a645"
+        },
+        {
+          "dimension": "35",
+          "file": "0af17c6c-bd99-4397-81c6-6620a012df2c"
+        },
+        {
+          "dimension": "36",
+          "file": "172de3a9-c484-4337-ad46-5420149edcd6"
+        },
+        {
+          "dimension": "37",
+          "file": "8ea8ec41-11e0-41a2-97e7-8b133a10f50a"
+        },
+        {
+          "dimension": "38",
+          "file": "c3c337f2-76d6-409e-bca7-f5a763732091"
+        },
+        {
+          "dimension": "39",
+          "file": "37817379-59e3-4b7d-a14b-3f51ef7d22d3"
+        },
+        {
+          "dimension": "40",
+          "file": "8c0c2d5e-3383-4dd9-baea-84a0b498bbdf"
+        },
+        {
+          "dimension": "41",
+          "file": "f5c910b9-664a-40ed-a922-fb5cd9b2bc74"
+        },
+        {
+          "dimension": "42",
+          "file": "b112e1bf-442e-43e5-91ac-2c5f0230d887"
+        },
+        {
+          "dimension": "43",
+          "file": "79236a6a-4fc9-4ed7-9fce-b9e6c53ad494"
+        },
+        {
+          "dimension": "44",
+          "file": "435fb4b4-3bfc-48af-aa9e-eba19c815a96"
+        },
+        {
+          "dimension": "45",
+          "file": "71006d4c-5fff-45d9-83a1-5b9c2dca1cf8"
+        },
+        {
+          "dimension": "46",
+          "file": "2e698a6f-f770-4506-8e03-094689be609b"
+        },
+        {
+          "dimension": "47",
+          "file": "264bd50b-1876-4645-b1b8-a66348dc8d85"
+        },
+        {
+          "dimension": "48",
+          "file": "5336873d-2c12-4fe1-9d42-cbc2415953db"
+        },
+        {
+          "dimension": "49",
+          "file": "80487817-61e0-49ff-9480-3b4b7ca95638"
+        },
+        {
+          "dimension": "50",
+          "file": "573cb841-d8a3-4d43-afcf-d7aaef834a78"
+        },
+        {
+          "dimension": "51",
+          "file": "20f23015-ad43-4a8b-9bf2-bd2fb527fc8a"
+        },
+        {
+          "dimension": "52",
+          "file": "ddf6b585-1fa7-40ac-882e-fb74f03a2628"
+        },
+        {
+          "dimension": "53",
+          "file": "2a21b97e-aacf-46af-a53a-2105960f54a4"
+        },
+        {
+          "dimension": "54",
+          "file": "68282cd9-d660-4d3f-8136-0778ae60c8e4"
+        },
+        {
+          "dimension": "55",
+          "file": "3554be23-224c-4524-9066-f4bb1d3f0149"
+        },
+        {
+          "dimension": "56",
+          "file": "3f13f063-8841-47e5-ba82-fdac99e80942"
+        },
+        {
+          "dimension": "57",
+          "file": "c5ab2bdb-0ce0-4903-8577-f718800c923b"
+        },
+        {
+          "dimension": "58",
+          "file": "17704280-8179-47c2-9ae2-3bf8381d2ba0"
+        },
+        {
+          "dimension": "59",
+          "file": "c5b005ff-a2a9-4920-b08e-c0998ab9aa7b"
+        },
+        {
+          "dimension": "60",
+          "file": "f6a118ea-1cc0-4a07-83fa-cfe630718289"
+        },
+        {
+          "dimension": "61",
+          "file": "4999481f-0b91-4778-b517-d578e77ee262"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_pb_cram_donor_pooled",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "f3826488-7e2a-4b80-b879-c8e7d3653e6c"
+        },
+        {
+          "dimension": "1",
+          "file": "c572b8c0-cdc5-4022-a6ea-d0a1f9c1e6ee"
+        },
+        {
+          "dimension": "2",
+          "file": "f590a009-ea2d-4184-b4b1-babcba9cafca"
+        },
+        {
+          "dimension": "3",
+          "file": "82431902-d4a0-44bb-a3ca-46e2dd876207"
+        },
+        {
+          "dimension": "4",
+          "file": "782e0664-0fc7-4ad2-82f6-fd58a2646caf"
+        },
+        {
+          "dimension": "5",
+          "file": "d9d42467-947b-48d0-bf50-0ca6145c38dc"
+        },
+        {
+          "dimension": "6",
+          "file": "6907df64-4064-4473-9ab0-e62a20834d67"
+        },
+        {
+          "dimension": "7",
+          "file": "42da42e8-5fa3-402a-86ce-acc6a862047f"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_all_long_read_cram_donor_pooled",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "152a6d35-99d0-4ad1-a5bf-95c8f5e15958"
+        },
+        {
+          "dimension": "1",
+          "file": "517076f1-8149-4711-ab6d-7b2fc9193002"
+        },
+        {
+          "dimension": "2",
+          "file": "80ed2487-927d-4abf-9078-562c956c5c3d"
+        },
+        {
+          "dimension": "3",
+          "file": "7bb32918-89c0-424b-b9e0-17797a1c2132"
+        },
+        {
+          "dimension": "4",
+          "file": "e28afee9-95ad-4530-ad0e-9541c3babff4"
+        },
+        {
+          "dimension": "5",
+          "file": "3e4ca832-b50e-4389-a0bd-c51f73da4afd"
+        },
+        {
+          "dimension": "6",
+          "file": "f3826488-7e2a-4b80-b879-c8e7d3653e6c"
+        },
+        {
+          "dimension": "7",
+          "file": "c572b8c0-cdc5-4022-a6ea-d0a1f9c1e6ee"
+        },
+        {
+          "dimension": "8",
+          "file": "f590a009-ea2d-4184-b4b1-babcba9cafca"
+        },
+        {
+          "dimension": "9",
+          "file": "82431902-d4a0-44bb-a3ca-46e2dd876207"
+        },
+        {
+          "dimension": "10",
+          "file": "782e0664-0fc7-4ad2-82f6-fd58a2646caf"
+        },
+        {
+          "dimension": "11",
+          "file": "d9d42467-947b-48d0-bf50-0ca6145c38dc"
+        },
+        {
+          "dimension": "12",
+          "file": "6907df64-4064-4473-9ab0-e62a20834d67"
+        },
+        {
+          "dimension": "13",
+          "file": "42da42e8-5fa3-402a-86ce-acc6a862047f"
+        },
+        {
+          "dimension": "14",
+          "file": "d8dc8ec2-542e-46c7-906a-16a9ccf35a2f"
+        },
+        {
+          "dimension": "15",
+          "file": "fd9ad569-a14e-44a6-8781-d075c81d9d73"
+        },
+        {
+          "dimension": "16",
+          "file": "3f4a2a02-07c8-4571-b340-eebee9115ea9"
+        },
+        {
+          "dimension": "17",
+          "file": "4118759f-d131-471b-9401-feb6c256a950"
+        },
+        {
+          "dimension": "18",
+          "file": "96682f6f-43fd-4354-a632-9abf841befb1"
+        },
+        {
+          "dimension": "19",
+          "file": "a6555672-cb62-4767-8f35-7f71a4d57fb1"
+        },
+        {
+          "dimension": "20",
+          "file": "f6d60b24-3be1-4d4e-b7ec-2dd8fd8eece5"
+        },
+        {
+          "dimension": "21",
+          "file": "ce39e7d8-ade0-4d4c-a565-8b50aaf0ff20"
+        },
+        {
+          "dimension": "22",
+          "file": "72ef774f-007d-4b52-93bc-633bb564f84f"
+        },
+        {
+          "dimension": "23",
+          "file": "d8171558-afba-4c7c-aa77-a94b3e4a6dbb"
+        },
+        {
+          "dimension": "24",
+          "file": "d3151220-63a7-4b9f-8df3-a1b003a07ac1"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATIWYWMIKG"
+    },
+    {
+      "argument_name": "input_files_tissue_descriptors_sr",
+      "argument_type": "parameter",
+      "value": [
+        "SMHT039-3S",
+        "SMHT039-3G",
+        "SMHT039-3E",
+        "SMHT039-3U",
+        "SMHT039-3K",
+        "SMHT039-3Q",
+        "SMHT039-3I",
+        "SMHT039-3AL",
+        "SMHT039-3AD",
+        "SMHT039-3I",
+        "SMHT039-3AK",
+        "SMHT039-3AD",
+        "SMHT039-3Q",
+        "SMHT039-3S",
+        "SMHT039-3U",
+        "SMHT039-3G",
+        "SMHT039-3A",
+        "SMHT039-3AL",
+        "SMHT039-3AF",
+        "SMHT039-3AF",
+        "SMHT039-3AN",
+        "SMHT039-3G",
+        "SMHT039-3E",
+        "SMHT039-3K",
+        "SMHT039-3A",
+        "SMHT039-3AO",
+        "SMHT039-3AN",
+        "SMHT039-3AO",
+        "SMHT039-3AO",
+        "SMHT039-3AK",
+        "SMHT039-3AM",
+        "SMHT039-3AN",
+        "SMHT039-3E",
+        "SMHT039-3AH",
+        "SMHT039-3AH",
+        "SMHT039-3AM",
+        "SMHT039-3U",
+        "SMHT039-3K",
+        "SMHT039-3S",
+        "SMHT039-3AM",
+        "SMHT039-3AH",
+        "SMHT039-3Q",
+        "SMHT039-3AK",
+        "SMHT039-3AF",
+        "SMHT039-3I",
+        "SMHT039-3AL",
+        "SMHT039-3AO",
+        "SMHT039-3O",
+        "SMHT039-3S",
+        "SMHT039-3E",
+        "SMHT039-3AD",
+        "SMHT039-3AH",
+        "SMHT039-3AL",
+        "SMHT039-3A",
+        "SMHT039-3G",
+        "SMHT039-3AF",
+        "SMHT039-3K",
+        "SMHT039-3AM",
+        "SMHT039-3AK",
+        "SMHT039-3I",
+        "SMHT039-3Q",
+        "SMHT039-3U"
+      ]
+    },
+    {
+      "argument_name": "input_files_tissue_descriptors_all_long_read",
+      "argument_type": "parameter",
+      "value": [
+        "SMHT039-3O",
+        "SMHT039-3I",
+        "SMHT039-3AO",
+        "SMHT039-3O",
+        "SMHT039-3I",
+        "SMHT039-3AO",
+        "SMHT039-3U",
+        "SMHT039-3AH",
+        "SMHT039-3AF",
+        "SMHT039-3AK",
+        "SMHT039-3AN",
+        "SMHT039-3Q",
+        "SMHT039-3AM",
+        "SMHT039-3I",
+        "SMHT039-3Q",
+        "SMHT039-3U",
+        "SMHT039-3E",
+        "SMHT039-3G",
+        "SMHT039-3S",
+        "SMHT039-3AH",
+        "SMHT039-3AD",
+        "SMHT039-3A",
+        "SMHT039-3AM",
+        "SMHT039-3AF",
+        "SMHT039-3AK"
+      ]
+    },
+    {
+      "argument_name": "input_files_types_all_long_read",
+      "argument_type": "parameter",
+      "value": [
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "PB",
+        "PB",
+        "PB",
+        "PB",
+        "PB",
+        "PB",
+        "PB",
+        "PB",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT",
+        "ONT"
+      ]
+    },
+    {
+      "argument_name": "sex",
+      "argument_type": "parameter",
+      "value": "male"
+    },
+    {
+      "argument_name": "current_tissue",
+      "argument_type": "parameter",
+      "value": "SMHT039-3A"
+    }
+  ],
+  "meta_workflow": "69bcc93e-08f8-4777-826a-982220b96be4",
+  "workflow_runs": [
+    {
+      "name": "bcftools_PASS_norm_dedup@TNhaplotyper2",
+      "shard": "0"
+    },
+    {
+      "name": "bcftools_PASS_norm_dedup@RUFUS",
+      "shard": "0"
+    },
+    {
+      "name": "bcftools_PASS_norm_dedup_extra_inputs@Strelka2",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "bcftools_PASS_norm_dedup@RUFUS:0",
+        "bcftools_PASS_norm_dedup@TNhaplotyper2:0",
+        "bcftools_PASS_norm_dedup_extra_inputs@Strelka2:0"
+      ],
+      "name": "snvs_step-1_filter",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "snvs_step-1_filter:0"
+      ],
+      "name": "snvs_step-2_filter",
+      "shard": "0"
+    }
+  ]
+}

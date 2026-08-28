@@ -1,0 +1,603 @@
+{
+  "accession": "SMAMWMDXS9P9",
+  "aliases": [
+    "smaht:MetaWorkflow-SNV_filtering_longcallD_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Variant Manipulation",
+    "Variant Calling"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2026-02-16T14:42:39.854198+00:00",
+  "description": "Filtering pipeline for SNV calls for a Tissue. Starts from raw calls from TNhaplotyper2, Strelka2, longcallD, and RUFUS. Filters PASS variants, normalizes calls, and runs two set of filters based on annotations and cross-technology and -tissue check",
+  "input": [
+    {
+      "argument_name": "input_files_TNhaplotyper2_vcf_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_Strelka2_vcf_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "additional_files_vcf_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_longcallD_vcf_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_RUFUS_vcf_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "germline_input_file_vcf_gz",
+      "argument_type": "file",
+      "dimensionality": 0
+    },
+    {
+      "argument_name": "input_files_sr_cram_tissue_specific",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_sr_cram_donor_pooled",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_pb_cram_donor_pooled",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_all_long_read_cram_donor_pooled",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_step1_bed",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "7b0d76f8-5c58-4a76-bc80-2a08e881d3b3"
+        },
+        {
+          "dimension": "1",
+          "file": "4dd3ad0e-2bcc-4556-8e37-39e540bad2c6"
+        },
+        {
+          "dimension": "2",
+          "file": "e45a8419-c1a1-4d74-bb8f-1cd9ea15a0bd"
+        },
+        {
+          "dimension": "3",
+          "file": "824e088f-8490-41c7-839d-676533bfd4c7"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_step2_bed",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "3bd6d7ce-34b3-4ee3-93fb-d349dbc3b229"
+        },
+        {
+          "dimension": "1",
+          "file": "702ed3fa-b877-4c9d-851b-44abd5fd9886"
+        }
+      ]
+    },
+    {
+      "argument_name": "panel_of_normals_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "5ab614d5-24eb-4db5-9348-735c3c43735f"
+        }
+      ]
+    },
+    {
+      "argument_name": "regions_list_txt",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "fe352da0-a73c-4cfc-8a11-2b371ef5ce11"
+        }
+      ]
+    },
+    {
+      "argument_name": "vep_database_archive",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "690dc785-2659-4bfd-8661-a0b381d0fc23"
+        }
+      ]
+    },
+    {
+      "argument_name": "gnomad_vcf_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "0fa5b3a2-9cdb-4333-b703-5770d07a5f82"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "input_files_tissue_descriptors_sr",
+      "argument_type": "parameter",
+      "value_type": "array"
+    },
+    {
+      "argument_name": "input_files_tissue_descriptors_all_long_read",
+      "argument_type": "parameter",
+      "value_type": "array"
+    },
+    {
+      "argument_name": "input_files_types_all_long_read",
+      "argument_type": "parameter",
+      "value_type": "array"
+    },
+    {
+      "argument_name": "sex",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "current_tissue",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "tag_filters",
+      "argument_type": "parameter",
+      "value": [
+        "gnomADc_AF_grpmax_joint/0.001/</float/all/field=|/entry=,/value=&"
+      ],
+      "value_type": "array"
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-05-21T18:53:28.103805+00:00",
+    "modified_by": "45ac3b0a-6640-4ccc-8ba7-e4cc7c778c15"
+  },
+  "name": "SNV_filtering_longcallD_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-58d22dfb2be6916d954eb22e8a545579bf7a7fcfc969ef3a8eb2706b3baad01c"
+  ],
+  "title": "SNV filtering longcallD GRCh38 [0.3.1]",
+  "uuid": "ceb3a4f2-2b2a-4eaa-9246-a7b86e7edae4",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.large",
+          "c5a.large",
+          "c6a.large",
+          "c6i.large",
+          "c7i.large",
+          "c7a.large"
+        ],
+        "run_name": "run_bcftools_PASS_norm_dedup_TNhaplotyper2",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel"
+          ],
+          "description": "PASS filtered and normalized variants from TNhaplotyper2",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_vcf_gz",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_TNhaplotyper2_vcf_gz"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        }
+      ],
+      "name": "bcftools_PASS_norm_dedup@TNhaplotyper2",
+      "workflow": "b1a38ca9-9aea-490b-92c2-643a6b300ac4"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.large",
+          "c5a.large",
+          "c6a.large",
+          "c6i.large",
+          "c7i.large",
+          "c7a.large"
+        ],
+        "run_name": "run_bcftools_PASS_norm_dedup_Strelka2",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel"
+          ],
+          "description": "PASS filtered and normalized variants from Strelka2",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_vcf_gz",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_Strelka2_vcf_gz"
+        },
+        {
+          "argument_name": "additional_files_vcf_gz",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        }
+      ],
+      "name": "bcftools_PASS_norm_dedup_extra_inputs@Strelka2",
+      "workflow": "f52319bb-0c8d-457a-a927-0b4195e82845"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.large",
+          "c5a.large",
+          "c6a.large",
+          "c6i.large",
+          "c7i.large",
+          "c7a.large"
+        ],
+        "run_name": "run_bcftools_PASS_norm_dedup_longcallD",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel",
+            "MEI",
+            "SV"
+          ],
+          "description": "PASS filtered and normalized variants from longcallD",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_vcf_gz",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_longcallD_vcf_gz"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        }
+      ],
+      "name": "bcftools_PASS_norm_dedup@longcallD",
+      "workflow": "b1a38ca9-9aea-490b-92c2-643a6b300ac4"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.large",
+          "c5a.large",
+          "c6a.large",
+          "c6i.large",
+          "c7i.large",
+          "c7a.large"
+        ],
+        "run_name": "run_bcftools_PASS_norm_dedup_RUFUS",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV",
+            "Indel"
+          ],
+          "description": "PASS filtered and normalized variants from RUFUS",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_vcf_gz",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_RUFUS_vcf_gz"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        }
+      ],
+      "name": "bcftools_PASS_norm_dedup@RUFUS",
+      "workflow": "b1a38ca9-9aea-490b-92c2-643a6b300ac4"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 100,
+        "instance_type": [
+          "c6i.4xlarge",
+          "c6a.4xlarge",
+          "m6i.4xlarge",
+          "m6a.4xlarge",
+          "m7i.4xlarge",
+          "m7a.4xlarge"
+        ],
+        "run_name": "run_snvs_step-1_filter_longcallD",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_indels_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "Indel"
+          ],
+          "description": "filtered indel calls from Step-1 filters",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f"
+        },
+        "output_snvs_vcf_gz": {
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV"
+          ],
+          "description": "filtered SNV calls from Step-1 filters",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_TNhaplotyper2_vcf_gz",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "bcftools_PASS_norm_dedup@TNhaplotyper2",
+          "source_argument_name": "output_file_vcf_gz"
+        },
+        {
+          "argument_name": "input_files_Strelka2_vcf_gz",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "bcftools_PASS_norm_dedup_extra_inputs@Strelka2",
+          "source_argument_name": "output_file_vcf_gz"
+        },
+        {
+          "argument_name": "input_files_longcallD_vcf_gz",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "bcftools_PASS_norm_dedup@longcallD",
+          "source_argument_name": "output_file_vcf_gz"
+        },
+        {
+          "argument_name": "input_files_RUFUS_vcf_gz",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "bcftools_PASS_norm_dedup@RUFUS",
+          "source_argument_name": "output_file_vcf_gz"
+        },
+        {
+          "argument_name": "germline_input_file_vcf_gz",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "input_files_bed",
+          "argument_type": "file",
+          "source_argument_name": "input_files_step1_bed"
+        },
+        {
+          "argument_name": "panel_of_normals_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "regions_list_txt",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "vep_database_archive",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "gnomad_vcf_gz",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "sample_name",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "tag_filters",
+          "argument_type": "parameter",
+          "value_type": "array"
+        }
+      ],
+      "name": "snvs_step-1_filter_longcallD",
+      "workflow": "7878df58-c35f-40c8-b2a3-0da8b8fecf01"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 30,
+        "instance_type": [
+          "r5a.4xlarge",
+          "r6a.4xlarge",
+          "r6i.4xlarge",
+          "r7a.4xlarge",
+          "r7i.4xlarge"
+        ],
+        "run_name": "run_snvs_step-2_filter",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "output_file_vcf_gz": {
+          "analysis_details": [
+            "Filtered"
+          ],
+          "data_category": [
+            "Somatic Variant Calls"
+          ],
+          "data_type": [
+            "SNV"
+          ],
+          "description": "filtered SNV calls from Step-2 filters",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "0ddf873f-3e61-4cb7-b48b-a72df5798af8"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_vcf_gz",
+          "argument_type": "file",
+          "source": "snvs_step-1_filter_longcallD",
+          "source_argument_name": "output_snvs_vcf_gz"
+        },
+        {
+          "argument_name": "germline_input_file_vcf_gz",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "input_files_sr_cram_tissue_specific",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "input_files_sr_cram_donor_pooled",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "input_files_pb_cram_donor_pooled",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "input_files_all_long_read_cram_donor_pooled",
+          "argument_type": "file",
+          "mount": true
+        },
+        {
+          "argument_name": "input_files_bed",
+          "argument_type": "file",
+          "source_argument_name": "input_files_step2_bed"
+        },
+        {
+          "argument_name": "input_files_tissue_descriptors_sr",
+          "argument_type": "parameter",
+          "value_type": "array"
+        },
+        {
+          "argument_name": "input_files_tissue_descriptors_all_long_read",
+          "argument_type": "parameter",
+          "value_type": "array"
+        },
+        {
+          "argument_name": "input_files_types_all_long_read",
+          "argument_type": "parameter",
+          "value_type": "array"
+        },
+        {
+          "argument_name": "sex",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "current_tissue",
+          "argument_type": "parameter",
+          "value_type": "string"
+        }
+      ],
+      "name": "snvs_step-2_filter",
+      "workflow": "5d657d85-172d-4ec9-8c68-912d345b8816"
+    }
+  ]
+}

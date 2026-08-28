@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_r1_fastq_gz",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "RNA-seq_bulk_short_reads_GRCh38",
+    "meta_workflow_uuid": "b8bfe1b3-5076-46f9-8c4b-47121b8bfb23",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRZT6E21S",
+    "mwfr_date_created": "2026-05-16T23:36:01.953828+00:00",
+    "mwfr_uuid": "382c019c-4603-4bbc-ad26-9e2710652f20"
+  }
+}

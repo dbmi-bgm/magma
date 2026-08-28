@@ -1,0 +1,87 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "f46371bd-48b6-4b93-9b67-6b34c343c659"
+        },
+        {
+          "dimension": "1",
+          "file": "8f4810c2-d522-4228-bdd1-980cc9007c3b"
+        }
+      ]
+    }
+  ],
+  "meta_workflow": "920ee827-7843-49d6-bba6-dd19f0ceb9fb",
+  "workflow_runs": [
+    {
+      "name": "check_bam_tags",
+      "shard": "0"
+    },
+    {
+      "name": "check_bam_tags",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "check_bam_tags:0"
+      ],
+      "name": "bam_to_fastq_single-end",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "check_bam_tags:1"
+      ],
+      "name": "bam_to_fastq_single-end",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "check_bam_tags:0"
+      ],
+      "name": "nanoplot",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "check_bam_tags:1"
+      ],
+      "name": "nanoplot",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "bam_to_fastq_single-end:0"
+      ],
+      "name": "kraken2",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "bam_to_fastq_single-end:1"
+      ],
+      "name": "kraken2",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "kraken2:0",
+        "nanoplot:0"
+      ],
+      "name": "parse-qc_FASTQ_Quality_Metrics_long_reads",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "kraken2:1",
+        "nanoplot:1"
+      ],
+      "name": "parse-qc_FASTQ_Quality_Metrics_long_reads",
+      "shard": "1"
+    }
+  ]
+}

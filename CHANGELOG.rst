@@ -3,7 +3,7 @@
 Change Log
 ==========
 
-3.17.0
+4.1.0
 =====
 * Add optional `input_structures` argument to `MetaWorkflow.write_run`, so that the shards of a step
   are calculated from the input structure of the input argument the step scatters over. This makes it
@@ -17,6 +17,15 @@ Change Log
   match the given files. The input structure itself is unchanged for all valid input.
 * `mwfr_from_input` calculates the input structure of every scattered input argument and raises a
   `ValueError` if `input_arg` is not one of the given input arguments.
+
+  
+4.0.0
+=====
+* Drop Python 3.8 support. Python 3.9 or higher is now required.
+* Add germline SNV, somatic SNV, and somatic SV (Manta) MetaWorkflowRun creation for SMaHT, with reuse of existing AnalysisRuns.
+* Add CLI commands for the new variant calling flows, mosdepth QC, and a per-donor analysis overview.
+* Allow filtering by MetaWorkflow name and limiting the number of resets when resetting failed MetaWorkflowRuns.
+* Add tests that check generated MetaWorkflowRun structures against expected output.
 
 
 3.16.0

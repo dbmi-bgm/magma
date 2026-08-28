@@ -1,0 +1,163 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "f46371bd-48b6-4b93-9b67-6b34c343c659"
+        },
+        {
+          "dimension": "1",
+          "file": "8f4810c2-d522-4228-bdd1-980cc9007c3b"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATS662NXR6"
+    },
+    {
+      "argument_name": "library_id",
+      "argument_type": "parameter",
+      "value": "SMALITWYOHP9"
+    }
+  ],
+  "meta_workflow": "d1460553-0b3d-41df-b862-af19081974e0",
+  "workflow_runs": [
+    {
+      "name": "pbmm2",
+      "shard": "0"
+    },
+    {
+      "name": "pbmm2",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "pbmm2:0"
+      ],
+      "name": "ReplaceReadGroups",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "pbmm2:1"
+      ],
+      "name": "ReplaceReadGroups",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:0",
+        "ReplaceReadGroups:1"
+      ],
+      "name": "samtools_merge",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_stats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "mosdepth",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_idxstats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_flagstat",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectAlignmentSummaryMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectBaseDistributionByCycle",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_MeanQualityByCycle",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0",
+        "samtools_stats:0"
+      ],
+      "name": "samtools_subsample",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "bamstats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectGcBiasMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "bam_to_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_subsample:0"
+      ],
+      "name": "verifybamid2",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "bam_to_cram:0",
+        "bamstats:0",
+        "mosdepth:0",
+        "picard_CollectAlignmentSummaryMetrics:0",
+        "picard_CollectBaseDistributionByCycle:0",
+        "picard_CollectGcBiasMetrics:0",
+        "picard_MeanQualityByCycle:0",
+        "samtools_flagstat:0",
+        "samtools_idxstats:0",
+        "samtools_stats:0",
+        "verifybamid2:0"
+      ],
+      "name": "parse-qc_BAM_Quality_Metrics_single-end_verifybamid2",
+      "shard": "0"
+    }
+  ]
+}

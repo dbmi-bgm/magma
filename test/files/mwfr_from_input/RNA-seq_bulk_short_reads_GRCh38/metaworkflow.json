@@ -1,0 +1,649 @@
+{
+  "accession": "SMAMWS32EYFW",
+  "aliases": [
+    "smaht:MetaWorkflow-RNA-seq_bulk_short_reads_GRCh38_0.3.1"
+  ],
+  "category": [
+    "Alignment",
+    "Gene Quantification",
+    "Transcript Quantification",
+    "Quality Control"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "date_created": "2025-07-24T19:12:49.413315+00:00",
+  "description": "End-to-end RNA-seq pipeline for bulk paired-end short reads data. Run STAR to align to genome and transcriptome. Run RSEM for isoform and gene quantification. Run RNA-SeQC for gene quantification and to calculate quality metrics. Build hg38/GRCh38",
+  "input": [
+    {
+      "argument_name": "input_files_r1_fastq_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "input_files_r2_fastq_gz",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "genome_reference_star",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "fd26127d-b556-4ae4-84bf-33761cdc1065"
+        }
+      ]
+    },
+    {
+      "argument_name": "genome_reference_rsem",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "da100c91-12d9-445d-a0ee-491df9567dfc"
+        }
+      ]
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "gene_annotation_gtf",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "353dada7-994b-4fb5-9892-90357e910d6e"
+        }
+      ]
+    },
+    {
+      "argument_name": "classifier",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "1a9617ff-1192-432f-8637-90b6d11dec0e"
+        }
+      ]
+    },
+    {
+      "argument_name": "resources_vb2",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cf4dd12e-c997-45cc-969e-e868dacfca97"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "library_id",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "strandedness",
+      "argument_type": "parameter",
+      "value_type": "string"
+    },
+    {
+      "argument_name": "qc_ruleset",
+      "argument_type": "QC ruleset",
+      "value": {
+        "overall_quality_status_rule": "{freemix_alpha} and {rrna_rate} and {library_complexity} and {exonic_intron_ratio} and {mapping_rate} and {genes_detected} and {intergenic_rate} and {chimeric_rate}",
+        "qc_thresholds": [
+          {
+            "id": "freemix_alpha",
+            "metric": "Estimate of Contamination [VerifyBamID2]",
+            "operator": "<",
+            "pass_target": 0.01,
+            "use_as_qc_flag": true,
+            "warn_target": 1.0
+          },
+          {
+            "id": "rrna_rate",
+            "metric": "rRNA Rate [RNA-SeQC]",
+            "operator": "<",
+            "pass_target": 0.01,
+            "use_as_qc_flag": true,
+            "warn_target": 1.0
+          },
+          {
+            "id": "library_complexity",
+            "metric": "Estimated Library Complexity [RNA-SeQC]",
+            "operator": ">",
+            "pass_target": 50000000.0,
+            "use_as_qc_flag": true,
+            "warn_target": 0.0
+          },
+          {
+            "id": "exonic_intron_ratio",
+            "metric": "Exonic/Intron Ratio [RNA-SeQC]",
+            "operator": "<",
+            "pass_target": 5.0,
+            "use_as_qc_flag": true,
+            "warn_target": 1000.0
+          },
+          {
+            "id": "mapping_rate",
+            "metric": "Mapping Rate [RNA-SeQC]",
+            "operator": ">",
+            "pass_target": 0.85,
+            "use_as_qc_flag": true,
+            "warn_target": 0.0
+          },
+          {
+            "id": "genes_detected",
+            "metric": "Genes Detected [RNA-SeQC]",
+            "operator": ">",
+            "pass_target": 25000.0,
+            "use_as_qc_flag": true,
+            "warn_target": 0.0
+          },
+          {
+            "id": "intergenic_rate",
+            "metric": "Intergenic Rate [RNA-SeQC]",
+            "operator": "<",
+            "pass_target": 0.1,
+            "use_as_qc_flag": true,
+            "warn_target": 1.0
+          },
+          {
+            "id": "chimeric_rate",
+            "metric": "Percentage of Chimeric Reads [RNA-SeQC]",
+            "operator": "<",
+            "pass_target": 1.0,
+            "use_as_qc_flag": true,
+            "warn_target": 100.0
+          }
+        ]
+      }
+    }
+  ],
+  "last_modified": {
+    "date_modified": "2026-08-04T20:44:06.805189+00:00",
+    "modified_by": "0d565156-00db-4948-82fe-021d151a5daf"
+  },
+  "name": "RNA-seq_bulk_short_reads_GRCh38",
+  "schema_version": "2",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "submitted_by": "f9524d43-01b5-4b71-94c6-32d2d09c2222",
+  "tags": [
+    "DEPLOY_HASH-8f53b6d5e3fa84934de97813c451180484162951312930b2ebcd4e7061e61331"
+  ],
+  "title": "RNA-seq bulk short reads GRCh38 [0.3.1]",
+  "uuid": "b8bfe1b3-5076-46f9-8c4b-47121b8bfb23",
+  "version": "0.3.1",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 300,
+        "instance_type": [
+          "m5.4xlarge",
+          "m5a.4xlarge",
+          "m6i.4xlarge",
+          "m6a.4xlarge",
+          "m7i.4xlarge",
+          "m7a.4xlarge"
+        ],
+        "run_name": "run_sentieon_STAR_sort",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "STAR genome output BAM",
+          "s3_lifecycle_category": "no_storage"
+        },
+        "output_tar_gz": {
+          "data_category": [
+            "Sequencing Reads",
+            "RNA Quantification"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "STAR auxiliary output"
+        },
+        "output_transcriptome_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "STAR transcriptome output BAM",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_r1_fastq_gz",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "input_files_r2_fastq_gz",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "genome_reference_star",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "sample_name",
+          "argument_type": "parameter",
+          "value_type": "string"
+        },
+        {
+          "argument_name": "library_id",
+          "argument_type": "parameter",
+          "value_type": "string"
+        }
+      ],
+      "name": "sentieon_STAR_sort",
+      "workflow": "b0422cd4-2363-4f66-adf3-5b177d4315ca"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "5x",
+        "instance_type": [
+          "r5.4xlarge",
+          "r5n.4xlarge",
+          "r5a.4xlarge",
+          "r6i.4xlarge",
+          "r6a.4xlarge",
+          "r7i.4xlarge",
+          "r7a.4xlarge"
+        ],
+        "run_name": "run_sentieon_Dedup",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "alignment_details": [
+            "Sorted"
+          ],
+          "annotation": [
+            "smaht:ReferenceFile-gencode_v47"
+          ],
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "STAR genome output BAM (Dedup)",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "c88bceb3-6c69-4021-9530-6e7464a0b6bc"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "sentieon_STAR_sort",
+          "source_argument_name": "output_file_bam"
+        }
+      ],
+      "name": "sentieon_Dedup",
+      "workflow": "16b30e34-dd9d-4519-9e6a-8ea5ee53ce19"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "8x",
+        "instance_type": [
+          "m5.4xlarge",
+          "m5a.4xlarge",
+          "m6i.4xlarge",
+          "m6a.4xlarge",
+          "m7i.4xlarge",
+          "m7a.4xlarge"
+        ],
+        "run_name": "run_RSEM",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_genes_tsv": {
+          "annotation": [
+            "smaht:ReferenceFile-gencode_v47"
+          ],
+          "data_category": [
+            "RNA Quantification"
+          ],
+          "data_type": [
+            "Gene Expression"
+          ],
+          "description": "RSEM gene quantification",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "b5c512cb-689c-420c-979a-92588abd6e85"
+          ]
+        },
+        "output_isoforms_tsv": {
+          "annotation": [
+            "smaht:ReferenceFile-gencode_v47"
+          ],
+          "data_category": [
+            "RNA Quantification"
+          ],
+          "data_type": [
+            "Transcript Expression"
+          ],
+          "description": "RSEM isoform quantification",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "b5c512cb-689c-420c-979a-92588abd6e85"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_transcriptome_bam",
+          "argument_type": "file",
+          "source": "sentieon_STAR_sort",
+          "source_argument_name": "output_transcriptome_bam"
+        },
+        {
+          "argument_name": "genome_reference_rsem",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "strandedness",
+          "argument_type": "parameter",
+          "value_type": "string"
+        }
+      ],
+      "name": "RSEM",
+      "workflow": "13a1bbaa-162a-4d74-8dd1-5816437bc11f"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5.4xlarge",
+          "m5a.4xlarge",
+          "m6i.4xlarge",
+          "m6a.4xlarge",
+          "m7i.4xlarge",
+          "m7a.4xlarge"
+        ],
+        "run_name": "run_RNA-SeQC",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_gene_tpm_tsv": {
+          "data_category": [
+            "RNA Quantification"
+          ],
+          "data_type": [
+            "Gene Expression"
+          ],
+          "description": "RNA-SeQC gene quantification",
+          "s3_lifecycle_category": "no_storage"
+        },
+        "output_tar_gz": {
+          "annotation": [
+            "smaht:ReferenceFile-gencode_v47"
+          ],
+          "data_category": [
+            "RNA Quantification",
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "RNA-SeQC auxiliary output",
+          "output_status": "Final Output",
+          "reference_genome": "e89937e6-80d3-4605-8dea-4a74c7981a9f",
+          "software": [
+            "621c74d6-9f20-4946-a41f-3b161ec30aa5"
+          ]
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "sentieon_Dedup",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "gene_annotation_gtf",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "strandedness",
+          "argument_type": "parameter",
+          "value_type": "string"
+        }
+      ],
+      "name": "RNA-SeQC",
+      "workflow": "727da34c-fa1b-44d0-9099-9cbaebac23b0"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "t3.large"
+        ],
+        "run_name": "run_collect_rnaseqc_metrics",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_json": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "RNA-SeQC metrics summary JSON"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_tar_gz",
+          "argument_type": "file",
+          "source": "RNA-SeQC",
+          "source_argument_name": "output_tar_gz"
+        }
+      ],
+      "name": "collect_rnaseqc_metrics",
+      "workflow": "cca510d2-1d7b-44e6-bb17-c6cae12c6bc1"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "t3.large"
+        ],
+        "run_name": "run_tissue_classifier",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "tissue classifier output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "rnaseqc_output",
+          "argument_type": "file",
+          "source": "RNA-SeQC",
+          "source_argument_name": "output_gene_tpm_tsv"
+        },
+        {
+          "argument_name": "classifier",
+          "argument_type": "file"
+        }
+      ],
+      "name": "tissue_classifier",
+      "workflow": "70871498-6238-44fe-8d8b-925db5998763"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "m5a.large",
+          "m5.large",
+          "m6i.large",
+          "m6a.large",
+          "m7i.large",
+          "m7a.large"
+        ],
+        "run_name": "run_verifybamid2",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_txt": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "VerifyBamID2 output TXT"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "source": "sentieon_Dedup",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "resources_vb2",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "nthreads",
+          "argument_type": "parameter",
+          "value": 2,
+          "value_type": "integer"
+        }
+      ],
+      "name": "verifybamid2",
+      "workflow": "79a9d0bb-17d2-4ea9-8e37-064f0ab12e39"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 10,
+        "instance_type": [
+          "c5a.large",
+          "c6a.large",
+          "c7a.large",
+          "m7a.medium"
+        ],
+        "run_name": "run_parse-qc_RNA-SeQC_Quality_Metrics",
+        "spot_instance": false
+      },
+      "custom_pf_fields": {
+        "metrics_zip": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC compressed output"
+        },
+        "qc_values_json": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC output JSON"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "mount": true,
+          "source": "sentieon_Dedup",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "input_rnaseqc_json",
+          "argument_type": "file",
+          "source": "collect_rnaseqc_metrics",
+          "source_argument_name": "output_file_json"
+        },
+        {
+          "argument_name": "input_classifier_txt",
+          "argument_type": "file",
+          "source": "tissue_classifier",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "input_verifybamid2_txt",
+          "argument_type": "file",
+          "source": "verifybamid2",
+          "source_argument_name": "output_file_txt"
+        },
+        {
+          "argument_name": "input_rnaseqc_tar_gz",
+          "argument_type": "file",
+          "source": "RNA-SeQC",
+          "source_argument_name": "output_tar_gz"
+        },
+        {
+          "argument_name": "qc_ruleset",
+          "argument_type": "QC ruleset"
+        }
+      ],
+      "name": "parse-qc_RNA-SeQC_Quality_Metrics",
+      "workflow": "53682a46-fd57-41e0-a2ee-3e6a420f3b39"
+    }
+  ]
+}

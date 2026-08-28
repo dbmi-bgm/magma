@@ -1,0 +1,334 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "74f0416f-b1d3-4858-9951-f2e2385d0124"
+        },
+        {
+          "dimension": "1",
+          "file": "d48f54cf-d5ae-482f-b7d0-775e71dd20be"
+        }
+      ]
+    }
+  ],
+  "meta_workflow": "0e4658eb-cf81-4a75-9254-7f231487cf6d",
+  "workflow_runs": [
+    {
+      "name": "samtools_merge_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "8"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "9"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "10"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "11"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "12"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "13"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "14"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "15"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "16"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "17"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "18"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "19"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "20"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "21"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "22"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "23"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "24"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "25"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "26"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "27"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "28"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "29"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "30"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "31"
+    },
+    {
+      "dependencies": [
+        "samtools_merge_cram:0"
+      ],
+      "name": "strelka2_region",
+      "shard": "32"
+    },
+    {
+      "dependencies": [
+        "strelka2_region:0",
+        "strelka2_region:1",
+        "strelka2_region:2",
+        "strelka2_region:3",
+        "strelka2_region:4",
+        "strelka2_region:5",
+        "strelka2_region:6",
+        "strelka2_region:7",
+        "strelka2_region:8",
+        "strelka2_region:9",
+        "strelka2_region:10",
+        "strelka2_region:11",
+        "strelka2_region:12",
+        "strelka2_region:13",
+        "strelka2_region:14",
+        "strelka2_region:15",
+        "strelka2_region:16",
+        "strelka2_region:17",
+        "strelka2_region:18",
+        "strelka2_region:19",
+        "strelka2_region:20",
+        "strelka2_region:21",
+        "strelka2_region:22",
+        "strelka2_region:23",
+        "strelka2_region:24",
+        "strelka2_region:25",
+        "strelka2_region:26",
+        "strelka2_region:27",
+        "strelka2_region:28",
+        "strelka2_region:29",
+        "strelka2_region:30",
+        "strelka2_region:31",
+        "strelka2_region:32"
+      ],
+      "name": "bcftools_concat@Indel",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "strelka2_region:0",
+        "strelka2_region:1",
+        "strelka2_region:2",
+        "strelka2_region:3",
+        "strelka2_region:4",
+        "strelka2_region:5",
+        "strelka2_region:6",
+        "strelka2_region:7",
+        "strelka2_region:8",
+        "strelka2_region:9",
+        "strelka2_region:10",
+        "strelka2_region:11",
+        "strelka2_region:12",
+        "strelka2_region:13",
+        "strelka2_region:14",
+        "strelka2_region:15",
+        "strelka2_region:16",
+        "strelka2_region:17",
+        "strelka2_region:18",
+        "strelka2_region:19",
+        "strelka2_region:20",
+        "strelka2_region:21",
+        "strelka2_region:22",
+        "strelka2_region:23",
+        "strelka2_region:24",
+        "strelka2_region:25",
+        "strelka2_region:26",
+        "strelka2_region:27",
+        "strelka2_region:28",
+        "strelka2_region:29",
+        "strelka2_region:30",
+        "strelka2_region:31",
+        "strelka2_region:32"
+      ],
+      "name": "bcftools_concat@SNV",
+      "shard": "0"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ from dcicutils import ff_utils
 import pprint
 
 from .create_metawfr import MWF_NAME_CRAM_TO_FASTQ_PAIRED_END
-from .reset_metawfr import reset_failed, reset_all
+from .reset_metawfr import reset_failed, reset_all, reset_status
 
 from magma_smaht.utils import (
     get_file_set,
@@ -34,18 +34,13 @@ from magma_smaht.constants import (
     FILE_SETS,
     CONSORTIA,
     SUBMISSION_CENTERS,
-    META_WORFLOW_RUN,
+    META_WORKFLOW_RUN,
     DESCRIPTION,
     TAGS,
     STATUS,
     DELETED,
-    RELEASED,
-    OPEN,
-    OPEN_NETWORK,
-    OPEN_EARLY,
-    PROTECTED,
-    PROTECTED_NETWORK,
-    PROTECTED_EARLY,
+    RELEASED_STATUSES,
+    RELEASED_STATUSES_SEARCH_FILTER,
     FAILED_JOBS,
 )
 
@@ -56,7 +51,61 @@ WF_BAM_TO_FASTQ_PAIRED_END = "bam_to_fastq_paired-end"
 
 SUPPORTED_MWF = [MWF_NAME_CRAM_TO_FASTQ_PAIRED_END, WF_BAM_TO_FASTQ_PAIRED_END]
 
-RELEASED_STATUSES = [RELEASED, OPEN, OPEN_NETWORK, OPEN_EARLY, PROTECTED, PROTECTED_NETWORK, PROTECTED_EARLY]
+
+def analysis_overview(donor_id: str, smaht_key: dict):
+    """Print an analysis overview for a given donor.
+
+    Args:
+        donor_id (str): Donor external ID
+    """
+
+    donor_search = f"/search/?type=Donor&external_id={donor_id}"
+    donor_result = ff_utils.search_metadata(donor_search, key=smaht_key)
+    if not donor_result:
+        print(f"ERROR: Donor with external_id {donor_id} not found.")
+        return
+    donor = donor_result[0]
+    print(f"\nAnalysis overview for donor {donor['display_title']} ({donor[ACCESSION]}):\n")
+
+    # Get all tissues for the donor
+    tissue_search = f"/search/?type=Tissue&donor.uuid={donor[UUID]}"
+    tissues = ff_utils.search_metadata(tissue_search, key=smaht_key)
+
+    def filter_files_for_sequencer(files, sequencer_name):
+        return [
+            file for file in files
+            if any(
+                file_set.get('sequencing', {}).get('sequencer', {}).get('display_title') == sequencer_name
+                for file_set in file.get('file_sets', [])
+            )
+        ]
+
+    for tissue in tissues:
+        
+        # Get all filesets for the tissue
+        files_search = f"/search/?type=File&sample_sources.uuid={tissue[UUID]}{RELEASED_STATUSES_SEARCH_FILTER}&file_sets.libraries.assay.display_title=WGS&file_sets.libraries.assay.display_title=Fiber-seq&file_sets.libraries.assay.display_title=Ultra-Long+WGS&dataset%21=No+value"
+        files = ff_utils.search_metadata(files_search, key=smaht_key)
+        # Filter files by assays display_title
+        
+        pacbio_files = filter_files_for_sequencer(files, "PacBio Revio")
+        ont_files = filter_files_for_sequencer(files, "ONT PromethION 24")
+        illumina_files = filter_files_for_sequencer(files, "Illumina NovaSeq X Plus")
+
+        if illumina_files or pacbio_files or ont_files:
+            print(f"\nTissue: {tissue['display_title']} ({tissue[ACCESSION]} - {tissue['tissue_type']})")
+            print(f"  Illumina files: {len(illumina_files)}, PacBio files: {len(pacbio_files)}, ONT files: {len(ont_files)}")
+            #print(f"{donor['display_title']}\t{donor[ACCESSION]}\tNo\t{tissue['display_title']}\t{tissue['tissue_type']}\t{tissue[ACCESSION]}")
+        else:
+            continue
+
+        analysis_search = f"/search/?type=AnalysisRun&donors.uuid={donor[UUID]}&tissues.uuid={tissue[UUID]}"
+        analysis_runs = ff_utils.search_metadata(analysis_search, key=smaht_key)
+        analysis_str = ok_green_text("Analysis")
+        for analysis_run in analysis_runs:
+            num_mwfrs = len(analysis_run["meta_workflow_runs"])
+            print(f"  {analysis_str}: {analysis_run['analysis_type']} ({analysis_run[ACCESSION]}) - MWFRs: {num_mwfrs}")
+        
+    return
 
 
 def associate_conversion_output_with_fileset(
@@ -157,13 +206,19 @@ def reset_mwfrs(mwfr_uuids: list, smaht_key: dict):
         reset_all(id, smaht_key)
 
 
-def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5 : bool):
+def reset_status_mwfr(mwfr_uuid: str, steps: list, status: str, smaht_key: dict):
+    print(f"\nResetting status of steps {','.join(steps)} in MetaWorkflowRun {mwfr_uuid} with status {status}")
+    reset_status(mwfr_uuid, status, steps, smaht_key)
 
+
+def reset_all_failed_mwfrs(smaht_key: dict, ignore_md5: bool, limit: int, mwf_name: str = None):
     url = (
-        "/search/?final_status=failed&type=MetaWorkflowRun&limit=100"
+        f"/search/?final_status=failed&type=MetaWorkflowRun&limit={limit}"
         if not ignore_md5
-        else "/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5"
+        else f"/search/?final_status=failed&type=MetaWorkflowRun&meta_workflow.name%21=md5&limit={limit}"
     )
+    if mwf_name:
+        url += f"&meta_workflow.name={mwf_name}"
     results = ff_utils.search_metadata(url, key=smaht_key)
     for item in results:
         print(f"Reset MetaWorkflowRun {item['uuid']}")
@@ -237,7 +292,7 @@ def rerun_mwfr(
     mwfr[DESCRIPTION] = f"Rerun of MetaWorkflow {mwfr_old_raw[ACCESSION]}"
     # mwfr["final_status"] = "stopped"
 
-    post_response = ff_utils.post_metadata(mwfr, META_WORFLOW_RUN, smaht_key)
+    post_response = ff_utils.post_metadata(mwfr, META_WORKFLOW_RUN, smaht_key)
     mwfr_accession = post_response["@graph"][0]["accession"]
     print(f"Posted MetaWorkflowRun {mwfr_accession}.")
 
@@ -435,9 +490,9 @@ def sample_identity_check_status(num_files: int, smaht_key: dict):
         "&sequencing_center.display_title=BROAD+GCC"
         "&sequencing_center.display_title=NYGC+GCC"
         "&sequencing_center.display_title=BCM+GCC"
+        #"&sequencing_center.display_title=MAYO TTD"
         "&status=uploaded&status=released"
-        "&status=open&status=open-network&status=open-early"
-        "&status=protected&status=protected-network&status=protected-early"
+        f"{RELEASED_STATUSES_SEARCH_FILTER}"
         "&file_format.display_title=bam"
         "&file_format.display_title=cram"
         "&output_status=Final Output"
@@ -661,6 +716,8 @@ def purge_meta_workflow_run(
 
     workflow_runs = mwfr_item.get("workflow_runs", [])
     for wfr in workflow_runs:
+        if not wfr.get("workflow_run"):
+            continue
         wfr_display_title = wfr["workflow_run"][DISPLAY_TITLE]
         wfr_uuid = wfr["workflow_run"][UUID]
         print(f"   - WorkflowRun {wfr_display_title}")
@@ -703,6 +760,8 @@ def print_error_and_exit(error):
 
 def set_property(uuid: str, prop_key: str, prop_value: Any, smaht_key: Dict[str, Any]):
     """ "Sets a property prop_key to value prop_value for item with uuid."""
+    if "," in prop_value:
+        prop_value = [v.strip() for v in prop_value.split(",")]
     patch_body = {prop_key: prop_value}
     try:
         ff_utils.patch_metadata(patch_body, obj_id=uuid, key=smaht_key)

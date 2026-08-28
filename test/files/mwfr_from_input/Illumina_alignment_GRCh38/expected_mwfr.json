@@ -1,0 +1,1366 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_r1_fastq_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "5cf7f3b3-0712-4868-ac3e-2457cddaedb8"
+        },
+        {
+          "dimension": "1",
+          "file": "bdfdfec6-6992-4d16-8f5a-bfaf5a63a35a"
+        },
+        {
+          "dimension": "2",
+          "file": "42e146c7-0902-4458-9afd-08c1335c96a3"
+        },
+        {
+          "dimension": "3",
+          "file": "580bbd13-27c9-4f26-b405-a7807f599f95"
+        },
+        {
+          "dimension": "4",
+          "file": "381f0a14-ae03-4192-945e-9eb5d9700af0"
+        },
+        {
+          "dimension": "5",
+          "file": "98633342-27bc-408f-a22e-23998ef370da"
+        },
+        {
+          "dimension": "6",
+          "file": "7e6b916d-d178-4b4d-b463-c0332f8bce54"
+        },
+        {
+          "dimension": "7",
+          "file": "e38cf0c7-1ef1-4b01-81c2-3a6a8562ab30"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_r2_fastq_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "c25044b8-4383-49eb-88bd-93f6865ee4cb"
+        },
+        {
+          "dimension": "1",
+          "file": "885ee9b6-48a9-42bf-83e5-3a6c9f9add2d"
+        },
+        {
+          "dimension": "2",
+          "file": "312bea55-e4f8-4787-a0dd-777509620c4b"
+        },
+        {
+          "dimension": "3",
+          "file": "554f5ad9-04cf-48d7-973c-6a97d0cde59a"
+        },
+        {
+          "dimension": "4",
+          "file": "4b953145-8d50-45f8-8b88-b66299a57fc4"
+        },
+        {
+          "dimension": "5",
+          "file": "15eddfb6-a4f8-4231-b0c2-ca86f82ee77a"
+        },
+        {
+          "dimension": "6",
+          "file": "f7cdd6d6-291a-4e28-915c-3e343046ddc0"
+        },
+        {
+          "dimension": "7",
+          "file": "4a787382-82e0-435d-99b4-5441749c156d"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATS9TR9ODR"
+    },
+    {
+      "argument_name": "library_id",
+      "argument_type": "parameter",
+      "value": "SMALIET7ET9T"
+    },
+    {
+      "argument_name": "length_required",
+      "argument_type": "parameter",
+      "value": 151
+    }
+  ],
+  "meta_workflow": "6c73a14e-dfd4-4856-b305-689b4ea15700",
+  "workflow_runs": [
+    {
+      "name": "fastp_paired-end",
+      "shard": "0"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "1"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "2"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "3"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "4"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "5"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "6"
+    },
+    {
+      "name": "fastp_paired-end",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:0"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:1"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:2"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:3"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:4"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:5"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:6"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "fastp_paired-end:7"
+      ],
+      "name": "sentieon_bwa-mem_sort",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:0"
+      ],
+      "name": "AddReadGroups",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:1"
+      ],
+      "name": "AddReadGroups",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:2"
+      ],
+      "name": "AddReadGroups",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:3"
+      ],
+      "name": "AddReadGroups",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:4"
+      ],
+      "name": "AddReadGroups",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:5"
+      ],
+      "name": "AddReadGroups",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:6"
+      ],
+      "name": "AddReadGroups",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "sentieon_bwa-mem_sort:7"
+      ],
+      "name": "AddReadGroups",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "8"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "9"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "10"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "11"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "12"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "13"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "14"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7"
+      ],
+      "name": "sentieon_LocusCollector",
+      "shard": "15"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "8"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "9"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "10"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "11"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "12"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "13"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "14"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "AddReadGroups:1",
+        "AddReadGroups:2",
+        "AddReadGroups:3",
+        "AddReadGroups:4",
+        "AddReadGroups:5",
+        "AddReadGroups:6",
+        "AddReadGroups:7",
+        "sentieon_LocusCollector:0",
+        "sentieon_LocusCollector:1",
+        "sentieon_LocusCollector:2",
+        "sentieon_LocusCollector:3",
+        "sentieon_LocusCollector:4",
+        "sentieon_LocusCollector:5",
+        "sentieon_LocusCollector:6",
+        "sentieon_LocusCollector:7",
+        "sentieon_LocusCollector:8",
+        "sentieon_LocusCollector:9",
+        "sentieon_LocusCollector:10",
+        "sentieon_LocusCollector:11",
+        "sentieon_LocusCollector:12",
+        "sentieon_LocusCollector:13",
+        "sentieon_LocusCollector:14",
+        "sentieon_LocusCollector:15"
+      ],
+      "name": "sentieon_LocusCollector_apply",
+      "shard": "15"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:0",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:1",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:2",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:3",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:4",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:5",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:6",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "AddReadGroups:7",
+        "sentieon_LocusCollector_apply:0",
+        "sentieon_LocusCollector_apply:1",
+        "sentieon_LocusCollector_apply:2",
+        "sentieon_LocusCollector_apply:3",
+        "sentieon_LocusCollector_apply:4",
+        "sentieon_LocusCollector_apply:5",
+        "sentieon_LocusCollector_apply:6",
+        "sentieon_LocusCollector_apply:7",
+        "sentieon_LocusCollector_apply:8",
+        "sentieon_LocusCollector_apply:9",
+        "sentieon_LocusCollector_apply:10",
+        "sentieon_LocusCollector_apply:11",
+        "sentieon_LocusCollector_apply:12",
+        "sentieon_LocusCollector_apply:13",
+        "sentieon_LocusCollector_apply:14",
+        "sentieon_LocusCollector_apply:15"
+      ],
+      "name": "shards_to_ReadGroups",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:0"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:1"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:2"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:3"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:4"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:5"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:6"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "shards_to_ReadGroups:7"
+      ],
+      "name": "sentieon_Realigner",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:0"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:1"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:2"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:3"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:4"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:5"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:6"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "sentieon_Realigner:7"
+      ],
+      "name": "sentieon_QualCal",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "sentieon_QualCal:0",
+        "sentieon_QualCal:1",
+        "sentieon_QualCal:2",
+        "sentieon_QualCal:3",
+        "sentieon_QualCal:4",
+        "sentieon_QualCal:5",
+        "sentieon_QualCal:6",
+        "sentieon_QualCal:7"
+      ],
+      "name": "samtools_merge",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_stats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectGcBiasMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectBaseDistributionByCycle",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "bam_to_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "bamstats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectWgsMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_MeanQualityByCycle",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "verifybamid2",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectInsertSizeMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "mosdepth",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectAlignmentSummaryMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_flagstat",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_idxstats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "bam_to_cram:0",
+        "bamstats:0",
+        "mosdepth:0",
+        "picard_CollectAlignmentSummaryMetrics:0",
+        "picard_CollectBaseDistributionByCycle:0",
+        "picard_CollectGcBiasMetrics:0",
+        "picard_CollectInsertSizeMetrics:0",
+        "picard_CollectWgsMetrics:0",
+        "picard_MeanQualityByCycle:0",
+        "samtools_flagstat:0",
+        "samtools_idxstats:0",
+        "samtools_stats:0",
+        "verifybamid2:0"
+      ],
+      "name": "parse-qc_BAM_Quality_Metrics_paired-end",
+      "shard": "0"
+    }
+  ]
+}

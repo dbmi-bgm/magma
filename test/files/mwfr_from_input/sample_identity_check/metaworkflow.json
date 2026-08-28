@@ -1,0 +1,240 @@
+{
+  "accession": "SMAMWKH9MJSU",
+  "aliases": [
+    "smaht:MetaWorkflow-sample_identity_check_0.2.0"
+  ],
+  "category": [
+    "Quality Control"
+  ],
+  "consortia": [
+    "358aed10-9b9d-4e26-ab84-4bd162da182b"
+  ],
+  "description": "Run Somalier to verify that a specified set of samples originates from the same individual. Accept a list of files in BAM format. Support files from different sequencing technologies for combined analysis",
+  "input": [
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "dimensionality": 1
+    },
+    {
+      "argument_name": "sample_names",
+      "argument_type": "parameter",
+      "value_type": "array"
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "cca516c0-3931-4fbe-bc2c-c26fe9ba23fa"
+        }
+      ]
+    },
+    {
+      "argument_name": "variant_sites",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "f056642f-33d5-46e0-a05d-7faea75bfc29"
+        }
+      ]
+    },
+    {
+      "argument_name": "qc_ruleset",
+      "argument_type": "QC ruleset",
+      "value": {
+        "overall_quality_status_rule": "{identity_check}",
+        "qc_thresholds": [
+          {
+            "id": "identity_check",
+            "metric": "Identity Check [Somalier]",
+            "operator": "==",
+            "pass_target": "PASSED",
+            "use_as_qc_flag": true,
+            "warn_target": "PASSED"
+          }
+        ]
+      }
+    }
+  ],
+  "name": "sample_identity_check",
+  "status": "in review",
+  "submission_centers": [
+    "9626d82e-8110-4213-ac75-0a50adf890ff"
+  ],
+  "title": "sample identity check [0.2.0]",
+  "uuid": "2f7456ca-8cbe-42ae-bdb2-51d971cae77c",
+  "version": "0.2.0",
+  "workflows": [
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "2.5x",
+        "instance_type": [
+          "c5.xlarge",
+          "c5a.xlarge",
+          "m5.xlarge",
+          "m5a.xlarge",
+          "m6i.xlarge",
+          "m6a.xlarge",
+          "m7i.xlarge",
+          "m7a.xlarge"
+        ],
+        "run_name": "run_ReplaceReadGroups",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_bam": {
+          "data_category": [
+            "Sequencing Reads"
+          ],
+          "data_type": [
+            "Aligned Reads"
+          ],
+          "description": "ReplaceReadGroups output BAM",
+          "s3_lifecycle_category": "no_storage"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "scatter": 1,
+          "source_argument_name": "input_files_bam"
+        },
+        {
+          "argument_name": "sample_name",
+          "argument_type": "parameter",
+          "input_dimension": 1,
+          "source_argument_name": "sample_names",
+          "value_type": "string"
+        }
+      ],
+      "name": "ReplaceReadGroups",
+      "workflow": "1047eab1-90b1-418e-b2c6-04e31faa42f4"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": "1.1x",
+        "instance_type": [
+          "t3.xlarge"
+        ],
+        "run_name": "run_somalier_extract",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_file_somalier": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "Somalier extract output SOMALIER"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_file_bam",
+          "argument_type": "file",
+          "mount": true,
+          "source": "ReplaceReadGroups",
+          "source_argument_name": "output_file_bam"
+        },
+        {
+          "argument_name": "genome_reference_fasta",
+          "argument_type": "file"
+        },
+        {
+          "argument_name": "variant_sites",
+          "argument_type": "file"
+        }
+      ],
+      "name": "somalier_extract",
+      "workflow": "d6eaa2e8-78c1-44b2-8206-5ab35b7deeac"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 10,
+        "instance_type": [
+          "t3.small"
+        ],
+        "run_name": "run_somalier_relate",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "output_pairs_tsv": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "Somalier relate output TSV"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_files_somalier",
+          "argument_type": "file",
+          "gather": 1,
+          "source": "somalier_extract",
+          "source_argument_name": "output_file_somalier"
+        }
+      ],
+      "name": "somalier_relate",
+      "workflow": "f16c0500-bba6-4cca-ab9a-ff22c96822f4"
+    },
+    {
+      "config": {
+        "behavior_on_capacity_limit": "wait_and_retry",
+        "ebs_optimized": true,
+        "ebs_size": 10,
+        "instance_type": [
+          "t3.small"
+        ],
+        "run_name": "run_parse-qc_Relatedness_Quality_Metrics",
+        "spot_instance": true
+      },
+      "custom_pf_fields": {
+        "metrics_zip": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC compressed output"
+        },
+        "qc_values_json": {
+          "data_category": [
+            "Quality Control"
+          ],
+          "data_type": [
+            "Statistics"
+          ],
+          "description": "QC output JSON"
+        }
+      },
+      "input": [
+        {
+          "argument_name": "input_pairs_tsv",
+          "argument_type": "file",
+          "source": "somalier_relate",
+          "source_argument_name": "output_pairs_tsv"
+        },
+        {
+          "argument_name": "qc_ruleset",
+          "argument_type": "QC ruleset"
+        }
+      ],
+      "name": "parse-qc_Relatedness_Quality_Metrics",
+      "workflow": "9e68930b-35e2-4ca1-bf51-1d184b4b07fb"
+    }
+  ]
+}

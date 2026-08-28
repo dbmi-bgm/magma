@@ -1,0 +1,190 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_fastq_gz",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "d20c4fe3-b8a5-47b2-b7d0-56386aedd464"
+        },
+        {
+          "dimension": "1",
+          "file": "8d44b907-91bd-42c1-bf0e-983d74d39784"
+        }
+      ]
+    },
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "6468e3be-69ef-4031-9925-2cfa9f0cbf3f"
+        },
+        {
+          "dimension": "1",
+          "file": "9ec8bb99-9cd1-4b14-a44c-4d677b3e9a11"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATSGHTTOPE"
+    },
+    {
+      "argument_name": "library_id",
+      "argument_type": "parameter",
+      "value": "SMALIPGUQB48"
+    }
+  ],
+  "meta_workflow": "1903b722-6649-40ec-83f5-e3cdced05d44",
+  "workflow_runs": [
+    {
+      "name": "sentieon_minimap2_sort",
+      "shard": "0"
+    },
+    {
+      "name": "sentieon_minimap2_sort",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "sentieon_minimap2_sort:0"
+      ],
+      "name": "methylink",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "sentieon_minimap2_sort:1"
+      ],
+      "name": "methylink",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "methylink:0"
+      ],
+      "name": "ImportReadGroups_methylink",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "methylink:1"
+      ],
+      "name": "ImportReadGroups_methylink",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "ImportReadGroups_methylink:0",
+        "ImportReadGroups_methylink:1"
+      ],
+      "name": "samtools_merge",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectBaseDistributionByCycle",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "mosdepth",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_MeanQualityByCycle",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_idxstats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_stats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectGcBiasMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "picard_CollectAlignmentSummaryMetrics",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "bam_to_cram",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_mpileup_regions",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "samtools_flagstat",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_merge:0"
+      ],
+      "name": "bamstats",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "samtools_mpileup_regions:0"
+      ],
+      "name": "verifybamid2_pileup",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "bam_to_cram:0",
+        "bamstats:0",
+        "mosdepth:0",
+        "picard_CollectAlignmentSummaryMetrics:0",
+        "picard_CollectBaseDistributionByCycle:0",
+        "picard_CollectGcBiasMetrics:0",
+        "picard_MeanQualityByCycle:0",
+        "samtools_flagstat:0",
+        "samtools_idxstats:0",
+        "samtools_stats:0",
+        "verifybamid2_pileup:0"
+      ],
+      "name": "parse-qc_BAM_Quality_Metrics_single-end_verifybamid2",
+      "shard": "0"
+    }
+  ]
+}

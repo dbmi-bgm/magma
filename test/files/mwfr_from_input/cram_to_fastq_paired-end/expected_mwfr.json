@@ -1,0 +1,30 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "4d0a51bf-3347-4b75-a745-526842dc82c3"
+        }
+      ]
+    },
+    {
+      "argument_name": "genome_reference_fasta",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "f1bd67d5-b2d5-4d52-bb67-0d2450957fc9"
+        }
+      ]
+    }
+  ],
+  "meta_workflow": "d1131c84-5ef7-42cc-a954-60422c6d7efd",
+  "workflow_runs": [
+    {
+      "name": "cram_to_fastq_paired-end",
+      "shard": "0"
+    }
+  ]
+}

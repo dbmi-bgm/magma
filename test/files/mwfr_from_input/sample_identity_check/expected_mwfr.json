@@ -1,0 +1,185 @@
+{
+  "input": [
+    {
+      "argument_name": "input_files_bam",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "f40336da-2e36-4c8a-9cd9-d2330d476388"
+        },
+        {
+          "dimension": "1",
+          "file": "23f7c69d-413d-4877-a7b1-0ac6bce48ecc"
+        },
+        {
+          "dimension": "2",
+          "file": "d0a6aea1-0ee1-47d6-82b6-bf1a6ab3a081"
+        },
+        {
+          "dimension": "3",
+          "file": "ed36dd59-4704-4041-aa88-5af4d293b78f"
+        },
+        {
+          "dimension": "4",
+          "file": "3fb5e0b4-8d8e-4227-9d44-2fb1bddfd23d"
+        },
+        {
+          "dimension": "5",
+          "file": "bed9a3de-5c07-4bd1-943e-d140abf0f828"
+        },
+        {
+          "dimension": "6",
+          "file": "4c43e972-cfa6-4d04-b012-84a1d08f394a"
+        },
+        {
+          "dimension": "7",
+          "file": "d3757183-d3d0-42b9-a3b5-b9bf04157e57"
+        },
+        {
+          "dimension": "8",
+          "file": "4160d3ff-7af6-4c53-8f86-2d5346eadefe"
+        }
+      ]
+    },
+    {
+      "argument_name": "sample_names",
+      "argument_type": "parameter",
+      "value": [
+        "SMAFIJJFO8TK",
+        "SMAFIGKEKZUJ",
+        "SMAFI5CKEQWJ",
+        "SMAFIMBXH8YW",
+        "SMAFICKPYQVG",
+        "SMAFI6JCSIYT",
+        "SMAFI7MWVNIS",
+        "SMAFIBZP86R2",
+        "SMAFI3SFXXLE"
+      ]
+    }
+  ],
+  "meta_workflow": "2f7456ca-8cbe-42ae-bdb2-51d971cae77c",
+  "workflow_runs": [
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "0"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "1"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "2"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "3"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "4"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "5"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "6"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "7"
+    },
+    {
+      "name": "ReplaceReadGroups",
+      "shard": "8"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:0"
+      ],
+      "name": "somalier_extract",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:1"
+      ],
+      "name": "somalier_extract",
+      "shard": "1"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:2"
+      ],
+      "name": "somalier_extract",
+      "shard": "2"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:3"
+      ],
+      "name": "somalier_extract",
+      "shard": "3"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:4"
+      ],
+      "name": "somalier_extract",
+      "shard": "4"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:5"
+      ],
+      "name": "somalier_extract",
+      "shard": "5"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:6"
+      ],
+      "name": "somalier_extract",
+      "shard": "6"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:7"
+      ],
+      "name": "somalier_extract",
+      "shard": "7"
+    },
+    {
+      "dependencies": [
+        "ReplaceReadGroups:8"
+      ],
+      "name": "somalier_extract",
+      "shard": "8"
+    },
+    {
+      "dependencies": [
+        "somalier_extract:0",
+        "somalier_extract:1",
+        "somalier_extract:2",
+        "somalier_extract:3",
+        "somalier_extract:4",
+        "somalier_extract:5",
+        "somalier_extract:6",
+        "somalier_extract:7",
+        "somalier_extract:8"
+      ],
+      "name": "somalier_relate",
+      "shard": "0"
+    },
+    {
+      "dependencies": [
+        "somalier_relate:0"
+      ],
+      "name": "parse-qc_Relatedness_Quality_Metrics",
+      "shard": "0"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "input": [
+    {
+      "argument_name": "input_file_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "file": "1732f61e-c221-4655-9908-8c2de928865b"
+        }
+      ]
+    },
+    {
+      "argument_name": "additional_input_files_cram",
+      "argument_type": "file",
+      "files": [
+        {
+          "dimension": "0",
+          "file": "da883558-ab20-4657-a424-2a45c24cd621"
+        }
+      ]
+    },
+    {
+      "argument_name": "platform",
+      "argument_type": "parameter",
+      "value": "--hifi"
+    },
+    {
+      "argument_name": "sample_name",
+      "argument_type": "parameter",
+      "value": "SMATIJEDQFOM"
+    }
+  ],
+  "meta_workflow": "cdbfaae7-9ac9-4357-84b7-9030024f75d7",
+  "workflow_runs": [
+    {
+      "name": "longcallD_compress_index",
+      "shard": "0"
+    }
+  ]
+}

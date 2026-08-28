@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_fastq_gz",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "Illumina_FASTQ_quality_metrics",
+    "meta_workflow_uuid": "85b07a59-611c-4c2e-ae58-91069afbecd8",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRRASPRXW",
+    "mwfr_date_created": "2026-08-05T17:55:56.784872+00:00",
+    "mwfr_uuid": "b0f07e22-b2a3-4d36-9243-93d9b5526f6c"
+  }
+}

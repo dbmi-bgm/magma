@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "input_arg": "input_files_cram",
+  "source": {
+    "ambiguous_input_args": [],
+    "env": "data",
+    "meta_workflow_name": "paired-end_short_reads_variant_calling_Delly_GRCh38",
+    "meta_workflow_uuid": "31c66189-bc9e-4cba-86f7-232516b8f2e5",
+    "meta_workflow_version": "0.3.1",
+    "mwfr_accession": "SMAMRVWQRMQF",
+    "mwfr_date_created": "2026-06-03T17:26:08.937902+00:00",
+    "mwfr_uuid": "47d8efb5-9c98-4f6b-aa82-824379143350"
+  }
+}
