@@ -337,6 +337,12 @@ class MetaWorkflow(object):
         if that argument has its own input structure, else the dimensions of the
         input structure with maximum scatter.
 
+        Only the dimensions the step scatters on are considered. An argument can
+        be nested deeper than the step shards on it, that extra nesting is passed
+        to the step within a shard and does not define the shards. Arguments that
+        disagree at or below the scatter dimension do define different shards and
+        cannot be reconciled.
+
         :param step_obj: StepWorkflow[obj] representing a StepWorkflow[json]
         :type step_obj: object
         :param scatter_dimension: Dimension the step is scattered on
@@ -356,6 +362,16 @@ class MetaWorkflow(object):
         step_dimensions, argument_names = [], []
         for argument_name in self._scatter_argument_names(step_obj):
             argument_dimensions = dimensions_by_argument.get(argument_name)
+            if not argument_dimensions:
+                continue
+            # Dimensions deeper than the scatter dimension are extra nesting
+            #   the step never shards on, they must not make two arguments
+            #   that shard the same way look different
+            argument_dimensions = {
+                dimension: argument_dimensions[dimension]
+                for dimension in range(1, scatter_dimension + 1)
+                if dimension in argument_dimensions
+            }
             if argument_dimensions and argument_dimensions not in step_dimensions:
                 step_dimensions.append(argument_dimensions)
                 argument_names.append(argument_name)

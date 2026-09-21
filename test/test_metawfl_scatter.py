@@ -192,6 +192,41 @@ def test_write_run_error_scatter_over_conflicting_arguments():
         )
 
 
+def test_write_run_scatter_over_arguments_nested_past_the_scatter():
+    """Nesting the step never shards on does not make two arguments conflict.
+
+    INPUT_B carries a list per shard rather than a single file, so its structure
+    is 2d where INPUT_A is 1d. Both still shard 3 ways on the 1st dimension,
+    which is the only dimension a scatter of 1 reaches -- the SNV filtering
+    pipelines pair a per-caller vcf with a list of extra vcfs exactly this way.
+    """
+    metawf = metawf_(
+        step_("A", [arg_("INPUT_A", scatter=1), arg_("INPUT_B", scatter=1)]),
+    )
+    assert shards_(
+        metawf,
+        [0, 1, 2],
+        input_structures={"INPUT_A": [0, 1, 2], "INPUT_B": [[0], [0], [0]]},
+    ) == {"A": ["0", "1", "2"]}
+
+
+def test_write_run_error_scatter_over_arguments_conflicting_at_scatter_dimension():
+    """Disagreeing at the scatter dimension still raises, whatever the nesting.
+
+    Companion to the test above: it is the 1st dimension that decides here, and
+    dropping the deeper dimensions from the comparison must not drop this.
+    """
+    metawf = metawf_(
+        step_("A", [arg_("INPUT_A", scatter=1), arg_("INPUT_B", scatter=1)]),
+    )
+    with pytest.raises(ValueError, match="scatters over arguments with different"):
+        shards_(
+            metawf,
+            [0, 1, 2],
+            input_structures={"INPUT_A": [0, 1, 2], "INPUT_B": [[0], [0]]},
+        )
+
+
 def test_write_run_error_shared_consumer_without_gather():
     """A shared downstream step that does not gather cannot combine steps
     that are scattered differently.

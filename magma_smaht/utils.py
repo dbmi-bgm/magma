@@ -29,6 +29,9 @@ from magma_smaht.constants import (
     RNASEQ,
     MWF_NAME_BAM_TO_CRAM,
     ANALYSIS_RUN,
+    ANNOTATED_FILENAME,
+    DISPLAY_TITLE,
+    SEQUENCER_TO_LABEL_MAPPING,
     RELEASED_STATUSES_SEARCH_FILTER,
 )
 
@@ -771,7 +774,7 @@ def get_released_illumina_wgs_files_for_donor(donor_code, key):
         f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS"
-        "&sample_summary.tissues%21=3AC - Fibroblast"
+        #"&sample_summary.tissues%21=3AC - Fibroblast"
         f"&sequencing.sequencer.display_title=Illumina NovaSeq X Plus"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -798,7 +801,7 @@ def get_released_pacbio_wgs_files_for_donor(donor_code, key):
         f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq"
-        f"&sample_summary.tissues%21=3AC - Fibroblast"
+        #f"&sample_summary.tissues%21=3AC - Fibroblast"
         f"&sequencing.sequencer.display_title=PacBio+Revio"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -812,7 +815,7 @@ def get_released_long_read_wgs_files_for_donor(donor_code, key):
         f"{RELEASED_STATUSES_SEARCH_FILTER}"
         f"&donors.display_title={donor_code}"
         f"&assays.display_title=WGS&assays.display_title=Fiber-seq&assays.display_title=Ultra-Long+WGS"
-        f"&sample_summary.tissues%21=3AC - Fibroblast"
+        #f"&sample_summary.tissues%21=3AC - Fibroblast"
         f"&sequencing.sequencer.display_title=PacBio+Revio&sequencing.sequencer.display_title=ONT+PromethION+24"
     )
     return ff_utils.search_metadata(f"/search/{search_filter}", key=key)
@@ -837,6 +840,206 @@ def get_file_coverage(file):
     if not quality_metrics:
         return None
     return quality_metrics[-1].get("coverage")
+
+
+# Fields of a dash separated annotated filename, e.g.
+#   SMHT019-3I-002D4-F78-A001-uwsc-SMAFIV8NKK4D-sentieon_bwamem_...GRCh38.cram
+#   the sample is the donor and the tissue together, i.e. "SMHT019-3I"
+ANNOTATED_FILENAME_SAMPLE_FIELDS = 2
+ANNOTATED_FILENAME_CORE_FIELD = 2
+ANNOTATED_FILENAME_ACCESSION_FIELD = 6
+# The accession is the last field anything reads, so it sets the minimum
+ANNOTATED_FILENAME_MIN_FIELDS = ANNOTATED_FILENAME_ACCESSION_FIELD + 1
+# Some annotated filenames carry this instead of the core. The core is then only
+#   available on the Samples of the file, see `get_core_from_samples`
+ANNOTATED_FILENAME_CORE_XX = "XX"
+
+SAMPLES = "samples"
+EXTERNAL_ID = "external_id"
+
+
+def _annotated_filename_fields(file_item):
+    """Split the annotated filename of a file into its dash separated fields.
+
+    Args:
+        file_item (dict): File item from portal
+
+    Returns:
+        list(str): The dash separated fields of the annotated filename
+
+    Raises:
+        ValueError: If the annotated filename is missing, or has fewer than
+            ANNOTATED_FILENAME_MIN_FIELDS fields
+    """
+    annotated_filename = file_item.get(ANNOTATED_FILENAME) or ""
+    fields = annotated_filename.split("-")
+    if len(fields) < ANNOTATED_FILENAME_MIN_FIELDS:
+        raise ValueError(
+            f"Cannot parse the {ANNOTATED_FILENAME} of file"
+            f" {file_item[ACCESSION]}: {annotated_filename!r} has"
+            f" {len(fields)} dash separated field(s), at least"
+            f" {ANNOTATED_FILENAME_MIN_FIELDS} are expected."
+        )
+    return fields
+
+
+def get_sample_external_ids(file_item, smaht_key):
+    """Get the external id of every Sample of a file.
+
+    Args:
+        file_item (dict): File item from portal
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        list(str): External id per sample, in the order they are listed
+
+    Raises:
+        ValueError: If a sample has no external id
+    """
+    file_accession = file_item.get(ACCESSION)
+    samples = file_item.get(SAMPLES) or []
+    
+    external_ids = []
+    for sample in samples:
+        sample_identifier = sample[UUID]
+        sample_item = get_item_es_cached(sample_identifier, smaht_key) or {}
+
+        external_id = sample_item.get(EXTERNAL_ID)
+        if not external_id:
+            raise ValueError(
+                f"Sample {sample_identifier} of file {file_accession} has no"
+                f" {EXTERNAL_ID}, so the sequencing core cannot be read off it."
+            )
+        external_ids.append(external_id)
+    return external_ids
+
+def get_core_from_samples(file_item, smaht_key):
+    """Get the sequencing core of a file from the TissueSample.
+    """
+    file_accession = file_item[ACCESSION]
+    external_ids = get_sample_external_ids(file_item, smaht_key)
+    
+    cores = []
+    for external_id in external_ids:
+        # The external_id runs `<donor>-<tissue>-<core>`, e.g. "SMHT020-3AC-001X"
+        fields = external_id.split("-")
+        core = fields[2]
+        cores.append(core)
+
+    cores = sorted(set(cores))
+    if len(cores) != 1:
+        raise ValueError(
+            f"Cannot resolve the sequencing core: The associated samples of file {file_accession} have {len(cores)} cores {cores}, expected exactly 1."
+        )
+
+    return cores[0]
+
+
+def get_core_from_annotated_filename(file_item, smaht_key):
+    """Get the sequencing core id of a file, primarily from its annotated filename.
+        In case of a liquid tissue, get it from the TissueSample instead.
+    """
+    core = _annotated_filename_fields(file_item)[ANNOTATED_FILENAME_CORE_FIELD]
+    if core == ANNOTATED_FILENAME_CORE_XX:
+        return get_core_from_samples(file_item, smaht_key)
+    return core
+
+
+def get_sample_core_accession(file_item, smaht_key):
+    """Get the sample, sequencing core and accession of a file.
+
+    Args:
+        file_item (dict): File item from portal
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        tuple(str, str, str): Sample, sequencing core id and accession
+
+    Raises:
+        ValueError: If the annotated filename cannot be parsed, or a placeholder
+            core cannot be resolved
+    """
+    fields = _annotated_filename_fields(file_item)
+    return (
+        "-".join(fields[:ANNOTATED_FILENAME_SAMPLE_FIELDS]),
+        get_core_from_annotated_filename(file_item, smaht_key),
+        fields[ANNOTATED_FILENAME_ACCESSION_FIELD],
+    )
+
+
+def sort_files_by_sample_core_accession(files, smaht_key):
+    """Order files by sample, then sequencing core id, then accession.
+
+    Args:
+        files (list(dict)): File items from portal
+        smaht_key (dict): SMaHT key
+
+    Returns:
+        list(dict): The same files, ordered
+
+    Raises:
+        ValueError: If the core of any file cannot be determined
+    """
+    return sorted(files, key=lambda file: get_sample_core_accession(file, smaht_key))
+
+
+def group_files_by_core(files, smaht_key):
+    """Group files by their sequencing core id.
+
+    :param files: File items
+    :type files: list(dict)
+    :param smaht_key: SMaHT key
+    :type smaht_key: dict
+    :return: Files by core id, in the order the cores are first seen
+    :rtype: dict
+    """
+    grouped_files = {}
+    for file in files:
+        core = get_core_from_annotated_filename(file, smaht_key)
+        grouped_files.setdefault(core, [])
+        grouped_files[core].append(file)
+    return grouped_files
+
+
+def get_tissue_labels(files):
+    """Get the sample source of each file, which is the tissue it belongs to.
+
+    :param files: File items
+    :type files: list(dict)
+    :return: Sample source display title per file
+    :rtype: list(str)
+    """
+    tissue_labels = []
+    for file in files:
+        sample_sources = file.get("sample_sources", [])
+        if len(sample_sources) != 1:
+            raise Exception(
+                f" - File: {file[DISPLAY_TITLE]} has {len(sample_sources)} sample sources, expected 1."
+            )
+        tissue_labels.append(sample_sources[0][DISPLAY_TITLE])
+    return tissue_labels
+
+
+def get_long_read_labels(files):
+    """Get the tissue and sequencing platform of each long read file.
+
+    :param files: Long read file items
+    :type files: list(dict)
+    :return: Sample source display titles and platform labels (PB/ONT), per file
+    :rtype: tuple(list(str), list(str))
+    """
+    tissue_labels = get_tissue_labels(files)
+    sequencer_labels = []
+    for file in files:
+        sequencers = file.get("data_generation_summary", {}).get(
+            "sequencing_platforms", []
+        )
+        if len(sequencers) != 1 or sequencers[0] not in SEQUENCER_TO_LABEL_MAPPING:
+            raise Exception(
+                f" - File: {file[DISPLAY_TITLE]} has unexpected sequencers, expected exactly one of PB or ONT."
+            )
+        sequencer_labels.append(SEQUENCER_TO_LABEL_MAPPING[sequencers[0]])
+    return tissue_labels, sequencer_labels
 
 
 def get_illumina_wgs_filesets_for_tissue(tissue_code, key):
@@ -910,6 +1113,71 @@ def get_variant_calling_output(tissue_code, caller_name, workflow_name, argument
     return final_outputs[0]
 
 
+def get_core_specific_caller_outputs(
+    tissue_code, cores, caller_name, workflow_names, argument_name, smaht_key
+):
+    """Collect the output of a variant caller for each sequencing core.
+
+    Step 1 posts one MWFR per core, tagged `{tissue_code}_core_{core}_{caller}`,
+    plus one over all files of the tissue, tagged `{tissue_code}_{caller}`. The
+    per-core outputs come first, followed by the output of the run over all
+    files, labelled with the core ids it covers joined by "-". With a single
+    core that run is the same run as the core specific one, so it is left out.
+
+    Every core, and the run over all files, must have a completed MWFR. A missing
+    one raises: skipping it would post a quietly smaller payload, and the caller
+    cannot tell that from a tissue that genuinely has fewer cores.
+
+    :param tissue_code: External id of the tissue
+    :type tissue_code: str
+    :param cores: Core ids to collect the output for
+    :type cores: list(str)
+    :param caller_name: Name of the caller as used in the MWFR tags
+    :type caller_name: str
+    :param workflow_names: Names of the workflows that produce the output. They
+        are tried in order, the first one that has an output is used
+    :type workflow_names: list(str)
+    :param argument_name: Name of the output argument
+    :type argument_name: str
+    :return: Output files and the core id labelling each of them
+    :rtype: tuple(list(dict), list(str))
+    """
+
+    def get_output(tag_caller_name):
+        for workflow_name in workflow_names:
+            result = get_variant_calling_output(
+                tissue_code, tag_caller_name, workflow_name, argument_name, smaht_key
+            )
+            if result:
+                return result
+        return None
+
+    files, core_ids = [], []
+    for core in cores:
+        result = get_output(f"core_{core}_{caller_name}")
+        if not result:
+            raise ValueError(
+                f"No completed {caller_name} MWFR found for core {core} of tissue {tissue_code}."
+            )
+        files.append(result)
+        core_ids.append(core)
+        print(f" - {caller_name} core {core}: {result[ACCESSION]}")
+
+    if len(cores) > 1:
+        # The run over all files of the tissue, covering every core
+        result = get_output(caller_name)
+        if not result:
+            raise ValueError(
+                f"No completed {caller_name} MWFR found over all files of tissue {tissue_code}."
+            )
+        core_ids_combined = "-".join(cores)
+        files.append(result)
+        core_ids.append(core_ids_combined)
+        print(f" - {caller_name} cores {core_ids_combined}: {result[ACCESSION]}")
+
+    return files, core_ids
+
+
 def get_analysis_runs_from_tissue(tissue_code, key):
     """For a given tissue code, get all analysis runs that are associated with that tissue code"""
     search_filter = (
@@ -976,6 +1244,26 @@ def get_item_es(identifier, key, frame="raw"):
     return ff_utils.get_metadata(
         identifier, add_on=f"frame={frame}", key=key
     )
+
+def get_item_es_cached(identifier, key, frame="raw"):
+    """Get an item from the portal, memoized on (identifier, key, frame).
+
+    For callers that ask for the same item repeatedly within one run.
+    """
+    return _get_item_es_cached(identifier, _serialize_key(key), frame)
+
+
+@functools.lru_cache(maxsize=1024)
+def _get_item_es_cached(identifier, serialized_key, frame):
+    """Internal cached function that works with hashable parameters.
+
+    Deliberately does nothing but the fetch, so that `lru_cache`, which does not
+    cache exceptions, cannot hide a caller's validation error behind a hit. A
+    long lived session that fixes portal metadata in place can call
+    `_get_item_es_cached.cache_clear()`.
+    """
+    return get_item_es(identifier, json.loads(serialized_key), frame=frame)
+
 
 def search_list(identifiers, key):
     if not identifiers:

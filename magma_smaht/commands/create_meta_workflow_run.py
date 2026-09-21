@@ -23,9 +23,10 @@ from magma_smaht.create_metawfr import (
 from magma_smaht.create_metawfr_variant_calling import (
     mwfrs_somatic_snv_callers,
     mwfrs_somatic_snv_callers_by_core,
-    mwfrs_somatic_snv_callers_by_analyte,
+    #mwfrs_somatic_snv_callers_by_analyte,
     mwfr_germline_snv_caller,
     mwfr_somatic_snv_filtering,
+    mwfr_somatic_snv_filtering_v2,
     mwfrs_somatic_sv_callers,
     mwfrs_somatic_sv_callers_by_core,
     mwfrs_somatic_sv_callers_by_gcc,
@@ -566,30 +567,30 @@ def call_somatic_snv_by_core(tissue, analysis_run, auth_env):
     mwfrs_somatic_snv_callers_by_core(tissue, analysis_run, smaht_key)
 
 
-@cli.command()
-@click.help_option("--help", "-h")
-@click.option(
-    "-t", "--tissue", required=True, type=str, help="Accession of donor specific tissue"
-)
-@click.option(
-    "-a",
-    "--analysis-run",
-    required=False,
-    default=None,
-    type=str,
-    help="Accession of an existing analysis run (optional)",
-)
-@click.option(
-    "-e",
-    "--auth-env",
-    required=True,
-    type=str,
-    help="Name of environment in smaht-keys file",
-)
-def call_somatic_snv_by_analyte(tissue, analysis_run, auth_env):
-    """Call SNV on a given tissue sample. Create the individual caller MWFRs by analyte. If an analysis run is provided, the MWFRs will be added to it."""
-    smaht_key = get_auth_key(auth_env)
-    mwfrs_somatic_snv_callers_by_analyte(tissue, analysis_run, smaht_key)
+# @cli.command()
+# @click.help_option("--help", "-h")
+# @click.option(
+#     "-t", "--tissue", required=True, type=str, help="Accession of donor specific tissue"
+# )
+# @click.option(
+#     "-a",
+#     "--analysis-run",
+#     required=False,
+#     default=None,
+#     type=str,
+#     help="Accession of an existing analysis run (optional)",
+# )
+# @click.option(
+#     "-e",
+#     "--auth-env",
+#     required=True,
+#     type=str,
+#     help="Name of environment in smaht-keys file",
+# )
+# def call_somatic_snv_by_analyte(tissue, analysis_run, auth_env):
+#     """Call SNV on a given tissue sample. Create the individual caller MWFRs by analyte. If an analysis run is provided, the MWFRs will be added to it."""
+#     smaht_key = get_auth_key(auth_env)
+#     mwfrs_somatic_snv_callers_by_analyte(tissue, analysis_run, smaht_key)
 
 
 @cli.command()
@@ -721,6 +722,32 @@ def call_somatic_snv_step2(tissue, analysis_run, auth_env):
     """Create filtered SNV on a given tissue sample. It will use the outputs of the caller MWFRs created in step 1. This step requires an existing analysis run with the caller MWFRs already added."""
     smaht_key = get_auth_key(auth_env)
     mwfr_somatic_snv_filtering(tissue, analysis_run, smaht_key)
+
+
+@cli.command()
+@click.help_option("--help", "-h")
+@click.option(
+    "-t", "--tissue", required=True, type=str, help="Accession of donor specific tissue"
+)
+@click.option(
+    "-a",
+    "--analysis-run",
+    required=False,
+    default=None,
+    type=str,
+    help="Accession of an existing analysis run",
+)
+@click.option(
+    "-e",
+    "--auth-env",
+    required=True,
+    type=str,
+    help="Name of environment in smaht-keys file",
+)
+def call_somatic_snv_step2_v2(tissue, analysis_run, auth_env):
+    """Create filtered SNV on a given tissue sample with the v2 filtering pipeline. It will use the outputs of the caller MWFRs created in step 1, one per sequencing core. This step requires an existing analysis run with the caller MWFRs already added."""
+    smaht_key = get_auth_key(auth_env)
+    mwfr_somatic_snv_filtering_v2(tissue, analysis_run, smaht_key)
 
 
 if __name__ == "__main__":
