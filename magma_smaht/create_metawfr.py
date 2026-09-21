@@ -56,6 +56,8 @@ from magma_smaht.constants import (
     MWF_NAME_ULTRA_LONG_BAMQC,
     MWF_NAME_LONG_READ_BAMQC,
     MWF_SAMPLE_IDENTITY_CHECK,
+    SOMALIER_EXTRACT_STEP,
+    LEGACY_SOMALIER_EXTRACT_STEP,
     INPUT_FILES_R1_FASTQ_GZ,
     INPUT_FILES_R2_FASTQ_GZ,
     INPUT_FILES_BAM,
@@ -617,6 +619,7 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
     mwf = get_latest_mwf(MWF_SAMPLE_IDENTITY_CHECK, smaht_key)
     print(f"Using MetaWorkflow {mwf[ACCESSION]} ({mwf[ALIASES][0]})")
 
+    previous_mwfr = None
     previous_bam_ids = []
     previous_bam_dimension = {}
     if donor:
@@ -658,21 +661,27 @@ def mwfr_sample_identity_check(files, donor, smaht_key):
     ]
     mwfr = mwfr_from_input(mwf[UUID], mwfr_input, INPUT_FILES_BAM, smaht_key)
 
-    # Copy completed wfrs from previous mwfr
+    # Copy completed wfrs from previous mwfr. The old somalier_extract step
+    # produced the same .somalier output as the consolidated step, so runs
+    # posted before the consolidation can still be imported.
+    previous_extract_step = SOMALIER_EXTRACT_STEP
+    if previous_mwfr and not any(
+        wfr["name"] == SOMALIER_EXTRACT_STEP for wfr in previous_mwfr["workflow_runs"]
+    ):
+        previous_extract_step = LEGACY_SOMALIER_EXTRACT_STEP
+
     for workflow_run in mwfr["workflow_runs"]:
         props_to_copy = ["job_id", "output", "status", "workflow_run"]
         if (
-            workflow_run["name"] in ["ReplaceReadGroups", "somalier_extract"]
+            workflow_run["name"] == SOMALIER_EXTRACT_STEP
             and workflow_run["shard"] in dimension_mapping
         ):
             old_shard = dimension_mapping[workflow_run["shard"]]
             previous_workflow_run = get_wfr_from_mwfr(
-                previous_mwfr, workflow_run["name"], old_shard
+                previous_mwfr, previous_extract_step, old_shard
             )
             for prop in props_to_copy:
                 workflow_run[prop] = previous_workflow_run[prop]
-            if workflow_run["name"] == "ReplaceReadGroups":
-                workflow_run["status"] = "completed"
 
     if donor:
         mwfr["tags"] = [get_tag_for_sample_identity_check(donor)]

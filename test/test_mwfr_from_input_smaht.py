@@ -262,19 +262,25 @@ class TestInputStructure:
         ]
         assert utils_module.generate_input_structure(files) == expected
 
-    def test_three_dimensions_exits(self):
-        """Not supported -- the current code prints and calls exit()."""
+    def test_three_dimensions_raise(self):
+        """Not supported -- a 3rd dimension has no shard representation."""
         files = [{"file": "f1", "dimension": "0,0,0"}]
-        with pytest.raises(SystemExit):
+        with pytest.raises(ValueError, match="more than 2 dimensions"):
             utils_module.generate_input_structure(files)
 
-    def test_only_the_first_file_decides_the_shape(self):
-        """A documented assumption: files[0]'s dimension is taken as representative."""
+    def test_mixed_dimensions_raise(self):
+        """files[0] is not assumed to be representative of the input structure.
+
+        A shape derived from the first file alone contradicts where ParserFF
+        places the remaining files: for the files below it would claim two flat
+        shards, while the parser nests the second one as ["f1", ["f2"]].
+        """
         files = [
             {"file": "f1", "dimension": "0"},
             {"file": "f2", "dimension": "1,0"},
         ]
-        assert utils_module.generate_input_structure(files) == [0, 1]
+        with pytest.raises(ValueError, match="Inconsistent dimensions"):
+            utils_module.generate_input_structure(files)
 
 
 def test_get_item_requests_the_raw_frame():

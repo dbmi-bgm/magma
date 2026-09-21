@@ -21,6 +21,11 @@ MWF_NAME_SAMTOOLS_MOSDEPTH = "samtools_mosdepth_bam"
 MWF_NAME_ULTRA_LONG_BAMQC = "ultra-long_reads_BAM_quality_metrics_GRCh38"
 MWF_NAME_LONG_READ_BAMQC = "long_reads_BAM_quality_metrics_GRCh38"
 MWF_SAMPLE_IDENTITY_CHECK = "sample_identity_check"
+# Step names in the sample_identity_check MetaWorkflow. ReplaceReadGroups and
+# somalier_extract were consolidated into a single step; MetaWorkflowRuns posted
+# before that change still carry the old step names.
+SOMALIER_EXTRACT_STEP = "ReplaceReadGroups_somalier_extract"
+LEGACY_SOMALIER_EXTRACT_STEP = "somalier_extract"
 # Variant calling
 MWF_NAME_TNHAPLOTYPER = "paired-end_short_reads_variant_calling_TNhaplotyper2_distributed_TNfilter_GRCh38"
 MWF_NAME_LONGCALLD = "PacBio_variant_calling_longcallD_GRCh38"
@@ -35,6 +40,8 @@ MWF_NAME_DELLY_SR = "paired-end_short_reads_variant_calling_Delly_GRCh38"
 MWF_NAME_MANTA = "paired-end_short_reads_variant_calling_Manta_GRCh38"
 MWF_NAME_SNV_FILTERING_LONGCALLD = "SNV_filtering_longcallD_GRCh38"
 MWF_NAME_SNV_FILTERING = "SNV_filtering_GRCh38"
+MWF_NAME_SNV_FILTERING_LONGCALLD_V2 = "SNV_filtering_longcallD_GRCh38_v2"
+MWF_NAME_SNV_FILTERING_V2 = "SNV_filtering_GRCh38_v2"
 
 HMS_DAC_UUID = "9626d82e-8110-4213-ac75-0a50adf890ff"
 
@@ -71,6 +78,7 @@ META_WORKFLOW_RUN = "MetaWorkflowRun"
 ANALYSIS_RUN = "AnalysisRun"
 ACCESSION = "accession"
 DISPLAY_TITLE = "display_title"
+ANNOTATED_FILENAME = "annotated_filename"
 ALIASES = "aliases"
 UPLOADED = "uploaded"
 RELEASED = "released"
@@ -104,6 +112,13 @@ RELEASED_STATUSES = [
 RELEASED_STATUSES_SEARCH_FILTER = "".join(
     f"&status={status}" for status in RELEASED_STATUSES
 )
+
+# Sequencing platform as reported on a file, mapped to the label the
+# SNV filtering workflows expect
+SEQUENCER_TO_LABEL_MAPPING = {
+    "ONT PromethION 24": "ONT",
+    "PacBio Revio": "PB",
+}
 
 # Assays
 WGS = "WGS"
