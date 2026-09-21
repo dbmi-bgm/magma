@@ -12,13 +12,22 @@ Change Log
 * `write_run` now raises a `ValueError` instead of creating a dependency on a shard that does not
   exist, which can happen when steps that are scattered differently are combined without gather.
 * `generate_input_structure` validates the dimensions of all given files instead of assuming that the
-  first file is representative of the input structure. Mixed dimensionalities, and duplicate, gapped or
-  negative dimensions, now raise a `ValueError` instead of resulting in an input structure that does not
-  match the given files. The input structure itself is unchanged for all valid input.
+  first file is representative. Mixed dimensionalities, and duplicate, gapped or negative dimensions,
+  now raise a `ValueError`. The input structure itself is unchanged for all valid input.
 * `mwfr_from_input` calculates the input structure of every scattered input argument and raises a
   `ValueError` if `input_arg` is not one of the given input arguments.
+* Add somatic SNV filtering v2 (`mwfr_somatic_snv_filtering_v2`, CLI `call-somatic-snv-step2-v2`),
+  which scatters over the per-core caller outputs created by step 1.
+* Add core-aware file utilities that resolve the sequencing core from the annotated filename, falling
+  back to the Samples of the file, and group, sort and label files by core.
+  `mwfrs_somatic_snv_callers_by_core` uses them and now also covers the cases previously handled by
+  `mwfrs_somatic_snv_callers_by_analyte`, which has been retired together with its CLI command.
+* Add `get_item_es_cached` to avoid refetching the same portal item within a run.
+* Sample identity checks import previous runs from the consolidated
+  `ReplaceReadGroups_somalier_extract` step, and still from the old `somalier_extract` step for
+  MetaWorkflowRuns posted before the consolidation.
 
-  
+
 4.0.0
 =====
 * Drop Python 3.8 support. Python 3.9 or higher is now required.
